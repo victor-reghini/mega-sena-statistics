@@ -21,6 +21,12 @@
     extrapHorizon: 500,
     extrapMode: "empirical", // "empirical" | "montecarlo" | "reversion"
     topProjectedSix: [10, 53, 5, 37, 34, 33],
+    spendBetsPerMonth: 8,
+    spendBetSize: 6,
+    spendTimeMode: "sinceYear", // "sinceYear" | "durationYears"
+    spendStartYear: 2015,
+    spendYearsCount: 10,
+    spendAdjustMode: "official", // "official" | "periodic"
     filterSearch: "",
     filterNumber: "",
     filterStatus: "all",
@@ -77,8 +83,13 @@
   function updateThemeBtn(theme) {
     const btn = document.getElementById("theme-toggle");
     if (!btn) return;
-    btn.textContent = theme === "dark" ? "Tema: Escuro (mudar para Claro)" : "Tema: Claro (mudar para Escuro)";
-    btn.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
+    const isDark = theme === "dark";
+    btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+    btn.title = isDark ? "Tema atual: Escuro (clique para Claro)" : "Tema atual: Claro (clique para Escuro)";
+    const iconSvg = isDark
+      ? `<svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.2 10.2A5.5 5.5 0 0 1 5.8 2.8a5.5 5.5 0 1 0 7.4 7.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`
+      : `<svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+    btn.innerHTML = `${iconSvg}<span class="btn-label-text" id="theme-toggle-text">${isDark ? "Escuro" : "Claro"}</span>`;
   }
 
   function buildVolanteButtons() {
@@ -450,6 +461,7 @@
     renderParityChart(stats);
     renderRowDistributionChart(stats);
     renderExtrapolation(stats);
+    renderSpendingSimulator();
   }
 
   function renderFrequencyMatrix(stats) {
@@ -779,6 +791,270 @@
           </div>
         `;
       })
+      .join("");
+  }
+
+  // Tabela oficial de reajustes da aposta simples (6 dezenas) da Mega-Sena (Caixa)
+  const OFFICIAL_PRICE_ERAS = [
+    { id: "1996-2003", label: "Mar/1996 a Ago/2003", startYM: 1996 * 12 + 3, endYM: 2003 * 12 + 8, unitPrice: 1.0 },
+    { id: "2003-2005", label: "Set/2003 a Jan/2005 (+50%)", startYM: 2003 * 12 + 9, endYM: 2005 * 12 + 1, unitPrice: 1.5 },
+    { id: "2005-2014", label: "Fev/2005 a Abr/2014 (+33%)", startYM: 2005 * 12 + 2, endYM: 2014 * 12 + 4, unitPrice: 2.0 },
+    { id: "2014-2015", label: "Mai/2014 a Abr/2015 (+25%)", startYM: 2014 * 12 + 5, endYM: 2015 * 12 + 4, unitPrice: 2.5 },
+    { id: "2015-2019", label: "Mai/2015 a Out/2019 (+40%)", startYM: 2015 * 12 + 5, endYM: 2019 * 12 + 10, unitPrice: 3.5 },
+    { id: "2019-2023", label: "Nov/2019 a Abr/2023 (+28,6%)", startYM: 2019 * 12 + 11, endYM: 2023 * 12 + 4, unitPrice: 4.5 },
+    { id: "2023-2025", label: "Mai/2023 a Jun/2025 (+11,1%)", startYM: 2023 * 12 + 5, endYM: 2025 * 12 + 6, unitPrice: 5.0 },
+    { id: "2025-2026", label: "Jul/2025 a Out/2026 (+20%)", startYM: 2025 * 12 + 7, endYM: 2026 * 12 + 10, unitPrice: 6.0 }
+  ];
+
+  const INVESTMENT_OPTIONS = [
+    {
+      id: "poupanca",
+      name: "Poupança Tradicional",
+      annualRate: 0.0617,
+      profile: "Conservador | Isenta de IR, liquidez imediata, menor rentabilidade real"
+    },
+    {
+      id: "ipca",
+      name: "Tesouro IPCA+ (Inflação + Juros Reais)",
+      annualRate: 0.095,
+      profile: "Moderado/Conservador | Protege o poder de compra no longo prazo (~9,5% a.a. nominal)"
+    },
+    {
+      id: "selic_cdi",
+      name: "Tesouro Selic / CDB 100% do CDI",
+      annualRate: 0.1075,
+      profile: "Conservador | Liquidez diária, segurança soberana/FGC (~10,75% a.a. líquido)"
+    },
+    {
+      id: "lci_fiis",
+      name: "LCI/LCA Isentas ou Fundos Imobiliários (FIIs)",
+      annualRate: 0.12,
+      profile: "Moderado | Renda isenta de IR com reinvestimento mensal de proventos (~12,0% a.a.)"
+    },
+    {
+      id: "diversificada",
+      name: "Carteira Diversificada (Renda Fixa + ETFs Globais)",
+      annualRate: 0.135,
+      profile: "Arrojado/Longo Prazo | Multiplicação patrimonial com juros compostos (~13,5% a.a.)"
+    }
+  ];
+
+  function getOfficialUnitPriceForYM(ym) {
+    for (let i = 0; i < OFFICIAL_PRICE_ERAS.length; i++) {
+      const era = OFFICIAL_PRICE_ERAS[i];
+      if (ym >= era.startYM && ym <= era.endYM) return era;
+    }
+    return OFFICIAL_PRICE_ERAS[OFFICIAL_PRICE_ERAS.length - 1];
+  }
+
+  function populateSpendYears() {
+    const sel = document.getElementById("spend-start-year");
+    if (!sel) return;
+    sel.innerHTML = "";
+    for (let y = 2026; y >= 1996; y--) {
+      const opt = document.createElement("option");
+      opt.value = String(y);
+      opt.textContent = `${y} (${2026 - y === 0 ? "ano atual" : "há " + (2026 - y) + (2026 - y === 1 ? " ano" : " anos")})`;
+      if (y === state.spendStartYear) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  }
+
+  function renderSpendingSimulator() {
+    const kpiEl = document.getElementById("spend-kpi-strip");
+    if (!kpiEl) return;
+
+    const betsPerMonth = Math.max(1, Math.min(500, Number(state.spendBetsPerMonth) || 1));
+    const k = state.spendBetSize;
+    const combosPerBet = BET_TABLE[k] ? BET_TABLE[k].combos : 1;
+
+    const endYM = 2026 * 12 + 10; // Outubro/2026
+    let startYM;
+    if (state.spendTimeMode === "sinceYear") {
+      const yr = Math.max(1996, Math.min(2026, Number(state.spendStartYear) || 2015));
+      startYM = yr === 1996 ? 1996 * 12 + 3 : yr * 12 + 1;
+    } else {
+      const yrs = Math.max(1, Math.min(30, Number(state.spendYearsCount) || 10));
+      startYM = Math.max(1996 * 12 + 3, endYM - yrs * 12 + 1);
+    }
+
+    const totalMonths = Math.max(1, endYM - startYM + 1);
+    const totalBetsPlaced = totalMonths * betsPerMonth;
+    const totalSimpleEquiv = totalBetsPlaced * combosPerBet;
+
+    // Simula mês a mês os gastos considerando reajustes e capitaliza cada opção de investimento
+    const invBalances = {};
+    const invMonthlyRate = {};
+    INVESTMENT_OPTIONS.forEach((opt) => {
+      invBalances[opt.id] = 0;
+      invMonthlyRate[opt.id] = Math.pow(1 + opt.annualRate, 1 / 12) - 1;
+    });
+
+    const cdiRate = invMonthlyRate["selic_cdi"];
+    let totalSpent = 0;
+    let firstMonthCost = 0;
+    let lastMonthCost = 0;
+    const eraBuckets = new Map();
+
+    const initialOfficial = getOfficialUnitPriceForYM(startYM).unitPrice;
+
+    for (let mIdx = 0; mIdx < totalMonths; mIdx++) {
+      const currentYM = startYM + mIdx;
+      let unitPrice;
+      let eraKey;
+      let eraLabel;
+
+      if (state.spendAdjustMode === "official") {
+        const eraObj = getOfficialUnitPriceForYM(currentYM);
+        unitPrice = eraObj.unitPrice;
+        eraKey = eraObj.id;
+        eraLabel = eraObj.label;
+      } else {
+        const cycleIdx = Math.floor(mIdx / 36);
+        unitPrice = Number((initialOfficial * Math.pow(1.25, cycleIdx)).toFixed(2));
+        const startYrCycle = Math.floor((startYM + cycleIdx * 36 - 1) / 12);
+        const endYrCycle = Math.min(2026, startYrCycle + 3);
+        eraKey = "cycle-" + cycleIdx;
+        eraLabel = `${ cycleIdx === 0 ? "Valor Inicial" : `${cycleIdx}º Reajuste (+25%)` } (${startYrCycle} a ${endYrCycle})`;
+      }
+
+      const singleBetCost = unitPrice * combosPerBet;
+      const monthSpend = singleBetCost * betsPerMonth;
+
+      if (mIdx === 0) firstMonthCost = monthSpend;
+      if (mIdx === totalMonths - 1) lastMonthCost = monthSpend;
+
+      totalSpent += monthSpend;
+
+      INVESTMENT_OPTIONS.forEach((opt) => {
+        invBalances[opt.id] = (invBalances[opt.id] + monthSpend) * (1 + invMonthlyRate[opt.id]);
+      });
+
+      const monthsRemaining = totalMonths - 1 - mIdx;
+      const monthFutureCDI = monthSpend * Math.pow(1 + cdiRate, monthsRemaining + 1);
+
+      if (!eraBuckets.has(eraKey)) {
+        eraBuckets.set(eraKey, {
+          label: eraLabel,
+          unitPrice,
+          singleBetCost,
+          months: 0,
+          spent: 0,
+          cdiValueToday: 0
+        });
+      }
+      const b = eraBuckets.get(eraKey);
+      b.months += 1;
+      b.spent += monthSpend;
+      b.cdiValueToday += monthFutureCDI;
+    }
+
+    // Probabilidade acumulada de acertar a Sena ao menos 1 vez no período (1 em 50.063.860 por aposta simples)
+    const pSingleSena = 1 / 50063860;
+    const probWinSenaOnce = 1 - Math.pow(1 - pSingleSena, totalSimpleEquiv);
+    const probPct = (probWinSenaOnce * 100).toFixed(4).replace(".", ",");
+
+    const cdiTotal = invBalances["selic_cdi"];
+    const cdiInterest = cdiTotal - totalSpent;
+    const priceGrowthPct = firstMonthCost > 0 ? Math.round(((lastMonthCost - firstMonthCost) / firstMonthCost) * 100) : 0;
+
+    kpiEl.innerHTML = `
+      <div class="kpi-item">
+        <p class="kpi-title">Total Gasto em Apostas (${totalMonths} meses)</p>
+        <p class="kpi-num" style="color:var(--danger-text);">${brlFmt.format(totalSpent)}</p>
+        <p class="kpi-sub">${intFmt.format(totalBetsPlaced)} apostas de ${k} dez. (${intFmt.format(totalSimpleEquiv)} jogos simples)</p>
+      </div>
+      <div class="kpi-item">
+        <p class="kpi-title">Impacto dos Reajustes no Bolso</p>
+        <p class="kpi-num">${brlFmt.format(firstMonthCost)}/mês -> ${brlFmt.format(lastMonthCost)}/mês</p>
+        <p class="kpi-sub">Alta de +${priceGrowthPct}% no custo mensal das mesmas ${betsPerMonth} apostas</p>
+      </div>
+      <div class="kpi-item">
+        <p class="kpi-title">Patrimônio em Tesouro Selic / 100% CDI</p>
+        <p class="kpi-num" style="color:var(--success-text);">${brlFmt.format(cdiTotal)}</p>
+        <p class="kpi-sub">Lucro só de juros: <strong>+${brlFmt.format(cdiInterest)}</strong> sobre o valor apostado</p>
+      </div>
+      <div class="kpi-item">
+        <p class="kpi-title">Chance Acumulada de Ganhar a Sena</p>
+        <p class="kpi-num">${probPct}%</p>
+        <p class="kpi-sub">Probabilidade de NÃO ganhar a Sena no período: ${(100 - probWinSenaOnce * 100).toFixed(4).replace(".", ",")}%</p>
+      </div>
+    `;
+
+    // Gráfico comparativo de investimentos vs Gasto na Loteria
+    const maxInvVal = Math.max(totalSpent, ...INVESTMENT_OPTIONS.map((o) => invBalances[o.id]), 1);
+    const chartRows = [
+      {
+        label: "Gasto Loteria",
+        total: totalSpent,
+        pct: Math.max(6, Math.round((totalSpent / maxInvVal) * 100)),
+        isBase: true
+      },
+      ...INVESTMENT_OPTIONS.map((opt) => ({
+        label: opt.name.split(" ")[0] + " (" + (opt.annualRate * 100).toFixed(1).replace(".", ",") + "%)",
+        fullName: opt.name,
+        profile: opt.profile,
+        annualRate: opt.annualRate,
+        total: invBalances[opt.id],
+        interest: invBalances[opt.id] - totalSpent,
+        pct: Math.max(6, Math.round((invBalances[opt.id] / maxInvVal) * 100)),
+        isBase: false
+      }))
+    ];
+
+    document.getElementById("spend-investments-chart").innerHTML = chartRows
+      .map(
+        (r) => `
+        <div class="bar-row">
+          <span><strong>${r.label}</strong></span>
+          <div class="bar-track" aria-hidden="true">
+            <div class="bar-fill" style="width:${r.pct}%;background:${r.isBase ? "var(--danger-text)" : "var(--accent)"};"></div>
+          </div>
+          <span>${brlFmt.format(r.total)}</span>
+        </div>
+      `
+      )
+      .join("");
+
+    document.getElementById("spend-investments-cards").innerHTML = chartRows
+      .filter((r) => !r.isBase)
+      .map((r) => {
+        const mult = totalSpent > 0 ? (r.total / totalSpent).toFixed(2).replace(".", ",") : "1,00";
+        return `
+          <div class="extrato-row-card">
+            <div class="extrato-row-top">
+              <span><strong>${r.fullName}</strong></span>
+              <span class="badge-status">${mult}x o valor gasto</span>
+            </div>
+            <div class="extrato-row-mid">${r.profile}</div>
+            <div class="extrato-row-bottom">
+              <span>Total Acumulado: <strong class="extrato-value gain" style="font-size:0.875rem;">${brlFmt.format(r.total)}</strong></span>
+              <span>Juros Ganhos: <strong>+${brlFmt.format(r.interest)}</strong></span>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+
+    const erasArray = Array.from(eraBuckets.values());
+    document.getElementById("spend-eras-list").innerHTML = erasArray
+      .map(
+        (era) => `
+        <div class="extrato-row-card">
+          <div class="extrato-row-top">
+            <span><strong>${era.label}</strong></span>
+            <span class="badge-status">${era.months} ${era.months === 1 ? "mês" : "meses"}</span>
+          </div>
+          <div class="extrato-row-mid">
+            Aposta simples: ${brlFmt.format(era.unitPrice)} | Sua aposta (${k} dez.): <strong>${brlFmt.format(era.singleBetCost)}</strong> (${betsPerMonth}x/mês = ${brlFmt.format(era.singleBetCost * betsPerMonth)}/mês)
+          </div>
+          <div class="extrato-row-bottom">
+            <span>Gasto na faixa: <strong class="extrato-value loss" style="font-size:0.8125rem;">-${brlFmt.format(era.spent)}</strong></span>
+            <span>No CDI até hoje: <strong class="extrato-value gain" style="font-size:0.8125rem;">${brlFmt.format(era.cdiValueToday)}</strong></span>
+          </div>
+        </div>
+      `
+      )
       .join("");
   }
 
@@ -1218,6 +1494,39 @@
       document.getElementById("simulador").scrollIntoView({ behavior: "smooth" });
     });
 
+    document.getElementById("spend-bets-month").addEventListener("input", (e) => {
+      state.spendBetsPerMonth = Number(e.target.value) || 1;
+      renderSpendingSimulator();
+    });
+
+    document.getElementById("spend-bet-size").addEventListener("change", (e) => {
+      state.spendBetSize = Number(e.target.value) || 6;
+      renderSpendingSimulator();
+    });
+
+    document.getElementById("spend-time-mode").addEventListener("change", (e) => {
+      state.spendTimeMode = e.target.value;
+      const isSince = state.spendTimeMode === "sinceYear";
+      document.getElementById("group-since-year").hidden = !isSince;
+      document.getElementById("group-duration-years").hidden = isSince;
+      renderSpendingSimulator();
+    });
+
+    document.getElementById("spend-start-year").addEventListener("change", (e) => {
+      state.spendStartYear = Number(e.target.value) || 2015;
+      renderSpendingSimulator();
+    });
+
+    document.getElementById("spend-years-count").addEventListener("input", (e) => {
+      state.spendYearsCount = Number(e.target.value) || 10;
+      renderSpendingSimulator();
+    });
+
+    document.getElementById("spend-adjust-mode").addEventListener("change", (e) => {
+      state.spendAdjustMode = e.target.value;
+      renderSpendingSimulator();
+    });
+
     document.getElementById("filter-search").addEventListener("input", (e) => {
       state.filterSearch = e.target.value;
       state.page = 1;
@@ -1315,6 +1624,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     initTheme();
     populateFilterNumberSelect();
+    populateSpendYears();
     buildVolanteButtons();
     bindEvents();
     syncVolanteUI();

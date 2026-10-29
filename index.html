@@ -13,19 +13,46 @@
     <div class="header-inner">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">60</span>
-        <div>
-          <h1 class="brand-title">Atlas Estatístico da Mega-Sena</h1>
-          <p class="brand-subtitle">3.076 sorteios auditáveis, métricas de dezenas e extrato de apostas múltiplas (6 a 10 dezenas)</p>
+        <div class="brand-text">
+          <h1 class="brand-title">Atlas da Mega-Sena</h1>
+          <p class="brand-subtitle">3.076 sorteios, métricas, projeções e simulador financeiro</p>
         </div>
       </div>
 
-      <nav class="main-nav" aria-label="Navegação principal">
-        <a href="#simulador" class="nav-link">Simulador e Extrato</a>
-        <a href="#estatisticas" class="nav-link">Gráficos e Métricas</a>
-        <a href="#extrapolacao" class="nav-link">Extrapolação Futura</a>
-        <a href="#historico" class="nav-link">Todos os Concursos</a>
-        <button type="button" id="btn-sync-api" class="btn">Atualizar da Caixa</button>
-        <button type="button" id="theme-toggle" class="btn" aria-pressed="false">Tema: Claro (mudar para Escuro)</button>
+      <nav class="main-nav" aria-label="Navegação principal e configurações">
+        <div class="nav-shortcuts" role="group" aria-label="Atalhos das seções">
+          <a href="#simulador" class="nav-link" title="Simulador de Aposta e Extrato">
+            <svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            <span>Simulador</span>
+          </a>
+          <a href="#gastos-investimentos" class="nav-link" title="Simulador de Gastos vs. Investimentos">
+            <svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v7M6 6.5c0-1 1-1.5 2-1.5s2 .5 2 1.5-1 1.5-2 1.5-2 .5-2 1.5 1 1.5 2 1.5 2-.5 2-1.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span>Gastos</span>
+          </a>
+          <a href="#estatisticas" class="nav-link" title="Gráficos e Métricas das Dezenas">
+            <svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5V8M6.5 13.5V4M10.5 13.5V6.5M13.5 13.5V2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>Métricas</span>
+          </a>
+          <a href="#extrapolacao" class="nav-link" title="Extrapolação Probabilística Futura">
+            <svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12l4-4 3 2 5-6M10.5 4H14v3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Projeção</span>
+          </a>
+          <a href="#historico" class="nav-link" title="Todos os Concursos Passados">
+            <svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span>Concursos</span>
+          </a>
+        </div>
+
+        <div class="nav-settings" role="group" aria-label="Configurações e sincronização">
+          <button type="button" id="btn-sync-api" class="btn" title="Sincronizar sorteios recentes da Caixa" aria-label="Atualizar sorteios da Caixa">
+            <svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 0 1-9.3 3.9M2.5 8a5.5 5.5 0 0 1 9.3-3.9M10 4.5h2.5V2M6 11.5H3.5V14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="btn-label-text">Atualizar</span>
+          </button>
+          <button type="button" id="theme-toggle" class="btn" aria-pressed="false" title="Alternar entre tema Claro e Escuro" aria-label="Alternar tema Claro ou Escuro">
+            <svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <span class="btn-label-text" id="theme-toggle-text">Claro</span>
+          </button>
+        </div>
       </nav>
     </div>
   </header>
@@ -83,6 +110,83 @@
 
         <!-- Coluna Direita: Resultado e Extrato -->
         <div id="simulation-output" class="result-panel" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 1.5: SIMULADOR DE GASTOS TOTAIS COM APOSTAS VS. INVESTIMENTOS -->
+    <section id="gastos-investimentos" class="section-block" aria-labelledby="title-gastos">
+      <div class="section-header">
+        <div>
+          <h2 id="title-gastos" class="section-title">Simulador de Gastos Acumulados com Apostas vs. Investimentos Mais Rentáveis</h2>
+          <p class="section-desc">
+            Calcule quanto você gastou (ou gastaria) apostando mensalmente ao longo do tempo, considerando os reajustes históricos de preço da Mega-Sena (de R$ 1,00 em 1996 até R$ 6,00 em 2025/2026) ou reajustes periódicos, e compare com o patrimônio acumulado se os mesmos valores tivessem sido investidos mês a mês.
+          </p>
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <div class="field-group">
+          <label class="field-label" for="spend-bets-month">Quantas apostas por mês?</label>
+          <input type="number" id="spend-bets-month" class="text-input" min="1" max="500" step="1" value="8">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="spend-bet-size">Dezenas por aposta:</label>
+          <select id="spend-bet-size" class="select-input">
+            <option value="6" selected>6 dezenas (1x valor base)</option>
+            <option value="7">7 dezenas (7x valor base)</option>
+            <option value="8">8 dezenas (28x valor base)</option>
+            <option value="9">9 dezenas (84x valor base)</option>
+            <option value="10">10 dezenas (210x valor base)</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="spend-time-mode">Como informar o tempo?</label>
+          <select id="spend-time-mode" class="select-input">
+            <option value="sinceYear" selected>Desde um ano específico (1996 a 2026)</option>
+            <option value="durationYears">Há quantos anos (duração em anos)</option>
+          </select>
+        </div>
+
+        <div class="field-group" id="group-since-year">
+          <label class="field-label" for="spend-start-year">Apostando desde o ano:</label>
+          <select id="spend-start-year" class="select-input"></select>
+        </div>
+
+        <div class="field-group" id="group-duration-years" hidden>
+          <label class="field-label" for="spend-years-count">Há quantos anos (1 a 30):</label>
+          <input type="number" id="spend-years-count" class="text-input" min="1" max="30" step="1" value="10">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="spend-adjust-mode">Regra de reajuste do valor da aposta:</label>
+          <select id="spend-adjust-mode" class="select-input">
+            <option value="official" selected>Reajustes Oficiais da Caixa (R$ 1,00 em 1996 até R$ 6,00 hoje)</option>
+            <option value="periodic">Reajuste Periódico Simulado (+25% a cada 3 anos)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="spend-kpi-strip" class="kpi-strip"></div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3 class="chart-title">Quanto o mesmo dinheiro teria rendido em investimentos mais rentáveis?</h3>
+          <p class="chart-subtitle">
+            Simulação de juros compostos aportando exatamente o valor gasto com as apostas em cada mês (incluindo os reajustes do bilhete).
+          </p>
+          <div id="spend-investments-chart" class="bar-list"></div>
+          <div id="spend-investments-cards" class="extrato-list" style="margin-top:12px;max-height:none;"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3 class="chart-title">Como os reajustes da aposta aumentaram o seu gasto ao longo do tempo?</h3>
+          <p class="chart-subtitle">
+            Detalhamento por ciclo de preço do bilhete: valor unitário da época, meses ativos, gasto no período e quanto esse lote teria hoje no CDI (10,75% a.a.).
+          </p>
+          <div id="spend-eras-list" class="extrato-list" style="max-height:420px;"></div>
+        </div>
       </div>
     </section>
 

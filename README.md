@@ -16,7 +16,12 @@ Aplicação web sem dependências externas para consulta de todos os resultados 
    - Destaque automático dos concursos com maior número de acertos (ex.: Concurso #2057 com 5 acertos pagando R$ 46.108,12) e alerta explícito quando nenhum prêmio é encontrado ou quando o custo da aposta supera o valor recebido.
    - Extrato financeiro detalhado com duas modalidades de custo: **1 Concurso Avulso** ou **Teimosinha Histórica (todos os 3.076 concursos)**.
 
-2. **Gráficos e Métricas das Dezenas**
+2. **Simulador de Gastos Acumulados com Apostas vs. Investimentos Mais Rentáveis**
+   - Permite informar **quantas apostas por mês**, **quantidade de dezenas (6 a 10)** e o período (**desde que ano** entre 1996 e 2026 ou **há quantos anos**).
+   - Aplica os **reajustes históricos oficiais da Caixa** mês a mês (`R$ 1,00` em 1996, `R$ 1,50` em 2003, `R$ 2,00` em 2005, `R$ 2,50` em 2014, `R$ 3,50` em 2015, `R$ 4,50` em 2019, `R$ 5,00` em 2023 e `R$ 6,00` em 2025/2026) ou **reajustes periódicos simulados** (+25% a cada 3 anos).
+   - Compara o total desembolsado na loteria com o patrimônio acumulado (aportes mensais + juros compostos) em 5 alternativas de investimento: **Poupança Tradicional**, **Tesouro IPCA+**, **Tesouro Selic / CDB 100% CDI**, **LCI/LCA Isentas ou FIIs** e **Carteira Diversificada / ETFs**, exibindo também o extrato de gastos por faixa de reajuste.
+
+3. **Gráficos e Métricas das Dezenas**
    - Indicadores gerais: total de concursos, percentual de acumulados, dezena mais sorteada, dezena menos sorteada, dezena com maior atraso atual e soma média por sorteio.
    - Matriz interativa das 60 dezenas ordenável por ordem numérica, maior frequência, menor frequência ou maior atraso.
    - Gráfico das 10 dezenas há mais concursos consecutivos sem sair.
