@@ -23,7 +23,12 @@ Aplicação web sem dependências externas para consulta de todos os resultados 
    - Gráfico de proporção entre dezenas pares e ímpares por sorteio.
    - Gráfico de distribuição por linha do volante (`01 a 10` até `51 a 60`).
 
-3. **Histórico Completo de Concursos**
+3. **Extrapolação Probabilística (Dezenas, Centenas e Milhares de Jogos à Frente)**
+   - Seleção de horizonte futuro: `+20` e `+50` (dezenas), `+250` e `+500` (centenas), `+1.000` e `+5.000` (milhares de concursos).
+   - Três métodos de projeção: **Expectativa Empírica Direta** ($p_i = f_i / N$), **Simulação de Monte Carlo Ponderada** (amostragem sem reposição de $H$ sorteios futuros) e **Regressão à Média + Pressão de Ciclo**.
+   - Gráfico SVG multi-escala comparando a trajetória das dezenas líderes, média teórica (10%) e lanterna em `+50`, `+500`, `+1.000` e `+5.000` jogos, além de projeções de aparições adicionais, pressão de ciclo, paridade e linhas do volante.
+
+4. **Histórico Completo de Concursos**
    - Busca por número do concurso ou data (`dd/mm/aaaa`).
    - Filtro por dezena específica sorteada (`01` a `60`) e por status do prêmio principal (Todos, Com ganhadores na Sena, Acumulados).
    - Modal de detalhes com o rateio completo de cada concurso (Sena, Quina e Quadra) e atalho para carregar as dezenas daquele sorteio no simulador.

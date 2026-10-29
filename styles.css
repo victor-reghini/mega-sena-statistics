@@ -626,6 +626,44 @@ body {
   background: var(--accent);
 }
 
+.svg-chart-wrap {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.extrap-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.svg-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+}
+
+.svg-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+}
+
 /* Tabela e Cartões Responsivos de Concursos */
 .table-wrap {
   width: 100%;

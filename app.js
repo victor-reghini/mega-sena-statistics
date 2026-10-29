@@ -18,6 +18,9 @@
     selectedNumbers: new Set([1, 10, 13, 20, 37, 38]),
     costMode: "single", // "single" (1 concurso) ou "all" (todos os concursos)
     freqSort: "num", // "num" | "most" | "least" | "delay"
+    extrapHorizon: 500,
+    extrapMode: "empirical", // "empirical" | "montecarlo" | "reversion"
+    topProjectedSix: [10, 53, 5, 37, 34, 33],
     filterSearch: "",
     filterNumber: "",
     filterStatus: "all",
@@ -446,6 +449,7 @@
     renderDelayChart(stats);
     renderParityChart(stats);
     renderRowDistributionChart(stats);
+    renderExtrapolation(stats);
   }
 
   function renderFrequencyMatrix(stats) {
@@ -540,6 +544,364 @@
         `;
       })
       .join("");
+  }
+
+  function simulateMonteCarloDraws(stats, horizon) {
+    const counts = Array(61).fill(0);
+    const parityProjected = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    const rowProjected = [0, 0, 0, 0, 0, 0];
+
+    const weights = Array(61).fill(1);
+    for (let i = 0; i < stats.items.length; i++) {
+      const it = stats.items[i];
+      weights[it.num] = Math.max(1, it.count);
+    }
+
+    // Amostragem ponderada sem reposição (Efraimidis-Spirakis)
+    for (let g = 0; g < horizon; g++) {
+      const scored = [];
+      for (let n = 1; n <= 60; n++) {
+        const u = Math.max(1e-9, Math.random());
+        scored.push({ n, key: Math.pow(u, 1 / weights[n]) });
+      }
+      scored.sort((a, b) => b.key - a.key);
+      let evens = 0;
+      for (let k = 0; k < 6; k++) {
+        const picked = scored[k].n;
+        counts[picked]++;
+        if (picked % 2 === 0) evens++;
+        rowProjected[Math.min(5, Math.floor((picked - 1) / 10))]++;
+      }
+      parityProjected[evens]++;
+    }
+
+    return { counts, parityProjected, rowProjected };
+  }
+
+  function renderExtrapolation(stats) {
+    if (!stats || !stats.totalDraws) return;
+    const H = state.extrapHorizon;
+    const mode = state.extrapMode;
+    const N = stats.totalDraws;
+    const uniformExpected = H * 0.1;
+
+    document.querySelectorAll(".horizon-pill").forEach((pill) => {
+      pill.setAttribute("aria-pressed", Number(pill.dataset.horizon) === H ? "true" : "false");
+    });
+
+    const mcRun = mode === "montecarlo" ? simulateMonteCarloDraws(stats, H) : null;
+
+    const rawProjections = stats.items.map((item) => {
+      const pEmpirical = item.count / N;
+      const avgCycle = pEmpirical > 0 ? 1 / pEmpirical : 10;
+      const cyclePressure = item.delay / avgCycle;
+      const probAtLeastOneInH = 1 - Math.pow(1 - pEmpirical, H);
+      const probAtLeastOneIn10 = 1 - Math.pow(1 - pEmpirical, 10);
+      const probAtLeastOneIn50 = 1 - Math.pow(1 - pEmpirical, 50);
+
+      let addCount = pEmpirical * H;
+      if (mode === "montecarlo" && mcRun) {
+        addCount = mcRun.counts[item.num];
+      } else if (mode === "reversion") {
+        const historicalDeficit = N * 0.1 - item.count;
+        const reversionPull = historicalDeficit * Math.min(1, H / (N * 0.8));
+        const delayBoost = Math.min(3.0, cyclePressure * 0.65);
+        addCount = Math.max(0.2, uniformExpected + reversionPull * 0.55 + delayBoost);
+      }
+
+      return {
+        num: item.num,
+        histCount: item.count,
+        delay: item.delay,
+        pEmpirical,
+        avgCycle,
+        cyclePressure,
+        probAtLeastOneInH,
+        probAtLeastOneIn10,
+        probAtLeastOneIn50,
+        addCount,
+        futureTotal: item.count + addCount
+      };
+    });
+
+    // Normaliza no modo reversion para somar 6*H bolas no horizonte
+    if (mode === "reversion") {
+      const sumAdd = rawProjections.reduce((acc, x) => acc + x.addCount, 0) || 1;
+      const targetSum = H * 6;
+      rawProjections.forEach((x) => {
+        x.addCount = (x.addCount / sumAdd) * targetSum;
+        x.futureTotal = x.histCount + x.addCount;
+      });
+    }
+
+    const sortedByAdd = rawProjections.slice().sort((a, b) => b.addCount - a.addCount || b.histCount - a.histCount);
+    const top6 = sortedByAdd.slice(0, 6).map((x) => x.num).sort((a, b) => a - b);
+    state.topProjectedSix = top6;
+
+    const latestConcurso = state.draws[state.draws.length - 1].c;
+    const targetConcurso = latestConcurso + H;
+    const scaleTag = H < 100 ? "Escala de Dezenas" : H < 1000 ? "Escala de Centenas" : "Escala de Milhares";
+
+    const leaderProj = sortedByAdd[0];
+    const tailProj = sortedByAdd[sortedByAdd.length - 1];
+    const spreadFuture = Math.round(leaderProj.futureTotal - tailProj.futureTotal);
+    const uniformProbH = (1 - Math.pow(0.9, H)) * 100;
+
+    document.getElementById("extrap-kpi-strip").innerHTML = `
+      <div class="kpi-item">
+        <p class="kpi-title">Janela Futura Projetada (${scaleTag})</p>
+        <p class="kpi-num">+${intFmt.format(H)} concursos</p>
+        <p class="kpi-sub">Do #${latestConcurso + 1} até #${intFmt.format(targetConcurso)} (+${intFmt.format(H * 6)} bolas)</p>
+      </div>
+      <div class="kpi-item">
+        <p class="kpi-title">Sexteto de Maior Projeção (+${intFmt.format(H)} jogos)</p>
+        <p class="kpi-num">${top6.map(pad2).join(", ")}</p>
+        <p class="kpi-sub">Média uniforme esperada: ${uniformExpected.toFixed(1)} saídas/dezena</p>
+      </div>
+      <div class="kpi-item">
+        <p class="kpi-title">Líder Projetada no Horizonte</p>
+        <p class="kpi-num">Dezena ${pad2(leaderProj.num)} (+${leaderProj.addCount.toFixed(1)}x)</p>
+        <p class="kpi-sub">Total estimado no #${intFmt.format(targetConcurso)}: ${Math.round(leaderProj.futureTotal)} sorteios (amplitude: ${spreadFuture})</p>
+      </div>
+      <div class="kpi-item">
+        <p class="kpi-title">Chance de Sair ao Menos 1x em +${intFmt.format(H)} Jogos</p>
+        <p class="kpi-num">${uniformProbH >= 99.95 ? "> 99,9%" : uniformProbH.toFixed(1).replace(".", ",") + "%"}</p>
+        <p class="kpi-sub">Em +10 jogos: 65,1% | Em +50 jogos: 99,5%</p>
+      </div>
+    `;
+
+    renderMultiScaleSVG(stats, mode);
+
+    // Gráfico 2: Top 12 dezenas projetadas no horizonte +H
+    document.getElementById("title-extrap-top").textContent =
+      `Quais dezenas terão mais sorteios adicionais nos próximos +${intFmt.format(H)} concursos?`;
+    const top12 = sortedByAdd.slice(0, 12);
+    const maxAdd = Math.max(...top12.map((x) => x.addCount), 1);
+    document.getElementById("extrap-top-chart").innerHTML = top12
+      .map((item) => {
+        const pct = Math.max(6, Math.round((item.addCount / maxAdd) * 100));
+        const diff = item.addCount - uniformExpected;
+        const sign = diff >= 0 ? "+" : "";
+        return `
+          <div class="bar-row">
+            <span>Dez. <strong>${pad2(item.num)}</strong></span>
+            <div class="bar-track" aria-hidden="true">
+              <div class="bar-fill" style="width:${pct}%"></div>
+            </div>
+            <span>+${item.addCount.toFixed(1)} (${sign}${diff.toFixed(1)})</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    // Gráfico 3: Pressão de ciclo e probabilidade acumulada das dezenas atrasadas
+    document.getElementById("title-extrap-prob").textContent =
+      `Como as 10 dezenas mais atrasadas se comportam nos próximos +10, +50 e +${intFmt.format(H)} jogos?`;
+    const topDelayedProj = rawProjections
+      .slice()
+      .sort((a, b) => b.cyclePressure - a.cyclePressure)
+      .slice(0, 10);
+    const maxPressure = Math.max(...topDelayedProj.map((x) => x.cyclePressure), 1);
+    document.getElementById("extrap-cycle-chart").innerHTML = topDelayedProj
+      .map((item) => {
+        const pct = Math.max(8, Math.round((item.cyclePressure / maxPressure) * 100));
+        const p10 = (item.probAtLeastOneIn10 * 100).toFixed(0);
+        return `
+          <div class="bar-row">
+            <span>Dez. <strong>${pad2(item.num)}</strong></span>
+            <div class="bar-track" aria-hidden="true">
+              <div class="bar-fill" style="width:${pct}%"></div>
+            </div>
+            <span>${item.cyclePressure.toFixed(1)}x ciclo (${p10}%/10j | +${item.addCount.toFixed(0)})</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    // Gráfico 4: Extrapolação de Paridade para +H jogos
+    document.getElementById("title-extrap-parity").textContent =
+      `Quantos dos próximos +${intFmt.format(H)} concursos terão cada proporção de Pares e Ímpares?`;
+    const parityRows = [
+      { label: "3P / 3I", evens: 3 },
+      { label: "4P / 2I", evens: 4 },
+      { label: "2P / 4I", evens: 2 },
+      { label: "5P / 1I", evens: 5 },
+      { label: "1P / 5I", evens: 1 },
+      { label: "6P / 0I", evens: 6 },
+      { label: "0P / 6I", evens: 0 }
+    ];
+    const parityCountsH = parityRows.map((r) => {
+      const val =
+        mode === "montecarlo" && mcRun
+          ? mcRun.parityProjected[r.evens] || 0
+          : ((stats.parityDist[r.evens] || 0) / N) * H;
+      return { label: r.label, val };
+    });
+    const maxParityH = Math.max(...parityCountsH.map((x) => x.val), 1);
+    document.getElementById("extrap-parity-chart").innerHTML = parityCountsH
+      .map((r) => {
+        const pct = Math.max(3, Math.round((r.val / maxParityH) * 100));
+        return `
+          <div class="bar-row">
+            <span><strong>${r.label}</strong></span>
+            <div class="bar-track" aria-hidden="true">
+              <div class="bar-fill" style="width:${pct}%"></div>
+            </div>
+            <span>+${r.val.toFixed(1)} jogos</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    // Gráfico 5: Extrapolação por Linhas do Volante em +H jogos
+    document.getElementById("title-extrap-rows").textContent =
+      `Quantas dezenas sairão em cada linha do volante nos próximos +${intFmt.format(H)} jogos?`;
+    const rowLabels = ["01 a 10", "11 a 20", "21 a 30", "31 a 40", "41 a 50", "51 a 60"];
+    const totalHistBalls = N * 6;
+    const rowVals = rowLabels.map((label, idx) => {
+      const val =
+        mode === "montecarlo" && mcRun
+          ? mcRun.rowProjected[idx]
+          : (stats.rowCounts[idx] / totalHistBalls) * (H * 6);
+      return { label, val };
+    });
+    const maxRowVal = Math.max(...rowVals.map((x) => x.val), 1);
+    document.getElementById("extrap-rows-chart").innerHTML = rowVals
+      .map((r) => {
+        const pct = Math.max(6, Math.round((r.val / maxRowVal) * 100));
+        return `
+          <div class="bar-row">
+            <span><strong>${r.label}</strong></span>
+            <div class="bar-track" aria-hidden="true">
+              <div class="bar-fill" style="width:${pct}%"></div>
+            </div>
+            <span>+${Math.round(r.val)} bolas</span>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  function renderMultiScaleSVG(stats, mode) {
+    const container = document.getElementById("extrap-svg-container");
+    const N = stats.totalDraws;
+    const horizons = [0, 50, 500, 1000, 5000];
+    const xLabels = ["Atual (3.076)", "+50 (Dez.)", "+500 (Cent.)", "+1.000 (Mil.)", "+5.000 (Mil.)"];
+
+    const leader = stats.byMost[0];
+    const second = stats.byMost[1];
+    const coldest = stats.byLeast[0];
+
+    function projectAt(item, h) {
+      const p = item.count / N;
+      if (mode === "reversion") {
+        const deficit = N * 0.1 - item.count;
+        return Math.round(item.count + 0.1 * h + deficit * Math.min(1, h / (N * 0.8)) * 0.55);
+      }
+      return Math.round(item.count + p * h);
+    }
+
+    const seriesLeader = horizons.map((h) => projectAt(leader, h));
+    const seriesSecond = horizons.map((h) => projectAt(second, h));
+    const seriesUniform = horizons.map((h) => Math.round((N + h) * 0.1));
+    const seriesColdest = horizons.map((h) => projectAt(coldest, h));
+
+    const allVals = [...seriesLeader, ...seriesSecond, ...seriesUniform, ...seriesColdest];
+    const minY = Math.min(...allVals) - 20;
+    const maxY = Math.max(...allVals) + 30;
+
+    const width = 760;
+    const height = 250;
+    const padL = 56;
+    const padR = 32;
+    const padT = 24;
+    const padB = 42;
+    const plotW = width - padL - padR;
+    const plotH = height - padT - padB;
+
+    function xPos(idx) {
+      return Math.round(padL + (idx / (horizons.length - 1)) * plotW);
+    }
+
+    function yPos(val) {
+      const ratio = (val - minY) / Math.max(1, maxY - minY);
+      return Math.round(padT + plotH - ratio * plotH);
+    }
+
+    function polyPoints(arr) {
+      return arr.map((v, i) => `${xPos(i)},${yPos(v)}`).join(" ");
+    }
+
+    const gridYSteps = [0, 0.25, 0.5, 0.75, 1].map((r) => Math.round(minY + r * (maxY - minY)));
+
+    const gridLinesSVG = gridYSteps
+      .map((gv) => {
+        const y = yPos(gv);
+        return `
+          <line x1="${padL}" y1="${y}" x2="${width - padR}" y2="${y}" stroke="var(--border)" stroke-dasharray="3,3" stroke-width="1" />
+          <text x="${padL - 8}" y="${y + 4}" text-anchor="end" fill="var(--text-muted)" font-size="11" font-family="monospace">${gv}</text>
+        `;
+      })
+      .join("");
+
+    const xAxisLabelsSVG = xLabels
+      .map((lbl, idx) => {
+        const x = xPos(idx);
+        return `
+          <line x1="${x}" y1="${padT}" x2="${x}" y2="${height - padB}" stroke="var(--border)" stroke-width="0.75" />
+          <text x="${x}" y="${height - 14}" text-anchor="middle" fill="var(--text)" font-size="11" font-weight="700" font-family="monospace">${lbl}</text>
+        `;
+      })
+      .join("");
+
+    const leaderDots = seriesLeader
+      .map(
+        (v, i) => `
+        <circle cx="${xPos(i)}" cy="${yPos(v)}" r="4.5" fill="var(--accent)" />
+        <text x="${xPos(i)}" y="${yPos(v) - 8}" text-anchor="middle" fill="var(--text)" font-size="10" font-weight="700" font-family="monospace">${v}</text>
+      `
+      )
+      .join("");
+
+    const coldestDots = seriesColdest
+      .map(
+        (v, i) => `
+        <circle cx="${xPos(i)}" cy="${yPos(v)}" r="4" fill="var(--danger-text)" />
+        <text x="${xPos(i)}" y="${yPos(v) + 14}" text-anchor="middle" fill="var(--danger-text)" font-size="10" font-weight="700" font-family="monospace">${v}</text>
+      `
+      )
+      .join("");
+
+    container.innerHTML = `
+      <svg class="extrap-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
+        ${gridLinesSVG}
+        ${xAxisLabelsSVG}
+        <polyline fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-dasharray="6,4" points="${polyPoints(seriesUniform)}" />
+        <polyline fill="none" stroke="var(--border-strong)" stroke-width="2" points="${polyPoints(seriesSecond)}" />
+        <polyline fill="none" stroke="var(--danger-text)" stroke-width="2.5" points="${polyPoints(seriesColdest)}" />
+        <polyline fill="none" stroke="var(--accent)" stroke-width="3" points="${polyPoints(seriesLeader)}" />
+        ${leaderDots}
+        ${coldestDots}
+      </svg>
+      <div class="svg-legend">
+        <span class="svg-legend-item">
+          <span class="legend-swatch" style="background:var(--accent);"></span>
+          <strong>Líder (Dez. ${pad2(leader.num)}):</strong> ${seriesLeader[0]} -> ${seriesLeader[1]} (+50) -> ${seriesLeader[2]} (+500) -> ${seriesLeader[3]} (+1k) -> ${seriesLeader[4]} (+5k)
+        </span>
+        <span class="svg-legend-item">
+          <span class="legend-swatch" style="background:var(--border-strong);"></span>
+          <strong>2ª Líder (Dez. ${pad2(second.num)}):</strong> ${seriesSecond[0]} -> ${seriesSecond[4]} (+5k)
+        </span>
+        <span class="svg-legend-item">
+          <span class="legend-swatch" style="background:var(--text-muted);"></span>
+          <strong>Média Teórica (10%):</strong> ${seriesUniform[0]} -> ${seriesUniform[4]} (+5k)
+        </span>
+        <span class="svg-legend-item">
+          <span class="legend-swatch" style="background:var(--danger-text);"></span>
+          <strong>Lanterna (Dez. ${pad2(coldest.num)}):</strong> ${seriesColdest[0]} -> ${seriesColdest[1]} (+50) -> ${seriesColdest[2]} (+500) -> ${seriesColdest[3]} (+1k) -> ${seriesColdest[4]} (+5k)
+        </span>
+      </div>
+    `;
   }
 
   function getFilteredDraws() {
@@ -826,6 +1188,34 @@
     document.getElementById("freq-sort-select").addEventListener("change", (e) => {
       state.freqSort = e.target.value;
       renderFrequencyMatrix(computeStatistics());
+    });
+
+    document.querySelectorAll(".horizon-pill").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        state.extrapHorizon = Number(pill.dataset.horizon);
+        renderExtrapolation(computeStatistics());
+      });
+    });
+
+    document.getElementById("extrap-mode-select").addEventListener("change", (e) => {
+      state.extrapMode = e.target.value;
+      renderExtrapolation(computeStatistics());
+    });
+
+    document.getElementById("btn-rerun-mc").addEventListener("click", () => {
+      state.extrapMode = "montecarlo";
+      document.getElementById("extrap-mode-select").value = "montecarlo";
+      renderExtrapolation(computeStatistics());
+    });
+
+    document.getElementById("btn-load-projected-bet").addEventListener("click", () => {
+      state.betSize = 6;
+      state.selectedNumbers = new Set(state.topProjectedSix);
+      document.getElementById("simulator-alert").hidden = true;
+      syncVolanteUI();
+      renderSimulation();
+      renderDrawsTable();
+      document.getElementById("simulador").scrollIntoView({ behavior: "smooth" });
     });
 
     document.getElementById("filter-search").addEventListener("input", (e) => {

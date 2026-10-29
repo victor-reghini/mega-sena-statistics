@@ -22,6 +22,7 @@
       <nav class="main-nav" aria-label="Navegação principal">
         <a href="#simulador" class="nav-link">Simulador e Extrato</a>
         <a href="#estatisticas" class="nav-link">Gráficos e Métricas</a>
+        <a href="#extrapolacao" class="nav-link">Extrapolação Futura</a>
         <a href="#historico" class="nav-link">Todos os Concursos</a>
         <button type="button" id="btn-sync-api" class="btn">Atualizar da Caixa</button>
         <button type="button" id="theme-toggle" class="btn" aria-pressed="false">Tema: Claro (mudar para Escuro)</button>
@@ -130,6 +131,88 @@
           <h3 class="chart-title">Como os sorteios se distribuem pelas 6 linhas do volante (01-10 a 51-60)?</h3>
           <p class="chart-subtitle">Total de bolas sorteadas em cada faixa de 10 números ao longo de toda a série histórica.</p>
           <div id="row-chart" class="bar-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2.5: EXTRAPOLAÇÃO PROBABILÍSTICA (DEZENAS, CENTENAS E MILHARES DE JOGOS À FRENTE) -->
+    <section id="extrapolacao" class="section-block" aria-labelledby="title-extrapolacao">
+      <div class="section-header">
+        <div>
+          <h2 id="title-extrapolacao" class="section-title">Extrapolação e Projeção de Padrões Futuros (Dezenas, Centenas e Milhares de Jogos)</h2>
+          <p class="section-desc">
+            Projeção matemática e simulação estocástica (Monte Carlo) baseada na probabilidade empírica observada de cada dezena nos 3.076 sorteios históricos (<code>p = frequência / total de concursos</code>). Nota: sorteios reais são eventos independentes; a extrapolação projeta a continuidade da taxa histórica observada.
+          </p>
+        </div>
+      </div>
+
+      <div class="controls-stack">
+        <div class="field-group">
+          <span class="field-label" id="label-horizon">Horizonte de extrapolação (jogos à frente do último concurso):</span>
+          <div class="dezena-size-group" role="group" aria-labelledby="label-horizon">
+            <button type="button" class="size-pill horizon-pill" data-horizon="20" aria-pressed="false">+20 (Dezenas)</button>
+            <button type="button" class="size-pill horizon-pill" data-horizon="50" aria-pressed="false">+50 (Dezenas)</button>
+            <button type="button" class="size-pill horizon-pill" data-horizon="250" aria-pressed="false">+250 (Centenas)</button>
+            <button type="button" class="size-pill horizon-pill" data-horizon="500" aria-pressed="true">+500 (Centenas)</button>
+            <button type="button" class="size-pill horizon-pill" data-horizon="1000" aria-pressed="false">+1.000 (Milhares)</button>
+            <button type="button" class="size-pill horizon-pill" data-horizon="5000" aria-pressed="false">+5.000 (Milhares)</button>
+          </div>
+        </div>
+
+        <div class="controls-row" style="margin-bottom:0;">
+          <div class="field-group">
+            <label class="field-label" for="extrap-mode-select">Método de projeção probabilística:</label>
+            <select id="extrap-mode-select" class="select-input">
+              <option value="empirical">Expectativa Empírica Direta (mantém a frequência histórica observada)</option>
+              <option value="montecarlo">Simulação de Monte Carlo Ponderada (sorteia N jogos futuros com pesos históricos)</option>
+              <option value="reversion">Regressão à Média + Pressão de Ciclo (compensa dezenas com maior atraso atual)</option>
+            </select>
+          </div>
+
+          <div class="field-group" style="justify-content:flex-end;flex:0 1 auto;">
+            <span class="field-label">&nbsp;</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+              <button type="button" id="btn-rerun-mc" class="btn">Nova Amostra Monte Carlo</button>
+              <button type="button" id="btn-load-projected-bet" class="btn btn-primary">Testar Top 6 Projetadas no Simulador</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="extrap-kpi-strip" class="kpi-strip"></div>
+
+      <!-- Gráfico SVG de Curvas de Extrapolação Multi-Escala (+10, +100, +1.000, +5.000) -->
+      <div class="chart-card" style="margin-bottom:16px;">
+        <h3 class="chart-title">Como divergem as dezenas líderes, medianas e lanternas em +50, +500, +1.000 e +5.000 jogos?</h3>
+        <p class="chart-subtitle">
+          Curva de ganho acumulado de aparições acima ou abaixo da média teórica uniforme (10% dos sorteios) nas escalas de dezenas, centenas e milhares de concursos futuros.
+        </p>
+        <div id="extrap-svg-container" class="svg-chart-wrap" role="img" aria-label="Gráfico de linhas de extrapolação para dezenas, centenas e milhares de jogos"></div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3 class="chart-title" id="title-extrap-top">Quais dezenas terão mais sorteios adicionais no horizonte selecionado?</h3>
+          <p class="chart-subtitle">Top 12 dezenas projetadas no horizonte futuro comparadas à média uniforme esperada.</p>
+          <div id="extrap-top-chart" class="bar-list"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3 class="chart-title" id="title-extrap-prob">Qual a chance acumulada de saída e quantos ciclos cada dezena atrasada cumprirá?</h3>
+          <p class="chart-subtitle">Probabilidade binomial <code>1 - (1 - p)^H</code> de sair ao menos 1 vez em +10/+50 jogos e aparições esperadas no horizonte.</p>
+          <div id="extrap-cycle-chart" class="bar-list"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3 class="chart-title" id="title-extrap-parity">Quantos sorteios futuros cairão em cada padrão de Pares e Ímpares?</h3>
+          <p class="chart-subtitle">Projeção do número de concursos futuros por combinação de paridade conforme a distribuição histórica.</p>
+          <div id="extrap-parity-chart" class="bar-list"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3 class="chart-title" id="title-extrap-rows">Qual a projeção de dezenas sorteadas por linha do volante nos próximos jogos?</h3>
+          <p class="chart-subtitle">Quantidade projetada de bolas sorteadas em cada faixa de 10 dezenas no horizonte escolhido.</p>
+          <div id="extrap-rows-chart" class="bar-list"></div>
         </div>
       </div>
     </section>
