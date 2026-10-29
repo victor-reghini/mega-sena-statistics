@@ -462,6 +462,7 @@
     renderRowDistributionChart(stats);
     renderExtrapolation(stats);
     renderSpendingSimulator();
+    updateDrawsOrderLabels();
   }
 
   function renderFrequencyMatrix(stats) {
@@ -1370,46 +1371,176 @@
     }
   }
 
-  async function syncLatestFromAPI() {
+  let baseMaxConcurso = 0;
+  let lastSyncTime = 0;
+
+  function loadCachedExtraDraws() {
+    try {
+      const raw = localStorage.getItem("megasena_extra_draws");
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function saveCachedExtraDraws(allDraws) {
+    try {
+      const extras = allDraws.filter((d) => d && d.c > baseMaxConcurso);
+      if (extras.length > 0) {
+        localStorage.setItem("megasena_extra_draws", JSON.stringify(extras));
+      }
+    } catch (e) {
+      console.warn("Falha ao salvar extra draws no localStorage:", e);
+    }
+  }
+
+  function mergeDraws(baseList, extraList) {
+    const map = new Map();
+    (baseList || []).forEach((d) => {
+      if (d && d.c) map.set(d.c, d);
+    });
+    (extraList || []).forEach((d) => {
+      if (d && d.c) map.set(d.c, d);
+    });
+    return Array.from(map.values()).sort((a, b) => a.c - b.c);
+  }
+
+  function formatApiDraw(item) {
+    if (!item || !item.concurso || !Array.isArray(item.dezenas)) return null;
+    const premios = {};
+    (item.premiacoes || []).forEach((p) => {
+      if (p.faixa === 1 || p.faixa === 2 || p.faixa === 3) {
+        const k = String(7 - p.faixa);
+        let val = Number(p.valorPremio || 0);
+        if (k === "6" && val === 0) {
+          val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+        }
+        premios[k] = { g: Number(p.ganhadores || 0), v: Math.round(val * 100) / 100 };
+      }
+    });
+    return {
+      c: Number(item.concurso),
+      d: String(item.data || ""),
+      n: item.dezenas.map(Number).sort((a, b) => a - b),
+      p: premios,
+      a: Boolean(item.acumulou)
+    };
+  }
+
+  function updateDrawsOrderLabels() {
+    if (!state.draws || !state.draws.length) return;
+    const latest = state.draws[state.draws.length - 1];
+    const first = state.draws[0];
+    const descOpt = document.getElementById("opt-sort-desc");
+    const ascOpt = document.getElementById("opt-sort-asc");
+    if (descOpt) descOpt.textContent = `Mais recentes primeiro (#${latest.c} ao #1)`;
+    if (ascOpt) ascOpt.textContent = `Mais antigos primeiro (#1 ao #${latest.c})`;
+    const statsDesc = document.getElementById("stats-range-desc");
+    if (statsDesc && first && latest) {
+      statsDesc.textContent = `Contagem real acumulada desde o Concurso #1 (${first.d}) até o Concurso #${latest.c} (${latest.d}).`;
+    }
+  }
+
+  async function syncLatestFromAPI(options = {}) {
+    const isAuto = Boolean(options && options.auto);
     const statusEl = document.getElementById("sync-status");
-    statusEl.hidden = false;
-    statusEl.className = "status-banner";
-    statusEl.textContent = "Consultando API de Loterias da Caixa para verificar novos sorteios...";
+    const btnSync = document.getElementById("btn-sync-api");
+
+    if (btnSync) {
+      btnSync.classList.add("is-syncing");
+      btnSync.setAttribute("aria-busy", "true");
+    }
+
+    if (!isAuto && statusEl) {
+      statusEl.hidden = false;
+      statusEl.className = "status-banner";
+      statusEl.textContent = "Consultando API de Loterias da Caixa para verificar novos sorteios...";
+    }
 
     try {
-      const res = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
+      const res = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest", {
+        signal: AbortSignal.timeout(10000)
+      });
       if (!res.ok) throw new Error("Resposta HTTP " + res.status);
       const item = await res.json();
-      const exists = state.draws.some((d) => d.c === item.concurso);
-      if (!exists && item.concurso && Array.isArray(item.dezenas)) {
-        const premios = {};
-        (item.premiacoes || []).forEach((p) => {
-          if (p.faixa === 1 || p.faixa === 2 || p.faixa === 3) {
-            const k = String(7 - p.faixa);
-            let val = Number(p.valorPremio || 0);
-            if (k === "6" && val === 0) {
-              val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
-            }
-            premios[k] = { g: Number(p.ganhadores || 0), v: val };
+      const latestConcurso = Number(item.concurso);
+      const maxExisting = state.draws.length > 0 ? state.draws[state.draws.length - 1].c : 0;
+
+      if (latestConcurso > maxExisting && Array.isArray(item.dezenas)) {
+        const missingDraws = [];
+        const diff = latestConcurso - maxExisting;
+
+        if (diff > 1 && diff <= 10) {
+          const fetchPromises = [];
+          for (let c = maxExisting + 1; c < latestConcurso; c++) {
+            fetchPromises.push(
+              fetch(`https://loteriascaixa-api.herokuapp.com/api/megasena/${c}`, {
+                signal: AbortSignal.timeout(8000)
+              })
+                .then((r) => (r.ok ? r.json() : null))
+                .catch(() => null)
+            );
           }
-        });
-        state.draws.push({
-          c: item.concurso,
-          d: item.data,
-          n: item.dezenas.map(Number),
-          p: premios,
-          a: Boolean(item.acumulou)
-        });
-        renderMetricsAndCharts();
-        renderSimulation();
-        renderDrawsTable();
-        statusEl.textContent = `Novo concurso #${item.concurso} (${item.data}) adicionado à base local.`;
+          const intermediateItems = await Promise.all(fetchPromises);
+          intermediateItems.forEach((raw) => {
+            const formatted = formatApiDraw(raw);
+            if (formatted) missingDraws.push(formatted);
+          });
+        }
+
+        const formattedLatest = formatApiDraw(item);
+        if (formattedLatest) missingDraws.push(formattedLatest);
+
+        if (missingDraws.length > 0) {
+          state.draws = mergeDraws(state.draws, missingDraws);
+          saveCachedExtraDraws(state.draws);
+
+          renderMetricsAndCharts();
+          renderSimulation();
+          renderDrawsTable();
+          updateDrawsOrderLabels();
+
+          if (statusEl) {
+            statusEl.hidden = false;
+            statusEl.className = "status-banner success";
+            statusEl.textContent =
+              missingDraws.length === 1
+                ? `Base atualizada: Novo concurso #${formattedLatest.c} (${formattedLatest.d}) adicionado com sucesso.`
+                : `Base atualizada: ${missingDraws.length} novos concursos adicionados (até #${formattedLatest.c} de ${formattedLatest.d}).`;
+          }
+        }
       } else {
-        statusEl.textContent = `A base já está sincronizada até o último concurso disponível (#${item.concurso} de ${item.data}).`;
+        if (!isAuto && statusEl) {
+          statusEl.hidden = false;
+          statusEl.className = "status-banner";
+          statusEl.textContent = `A base já está sincronizada até o último concurso disponível (#${item.concurso} de ${item.data}).`;
+        }
       }
     } catch (err) {
-      statusEl.className = "status-banner error";
-      statusEl.textContent = `Não foi possível conectar à API externa no momento (${err.message}). Os ${intFmt.format(state.draws.length)} concursos locais seguem disponíveis para consulta e simulação.`;
+      if (!isAuto && statusEl) {
+        statusEl.hidden = false;
+        statusEl.className = "status-banner error";
+        statusEl.textContent = `Não foi possível conectar à API externa no momento (${err.message}). Os ${intFmt.format(
+          state.draws.length
+        )} concursos locais seguem disponíveis para consulta e simulação.`;
+      } else {
+        console.warn("Auto-sync da API Caixa em segundo plano:", err.message);
+      }
+    } finally {
+      if (btnSync) {
+        btnSync.classList.remove("is-syncing");
+        btnSync.removeAttribute("aria-busy");
+      }
+    }
+  }
+
+  function triggerAutoSync(force = false) {
+    const now = Date.now();
+    if (force || now - lastSyncTime > 5 * 60 * 1000) {
+      lastSyncTime = now;
+      syncLatestFromAPI({ auto: true });
     }
   }
 
@@ -1576,7 +1707,16 @@
       renderDrawsTable();
     });
 
-    document.getElementById("btn-sync-api").addEventListener("click", syncLatestFromAPI);
+    document.getElementById("btn-sync-api").addEventListener("click", () => {
+      syncLatestFromAPI({ auto: false });
+    });
+
+    window.addEventListener("focus", () => triggerAutoSync(false));
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        triggerAutoSync(false);
+      }
+    });
 
     document.getElementById("modal-close-btn").addEventListener("click", closeModal);
     document.getElementById("contest-modal").addEventListener("click", (e) => {
@@ -1590,13 +1730,18 @@
   }
 
   function loadInitialData() {
+    const cachedExtras = loadCachedExtraDraws();
+
     if (Array.isArray(window.MEGASENA_DRAWS) && window.MEGASENA_DRAWS.length > 0) {
-      state.draws = window.MEGASENA_DRAWS;
+      baseMaxConcurso = window.MEGASENA_DRAWS[window.MEGASENA_DRAWS.length - 1].c;
+      state.draws = mergeDraws(window.MEGASENA_DRAWS, cachedExtras);
       state.loading = false;
       state.error = null;
       renderMetricsAndCharts();
       renderSimulation();
       renderDrawsTable();
+      updateDrawsOrderLabels();
+      triggerAutoSync(true);
       return;
     }
 
@@ -1606,12 +1751,15 @@
         return r.json();
       })
       .then((data) => {
-        state.draws = data;
+        baseMaxConcurso = data.length > 0 ? data[data.length - 1].c : 0;
+        state.draws = mergeDraws(data, cachedExtras);
         state.loading = false;
         state.error = null;
         renderMetricsAndCharts();
         renderSimulation();
         renderDrawsTable();
+        updateDrawsOrderLabels();
+        triggerAutoSync(true);
       })
       .catch((err) => {
         state.loading = false;

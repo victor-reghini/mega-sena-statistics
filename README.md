@@ -1,6 +1,6 @@
 # Atlas Estatístico da Mega-Sena
 
-Aplicação web sem dependências externas para consulta de todos os resultados históricos da Mega-Sena (desde o Concurso #1 em 11/03/1996 até o #3076 em 27/10/2026), análise gráfica das 60 dezenas e simulação financeira de apostas simples e múltiplas (6 a 10 dezenas).
+Aplicação web sem dependências externas para consulta de todos os resultados históricos da Mega-Sena (desde o Concurso #1 em 11/03/1996 até o #3077 em 28/10/2026), análise gráfica das 60 dezenas e simulação financeira de apostas simples e múltiplas (6 a 10 dezenas). O sistema busca automaticamente os sorteios mais recentes da Caixa sempre que o usuário acessa o site.
 
 ## Funcionalidades
 
@@ -58,7 +58,7 @@ Basta dar duplo clique no arquivo `index.html` ou executar no terminal:
 open index.html
 ```
 
-*(Como os dados estão empacotados também em `data/megasena.js`, toda a base de 3.076 sorteios funciona mesmo abrindo via protocolo `file://`).*
+*(Como os dados estão empacotados também em `data/megasena.js`, toda a base de 3.077 sorteios funciona mesmo abrindo via protocolo `file://`).*
 
 ### Opção 2: Rodar com servidor HTTP local (Python)
 Para servir via HTTP na porta `8080`:
@@ -71,27 +71,15 @@ Depois, acesse no navegador: `http://localhost:8080`
 
 ## Como Atualizar a Base de Dados Local (Opcional)
 
-Na própria interface do site, clique no botão **Atualizar da Caixa** no topo da página para consultar o último concurso disponível. Caso queira regerar os arquivos `data/megasena.json` e `data/megasena.js` via terminal com todos os concursos da API aberta:
+A aplicação busca novos resultados automaticamente via API oficial sempre que a página é acessada ou quando a aba ganha foco.
+
+### Atualização Automática via GitHub Actions
+O repositório possui uma rotina diária em [`.github/workflows/sync-draws.yml`](.github/workflows/sync-draws.yml) que executa o script [`scripts/sync-draws.py`](scripts/sync-draws.py) às 20:15, 22:15 e 00:15 (horário de Brasília). O workflow só realiza commit e push caso novos concursos tenham sido confirmados pela Caixa.
+
+### Atualização Manual via Terminal
+Você pode executar o script a qualquer momento:
 
 ```bash
-python3 -c '
-import urllib.request, json
-raw = json.loads(urllib.request.urlopen("https://loteriascaixa-api.herokuapp.com/api/megasena", timeout=30).read().decode("utf-8"))
-compact = []
-for item in sorted(raw, key=lambda x: x["concurso"]):
-    premios = {}
-    for p in item.get("premiacoes", []):
-        if p.get("faixa") in (1, 2, 3):
-            k = str(7 - p["faixa"])
-            val = float(p["valorPremio"] or 0)
-            if k == "6" and val == 0:
-                val = float(item.get("valorAcumuladoProximoConcurso") or item.get("valorEstimadoProximoConcurso") or 0)
-            premios[k] = {"g": int(p["ganhadores"] or 0), "v": round(val, 2)}
-    compact.append({"c": item["concurso"], "d": item["data"], "n": [int(x) for x in item["dezenas"]], "p": premios, "a": bool(item.get("acumulou", False))})
-body = json.dumps(compact, separators=(",", ":"))
-open("data/megasena.json", "w", encoding="utf-8").write(body)
-open("data/megasena.js", "w", encoding="utf-8").write("window.MEGASENA_DRAWS=" + body + ";\n")
-print("Atualizado:", len(compact), "concursos")
-'
+python3 scripts/sync-draws.py
 ```
 

@@ -305,6 +305,21 @@ body {
   border-color: var(--danger-border);
 }
 
+.status-banner.success {
+  background: var(--success-bg);
+  color: var(--success-text);
+  border-color: var(--accent);
+}
+
+#btn-sync-api.is-syncing .nav-icon {
+  animation: spin-sync 0.8s linear infinite;
+}
+
+@keyframes spin-sync {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Simulador Layout */
 .simulator-grid {
   display: grid;

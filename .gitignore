@@ -1,7 +1,7 @@
 # Antigravity
 .agents/
 .cursor/
-.github/
+.github/copilot-instructions.md
 runs/
 .clinerules
 .cursorrules
