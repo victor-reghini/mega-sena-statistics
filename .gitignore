@@ -1,0 +1,13 @@
+# Antigravity
+.agents/
+.cursor/
+.github/
+runs/
+.clinerules
+.cursorrules
+.windsurfrules
+AGENTS.md
+CLAUDE.md
+
+# Node & Build outputs
+node_modules/

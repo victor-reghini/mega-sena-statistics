@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mega-Sena: Histórico Completo, Estatísticas das Dezenas e Simulador Financeiro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="#simulador" class="skip-link">Pular para o Simulador de Apostas</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">60</span>
+        <div>
+          <h1 class="brand-title">Atlas Estatístico da Mega-Sena</h1>
+          <p class="brand-subtitle">3.076 sorteios auditáveis, métricas de dezenas e extrato de apostas múltiplas (6 a 10 dezenas)</p>
+        </div>
+      </div>
+
+      <nav class="main-nav" aria-label="Navegação principal">
+        <a href="#simulador" class="nav-link">Simulador e Extrato</a>
+        <a href="#estatisticas" class="nav-link">Gráficos e Métricas</a>
+        <a href="#historico" class="nav-link">Todos os Concursos</a>
+        <button type="button" id="btn-sync-api" class="btn">Atualizar da Caixa</button>
+        <button type="button" id="theme-toggle" class="btn" aria-pressed="false">Tema: Claro (mudar para Escuro)</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="sync-status" class="status-banner" role="status" hidden></div>
+
+    <!-- SEÇÃO 1: SIMULADOR DE APOSTAS E EXTRATO FINANCEIRO -->
+    <section id="simulador" class="section-block" aria-labelledby="title-simulador">
+      <div class="section-header">
+        <div>
+          <h2 id="title-simulador" class="section-title">Simulador de Aposta (6 a 10 Dezenas) e Extrato Histórico</h2>
+          <p class="section-desc">
+            Marque de 6 a 10 dezenas no volante para conferir em quais sorteios passados você teria tido o maior número de acertos, o prêmio exato (incluindo múltiplos de Quina e Quadra) e o saldo final descontando o custo da aposta.
+          </p>
+        </div>
+        <div class="controls-row" style="margin-bottom:0;">
+          <button type="button" id="btn-example-2057" class="btn">Exemplo: Concurso 2057 (5 acertos)</button>
+          <button type="button" id="btn-example-loss" class="btn">Exemplo: 10 Dezenas (Custo &gt; Prêmio)</button>
+          <button type="button" id="btn-random-bet" class="btn btn-primary">Surpresinha (Aleatório)</button>
+          <button type="button" id="btn-clear-bet" class="btn">Limpar Volante</button>
+        </div>
+      </div>
+
+      <div id="simulator-alert" class="status-banner" role="alert" hidden></div>
+
+      <div class="simulator-grid">
+        <!-- Coluna Esquerda: Volante -->
+        <div>
+          <div class="controls-stack">
+            <div class="field-group">
+              <span class="field-label" id="label-bet-size">Quantidade de dezenas na aposta (Tabela Oficial Caixa):</span>
+              <div class="dezena-size-group" role="group" aria-labelledby="label-bet-size">
+                <button type="button" class="size-pill" data-size="6" aria-pressed="true">6 dez (R$ 6)</button>
+                <button type="button" class="size-pill" data-size="7" aria-pressed="false">7 dez (R$ 42)</button>
+                <button type="button" class="size-pill" data-size="8" aria-pressed="false">8 dez (R$ 168)</button>
+                <button type="button" class="size-pill" data-size="9" aria-pressed="false">9 dez (R$ 504)</button>
+                <button type="button" class="size-pill" data-size="10" aria-pressed="false">10 dez (R$ 1.260)</button>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="cost-mode-select">Base de cálculo do custo no saldo:</label>
+              <select id="cost-mode-select" class="select-input">
+                <option value="single">Custo de 1 Concurso Avulso (Aposta Única vs. Prêmios)</option>
+                <option value="all">Custo Acumulado nos 3.076 Concursos (Teimosinha Histórica)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="ticket-summary" class="ticket-summary-bar" aria-live="polite"></div>
+
+          <div id="volante-grid" class="volante-grid" role="group" aria-label="Volante de 60 dezenas da Mega-Sena"></div>
+        </div>
+
+        <!-- Coluna Direita: Resultado e Extrato -->
+        <div id="simulation-output" class="result-panel" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: GRÁFICOS E MÉTRICAS DAS DEZENAS -->
+    <section id="estatisticas" class="section-block" aria-labelledby="title-estatisticas">
+      <div class="section-header">
+        <div>
+          <h2 id="title-estatisticas" class="section-title">Métricas e Gráficos das Dezenas Sorteadas</h2>
+          <p class="section-desc">
+            Contagem real acumulada desde o Concurso #1 (11/03/1996) até o Concurso #3076 (27/10/2026).
+          </p>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="freq-sort-select">Ordenar matriz das 60 dezenas por:</label>
+          <select id="freq-sort-select" class="select-input">
+            <option value="num">Ordem numérica (01 a 60)</option>
+            <option value="most">Mais sorteadas primeiro</option>
+            <option value="least">Menos sorteadas primeiro</option>
+            <option value="delay">Maior atraso atual primeiro</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="kpi-strip" class="kpi-strip"></div>
+
+      <div class="chart-card" style="margin-bottom:20px;">
+        <h3 class="chart-title">Quantas vezes cada uma das 60 dezenas foi sorteada desde 1996?</h3>
+        <p class="chart-subtitle">As 10 dezenas com maior frequência histórica estão destacadas com borda dupla.</p>
+        <div id="freq-matrix" class="freq-matrix"></div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3 class="chart-title">Quais são as 10 dezenas há mais concursos sem sair?</h3>
+          <p class="chart-subtitle">Atraso medido em quantidade de sorteios consecutivos de ausência até o último concurso.</p>
+          <div id="delay-chart" class="bar-list"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3 class="chart-title">Qual a proporção entre dezenas pares (P) e ímpares (I) por sorteio?</h3>
+          <p class="chart-subtitle">Distribuição percentual das 6 dezenas sorteadas em cada concurso histórico.</p>
+          <div id="parity-chart" class="bar-list"></div>
+        </div>
+
+        <div class="chart-card" style="grid-column: 1 / -1;">
+          <h3 class="chart-title">Como os sorteios se distribuem pelas 6 linhas do volante (01-10 a 51-60)?</h3>
+          <p class="chart-subtitle">Total de bolas sorteadas em cada faixa de 10 números ao longo de toda a série histórica.</p>
+          <div id="row-chart" class="bar-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 3: TODOS OS RESULTADOS DE CONCURSOS PASSADOS -->
+    <section id="historico" class="section-block" aria-labelledby="title-historico">
+      <div class="section-header">
+        <div>
+          <h2 id="title-historico" class="section-title">Resultados de Todos os Concursos Passados</h2>
+          <p class="section-desc">
+            Pesquise por número do concurso, data ou filtre pelos sorteios onde determinada dezena saiu. Dezenas marcadas no simulador ficam realçadas na tabela.
+          </p>
+        </div>
+        <span id="draws-count-label" class="badge-status">Carregando...</span>
+      </div>
+
+      <div class="controls-row">
+        <div class="field-group">
+          <label class="field-label" for="filter-search">Buscar concurso ou data:</label>
+          <input type="search" id="filter-search" class="text-input" placeholder="Ex.: 2057 ou 2018 ou 31/12">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="filter-number">Filtrar por dezena sorteada:</label>
+          <select id="filter-number" class="select-input">
+            <option value="">Todas as dezenas (01 a 60)</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="filter-status">Situação do prêmio principal (Sena):</label>
+          <select id="filter-status" class="select-input">
+            <option value="all">Todos os concursos</option>
+            <option value="winners">Apenas com ganhadores na Sena</option>
+            <option value="accumulated">Apenas acumulados</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="sort-order">Ordenação:</label>
+          <select id="sort-order" class="select-input">
+            <option value="desc">Mais recentes primeiro (#3076 ao #1)</option>
+            <option value="asc">Mais antigos primeiro (#1 ao #3076)</option>
+          </select>
+        </div>
+
+        <div class="field-group" style="justify-content:flex-end;">
+          <span class="field-label">&nbsp;</span>
+          <button type="button" id="btn-reset-filters" class="btn">Limpar filtros</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="draws-table" aria-label="Tabela histórica de todos os resultados da Mega-Sena">
+          <thead>
+            <tr>
+              <th>Concurso</th>
+              <th>Data</th>
+              <th>Dezenas Sorteadas</th>
+              <th>Sena (6 acertos)</th>
+              <th>Quina (5) e Quadra (4)</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="draws-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination-bar">
+        <button type="button" id="prev-page" class="btn">Página Anterior</button>
+        <span id="page-info" style="font-family:var(--font-mono);font-weight:700;">Página 1</span>
+        <button type="button" id="next-page" class="btn">Próxima Página</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL DE DETALHES DO CONCURSO -->
+  <div id="contest-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-title" style="margin:0;font-size:1.25rem;">Detalhes do Concurso</h3>
+        <button type="button" id="modal-close-btn" class="btn">Fechar (Esc)</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p style="margin:0;">
+      Dados históricos oficiais da Mega-Sena (Caixa Econômica Federal): 3.076 concursos entre 11/03/1996 e 27/10/2026. Valores de aposta conforme tabela vigente (6 a 10 dezenas).
+    </p>
+  </footer>
+
+  <script src="data/megasena.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
