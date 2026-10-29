@@ -110,10 +110,10 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="brand">
-        <span class="brand-mark" aria-hidden="true">60</span>
+        <span id="brand-mark" class="brand-mark" aria-hidden="true">60</span>
         <div class="brand-text">
-          <h1 class="brand-title">Atlas da Mega-Sena</h1>
-          <p class="brand-subtitle">3.076 sorteios, métricas, projeções e simulador financeiro</p>
+          <h1 id="brand-title" class="brand-title">Atlas da Mega-Sena</h1>
+          <p id="brand-subtitle" class="brand-subtitle">3.077 sorteios, métricas, projeções e simulador financeiro</p>
         </div>
       </div>
 
@@ -160,6 +160,25 @@
   </header>
 
   <main class="container">
+    <nav class="lottery-bar" aria-label="Selecione a modalidade de loteria">
+      <button type="button" class="lottery-btn active" data-lottery="megasena" aria-pressed="true">
+        <span class="lottery-dot mega"></span>
+        <span>Mega-Sena</span>
+      </button>
+      <button type="button" class="lottery-btn" data-lottery="lotofacil" aria-pressed="false">
+        <span class="lottery-dot lotofacil"></span>
+        <span>Lotofácil</span>
+      </button>
+      <button type="button" class="lottery-btn" data-lottery="quina" aria-pressed="false">
+        <span class="lottery-dot quina"></span>
+        <span>Quina</span>
+      </button>
+      <button type="button" class="lottery-btn" data-lottery="lotomania" aria-pressed="false">
+        <span class="lottery-dot lotomania"></span>
+        <span>Lotomania</span>
+      </button>
+    </nav>
+
     <div id="sync-status" class="status-banner" role="status" hidden></div>
 
     <!-- ANÚNCIO ADSENSE: TOPO -->
@@ -180,9 +199,9 @@
     <section id="simulador" class="section-block" aria-labelledby="title-simulador">
       <div class="section-header">
         <div>
-          <h2 id="title-simulador" class="section-title">Simulador de Aposta (6 a 10 Dezenas) e Extrato Histórico</h2>
-          <p class="section-desc">
-            Marque de 6 a 10 dezenas no volante para conferir em quais sorteios passados você teria tido o maior número de acertos, o prêmio exato (incluindo múltiplos de Quina e Quadra) e o saldo final descontando o custo da aposta.
+          <h2 id="title-simulador" class="section-title">Simulador de Aposta e Extrato Histórico</h2>
+          <p id="desc-simulador" class="section-desc">
+            Marque suas dezenas no volante para conferir em quais sorteios passados você teria tido o maior número de acertos, o prêmio exato e o saldo final descontando o custo da aposta.
           </p>
         </div>
         <div class="controls-row" style="margin-bottom:0;">
@@ -201,13 +220,7 @@
           <div class="controls-stack">
             <div class="field-group">
               <span class="field-label" id="label-bet-size">Quantidade de dezenas na aposta (Tabela Oficial Caixa):</span>
-              <div class="dezena-size-group" role="group" aria-labelledby="label-bet-size">
-                <button type="button" class="size-pill" data-size="6" aria-pressed="true">6 dez (R$ 6)</button>
-                <button type="button" class="size-pill" data-size="7" aria-pressed="false">7 dez (R$ 42)</button>
-                <button type="button" class="size-pill" data-size="8" aria-pressed="false">8 dez (R$ 168)</button>
-                <button type="button" class="size-pill" data-size="9" aria-pressed="false">9 dez (R$ 504)</button>
-                <button type="button" class="size-pill" data-size="10" aria-pressed="false">10 dez (R$ 1.260)</button>
-              </div>
+              <div id="dezena-size-group" class="dezena-size-group" role="group" aria-labelledby="label-bet-size"></div>
             </div>
 
             <div class="field-group">
@@ -500,14 +513,14 @@
       </div>
 
       <div class="table-wrap">
-        <table class="draws-table" aria-label="Tabela histórica de todos os resultados da Mega-Sena">
+        <table class="draws-table" aria-label="Tabela histórica de todos os resultados da loteria">
           <thead>
             <tr>
               <th>Concurso</th>
               <th>Data</th>
               <th>Dezenas Sorteadas</th>
-              <th>Sena (6 acertos)</th>
-              <th>Quina (5) e Quadra (4)</th>
+              <th id="th-prize-main">Prêmio Principal</th>
+              <th id="th-prize-sub">Demais Faixas</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -682,6 +695,9 @@
   </footer>
 
   <script src="data/megasena.js"></script>
+  <script src="data/lotofacil.js"></script>
+  <script src="data/quina.js"></script>
+  <script src="data/lotomania.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

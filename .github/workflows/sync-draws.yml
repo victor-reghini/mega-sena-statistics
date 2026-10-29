@@ -1,4 +1,4 @@
-name: Sincronizar Sorteios Mega-Sena
+name: Sincronizar Loterias Caixa
 
 on:
   schedule:
@@ -24,17 +24,22 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Executar script de sincronização
+      - name: Executar script de sincronização de todas as loterias
         run: python3 scripts/sync-draws.py
 
       - name: Comitar e enviar alterações
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/megasena.json data/megasena.js
+          git add data/
           if git diff --staged --quiet; then
             echo "Nenhuma atualização encontrada. Repositório mantido inalterado."
           else
-            git commit -m "chore(data): atualizar sorteios da Mega-Sena [skip ci]"
+            UPDATED=$(git diff --staged --name-only data/*.json | sed -E 's|data/(.*)\.json|\1|' | paste -sd, -)
+            if [ -n "$UPDATED" ]; then
+              git commit -m "chore(data): atualizar resultados ($UPDATED) [skip ci]"
+            else
+              git commit -m "chore(data): atualizar resultados das loterias Caixa [skip ci]"
+            fi
             git push
           fi

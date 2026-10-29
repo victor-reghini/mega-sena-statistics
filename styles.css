@@ -38,6 +38,119 @@
   --focus-ring: #4ADE80;
 }
 
+/* Paletas Oficiais de Loterias */
+[data-lottery="megasena"] {
+  --accent: #0F5C3A;
+  --accent-soft: #DCECE3;
+  --focus-ring: #0F5C3A;
+}
+[data-theme="dark"][data-lottery="megasena"] {
+  --accent: #4ADE80;
+  --accent-soft: #1B3B2B;
+  --focus-ring: #4ADE80;
+}
+
+[data-lottery="lotofacil"] {
+  --accent: #7E22CE;
+  --accent-soft: #F3E8FF;
+  --focus-ring: #7E22CE;
+}
+[data-theme="dark"][data-lottery="lotofacil"] {
+  --accent: #C084FC;
+  --accent-soft: #3B0764;
+  --focus-ring: #C084FC;
+}
+
+[data-lottery="quina"] {
+  --accent: #1D4ED8;
+  --accent-soft: #EFF6FF;
+  --focus-ring: #1D4ED8;
+}
+[data-theme="dark"][data-lottery="quina"] {
+  --accent: #60A5FA;
+  --accent-soft: #1E3A8A;
+  --focus-ring: #60A5FA;
+}
+
+[data-lottery="lotomania"] {
+  --accent: #EA580C;
+  --accent-soft: #FFF7ED;
+  --focus-ring: #EA580C;
+}
+[data-theme="dark"][data-lottery="lotomania"] {
+  --accent: #FB923C;
+  --accent-soft: #7C2D12;
+  --focus-ring: #FB923C;
+}
+
+/* Seletor de Loterias */
+.lottery-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 8px 0 16px;
+  margin-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.lottery-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.lottery-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.lottery-btn.active {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+}
+
+.lottery-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.lottery-dot.mega { background: #10B981; }
+.lottery-dot.lotofacil { background: #A855F7; }
+.lottery-dot.quina { background: #3B82F6; }
+.lottery-dot.lotomania { background: #F97316; }
+
+.lottery-btn.active .lottery-dot {
+  background: var(--accent-fg);
+}
+
+[data-lottery="lotofacil"] .volante-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+[data-lottery="lotomania"] .volante-grid {
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  max-width: 580px;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -602,38 +715,93 @@ body {
 }
 
 /* Métricas e Gráficos */
+/* Métricas e Gráficos */
 .kpi-strip {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 10px;
   margin-bottom: 20px;
 }
 
 .kpi-item {
-  padding: 12px;
+  padding: 10px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--surface-alt);
   min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .kpi-title {
   font-size: 0.75rem;
+  line-height: 1.25;
   color: var(--text-muted);
   margin: 0 0 4px 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .kpi-num {
   font-family: var(--font-mono);
-  font-size: 1.125rem;
+  font-size: clamp(0.875rem, 1.2vw, 1.125rem);
   font-weight: 800;
   margin: 0;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  letter-spacing: -0.01em;
 }
 
 .kpi-sub {
   font-size: 0.75rem;
+  line-height: 1.25;
   color: var(--text-muted);
   margin: 4px 0 0 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Faixa de KPIs no painel do simulador (evita overflow de moedas e valores) */
+.result-panel .kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 0 0;
+}
+
+.result-panel .kpi-item {
+  padding: 8px 6px;
+}
+
+.result-panel .kpi-title {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
+
+.result-panel .kpi-num {
+  font-size: clamp(0.75rem, 1.05vw, 0.9375rem);
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.result-panel .kpi-num:hover,
+.result-panel .kpi-num:focus {
+  overflow: visible;
+  white-space: normal;
+}
+
+.result-panel .kpi-sub {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
+
+@media (max-width: 540px) {
+  .result-panel .kpi-strip {
+    grid-template-columns: 1fr;
+  }
 }
 
 .charts-grid {
@@ -970,7 +1138,15 @@ body {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
-  .kpi-strip {
+  #kpi-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #spend-kpi-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #extrap-kpi-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -991,8 +1167,20 @@ body {
     grid-template-columns: repeat(10, minmax(0, 1fr));
   }
 
-  .kpi-strip {
+  #kpi-strip {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  #spend-kpi-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #extrap-kpi-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .result-panel .kpi-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .charts-grid {

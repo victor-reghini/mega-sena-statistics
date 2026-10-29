@@ -1,32 +1,152 @@
 (function () {
   "use strict";
 
-  // Quantidade de apostas simples equivalentes C(k, 6) e custo oficial nas lotéricas
-  const BET_TABLE = {
-    6: { combos: 1, cost: 6.0 },
-    7: { combos: 7, cost: 42.0 },
-    8: { combos: 28, cost: 168.0 },
-    9: { combos: 84, cost: 504.0 },
-    10: { combos: 210, cost: 1260.0 }
+  const LOTTERY_CONFIGS = {
+    megasena: {
+      id: "megasena",
+      name: "Mega-Sena",
+      mark: "60",
+      title: "Atlas da Mega-Sena",
+      subtitle: "3.077 sorteios, métricas, projeções e simulador financeiro",
+      maxNum: 60,
+      drawCount: 6,
+      defaultSize: 6,
+      allowedSizes: [6, 7, 8, 9, 10],
+      startYear: 1996,
+      basePrice: 6.0,
+      defaultPicks: [1, 10, 13, 20, 37, 38],
+      betTable: {
+        6: { combos: 1, cost: 6.0 },
+        7: { combos: 7, cost: 42.0 },
+        8: { combos: 28, cost: 168.0 },
+        9: { combos: 84, cost: 504.0 },
+        10: { combos: 210, cost: 1260.0 }
+      },
+      minHitsForPrize: 4,
+      tiers: [
+        { key: "6", name: "Sena", minHits: 6 },
+        { key: "5", name: "Quina", minHits: 5 },
+        { key: "4", name: "Quadra", minHits: 4 }
+      ],
+      tablePrizeCols: { main: "Sena (6 acertos)", sub: "Quina (5) e Quadra (4)" },
+      dataVar: "MEGASENA_DRAWS",
+      dataFile: "data/megasena.json"
+    },
+    lotofacil: {
+      id: "lotofacil",
+      name: "Lotofácil",
+      mark: "25",
+      title: "Atlas da Lotofácil",
+      subtitle: "3.816 sorteios, estatísticas das 25 dezenas e simulador combinatório",
+      maxNum: 25,
+      drawCount: 15,
+      defaultSize: 15,
+      allowedSizes: [15, 16, 17, 18, 19, 20],
+      startYear: 2003,
+      basePrice: 3.5,
+      defaultPicks: [1, 2, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 24, 25],
+      betTable: {
+        15: { combos: 1, cost: 3.5 },
+        16: { combos: 16, cost: 56.0 },
+        17: { combos: 136, cost: 476.0 },
+        18: { combos: 816, cost: 2856.0 },
+        19: { combos: 3876, cost: 13566.0 },
+        20: { combos: 15504, cost: 54264.0 }
+      },
+      minHitsForPrize: 11,
+      tiers: [
+        { key: "15", name: "15 Acertos", minHits: 15 },
+        { key: "14", name: "14 Acertos", minHits: 14 },
+        { key: "13", name: "13 Acertos", minHits: 13 },
+        { key: "12", name: "12 Acertos", minHits: 12 },
+        { key: "11", name: "11 Acertos", minHits: 11 }
+      ],
+      tablePrizeCols: { main: "15 Acertos", sub: "14, 13, 12 e 11 Acertos" },
+      dataVar: "LOTOFACIL_DRAWS",
+      dataFile: "data/lotofacil.json"
+    },
+    quina: {
+      id: "quina",
+      name: "Quina",
+      mark: "80",
+      title: "Atlas da Quina",
+      subtitle: "7.154 sorteios, métricas das 80 dezenas e simulador de acertos",
+      maxNum: 80,
+      drawCount: 5,
+      defaultSize: 5,
+      allowedSizes: [5, 6, 7, 8, 9, 10],
+      startYear: 1994,
+      basePrice: 3.0,
+      defaultPicks: [5, 15, 27, 42, 60],
+      betTable: {
+        5: { combos: 1, cost: 3.0 },
+        6: { combos: 6, cost: 18.0 },
+        7: { combos: 21, cost: 63.0 },
+        8: { combos: 56, cost: 168.0 },
+        9: { combos: 126, cost: 378.0 },
+        10: { combos: 252, cost: 756.0 }
+      },
+      minHitsForPrize: 2,
+      tiers: [
+        { key: "5", name: "Quina", minHits: 5 },
+        { key: "4", name: "Quadra", minHits: 4 },
+        { key: "3", name: "Terno", minHits: 3 },
+        { key: "2", name: "Duque", minHits: 2 }
+      ],
+      tablePrizeCols: { main: "Quina (5 acertos)", sub: "Quadra (4), Terno (3) e Duque (2)" },
+      dataVar: "QUINA_DRAWS",
+      dataFile: "data/quina.json"
+    },
+    lotomania: {
+      id: "lotomania",
+      name: "Lotomania",
+      mark: "100",
+      title: "Atlas da Lotomania",
+      subtitle: "2.993 sorteios, conferência de jogos de 50 dezenas e frequências",
+      maxNum: 100,
+      drawCount: 20,
+      defaultSize: 50,
+      allowedSizes: [50],
+      startYear: 1999,
+      basePrice: 3.0,
+      defaultPicks: Array.from({ length: 50 }, (_, i) => i + 1),
+      betTable: {
+        50: { combos: 1, cost: 3.0 }
+      },
+      minHitsForPrize: 15,
+      tiers: [
+        { key: "20", name: "20 Acertos", minHits: 20 },
+        { key: "19", name: "19 Acertos", minHits: 19 },
+        { key: "18", name: "18 Acertos", minHits: 18 },
+        { key: "17", name: "17 Acertos", minHits: 17 },
+        { key: "16", name: "16 Acertos", minHits: 16 },
+        { key: "15", name: "15 Acertos", minHits: 15 },
+        { key: "0", name: "0 Acertos", minHits: 0 }
+      ],
+      tablePrizeCols: { main: "20 Acertos", sub: "19 a 15 e 0 Acertos" },
+      dataVar: "LOTOMANIA_DRAWS",
+      dataFile: "data/lotomania.json"
+    }
   };
 
   const state = {
+    lottery: "megasena",
     draws: [],
     loading: true,
     error: null,
     betSize: 6,
     selectedNumbers: new Set([1, 10, 13, 20, 37, 38]),
-    costMode: "single", // "single" (1 concurso) ou "all" (todos os concursos)
-    freqSort: "num", // "num" | "most" | "least" | "delay"
+    costMode: "single",
+    freqSort: "num",
     extrapHorizon: 500,
-    extrapMode: "empirical", // "empirical" | "montecarlo" | "reversion"
+    extrapMode: "empirical",
     topProjectedSix: [10, 53, 5, 37, 34, 33],
     spendBetsPerMonth: 8,
     spendBetSize: 6,
-    spendTimeMode: "sinceYear", // "sinceYear" | "durationYears"
+    spendTimeMode: "sinceYear",
     spendStartYear: 2015,
     spendYearsCount: 10,
-    spendAdjustMode: "official", // "official" | "periodic"
+    spendAdjustMode: "official",
     filterSearch: "",
     filterNumber: "",
     filterStatus: "all",
@@ -35,14 +155,15 @@
     pageSize: 20
   };
 
-  const brlFmt = new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL"
-  });
+  const brlFmt = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
   const intFmt = new Intl.NumberFormat("pt-BR");
 
   function pad2(n) {
     return String(n).padStart(2, "0");
+  }
+
+  function getCurrentLottery() {
+    return LOTTERY_CONFIGS[state.lottery] || LOTTERY_CONFIGS.megasena;
   }
 
   function comb(n, r) {
@@ -55,26 +176,49 @@
     return Math.round(res);
   }
 
-  // Calcula quantos prêmios de Sena (6), Quina (5) e Quadra (4) uma aposta de k dezenas recebe ao acertar h dezenas
   function calcMultiplePrizes(k, h, drawPrizes) {
-    if (h < 4) {
-      return { senaCount: 0, quinaCount: 0, quadraCount: 0, totalValue: 0 };
+    const cfg = getCurrentLottery();
+    const res = { totalValue: 0, breakdown: [], senaCount: 0, quinaCount: 0, quadraCount: 0 };
+    if (!cfg) return res;
+
+    if (cfg.id === "lotomania") {
+      cfg.tiers.forEach((t) => {
+        let won = false;
+        if (t.key === "0" && h === 0) won = true;
+        else if (t.key !== "0" && h === Number(t.key)) won = true;
+        if (won) {
+          const v = (drawPrizes && drawPrizes[t.key] && drawPrizes[t.key].v) || 0;
+          res.totalValue += v;
+          res.breakdown.push({ tier: t.name, count: 1, value: v });
+        }
+      });
+      return res;
     }
+
     const missed = k - h;
-    const senaCount = comb(h, 6) * comb(missed, 0);
-    const quinaCount = comb(h, 5) * comb(missed, 1);
-    const quadraCount = comb(h, 4) * comb(missed, 2);
+    const drawn = cfg.drawCount;
 
-    const v6 = (drawPrizes && drawPrizes["6"] && drawPrizes["6"].v) || 0;
-    const v5 = (drawPrizes && drawPrizes["5"] && drawPrizes["5"].v) || 0;
-    const v4 = (drawPrizes && drawPrizes["4"] && drawPrizes["4"].v) || 0;
+    cfg.tiers.forEach((tier) => {
+      const m = tier.minHits;
+      if (h >= m && (drawn - m) <= missed && (drawn - m) >= 0) {
+        const count = comb(h, m) * comb(missed, drawn - m);
+        if (count > 0) {
+          const val = (drawPrizes && drawPrizes[tier.key] && drawPrizes[tier.key].v) || 0;
+          const subtotal = count * val;
+          res.totalValue += subtotal;
+          res.breakdown.push({ tier: tier.name, count, value: subtotal });
+          if (tier.key === "6") res.senaCount = count;
+          else if (tier.key === "5") res.quinaCount = count;
+          else if (tier.key === "4") res.quadraCount = count;
+        }
+      }
+    });
 
-    const totalValue = senaCount * v6 + quinaCount * v5 + quadraCount * v4;
-    return { senaCount, quinaCount, quadraCount, totalValue };
+    return res;
   }
 
   function initTheme() {
-    const saved = localStorage.getItem("megasena_theme");
+    const saved = localStorage.getItem("loterias_theme");
     const theme = saved === "dark" ? "dark" : "light";
     document.documentElement.setAttribute("data-theme", theme);
     updateThemeBtn(theme);
@@ -92,10 +236,31 @@
     btn.innerHTML = `${iconSvg}<span class="btn-label-text" id="theme-toggle-text">${isDark ? "Escuro" : "Claro"}</span>`;
   }
 
+  function buildSizePills() {
+    const cfg = getCurrentLottery();
+    const group = document.getElementById("dezena-size-group");
+    if (!group) return;
+    group.innerHTML = "";
+    cfg.allowedSizes.forEach((sz) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "size-pill";
+      btn.dataset.size = String(sz);
+      const info = cfg.betTable[sz] || { cost: cfg.basePrice };
+      btn.textContent = `${sz} dez (${brlFmt.format(info.cost)})`;
+      btn.setAttribute("aria-pressed", sz === state.betSize ? "true" : "false");
+      btn.addEventListener("click", () => setBetSize(sz));
+      group.appendChild(btn);
+    });
+  }
+
   function buildVolanteButtons() {
+    const cfg = getCurrentLottery();
     const container = document.getElementById("volante-grid");
+    if (!container) return;
     container.innerHTML = "";
-    for (let n = 1; n <= 60; n++) {
+    container.setAttribute("aria-label", `Volante de ${cfg.maxNum} dezenas da ${cfg.name}`);
+    for (let n = 1; n <= cfg.maxNum; n++) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "dezena-btn";
@@ -110,6 +275,7 @@
   }
 
   function syncVolanteUI() {
+    const cfg = getCurrentLottery();
     const buttons = document.querySelectorAll("#volante-grid .dezena-btn");
     buttons.forEach((btn) => {
       const n = Number(btn.dataset.num);
@@ -122,23 +288,26 @@
       pill.setAttribute("aria-pressed", sz === state.betSize ? "true" : "false");
     });
 
-    const info = BET_TABLE[state.betSize];
+    const info = cfg.betTable[state.betSize] || { combos: 1, cost: cfg.basePrice };
     const picked = Array.from(state.selectedNumbers).sort((a, b) => a - b);
     const summaryEl = document.getElementById("ticket-summary");
-    summaryEl.innerHTML = `
-      <span><strong>Selecionadas (${picked.length}/${state.betSize}):</strong> ${picked.length ? picked.map(pad2).join(", ") : "nenhuma"}</span>
-      <span><strong>Equivalência:</strong> ${info.combos} ${info.combos === 1 ? "aposta simples" : "apostas simples"} | <strong>Valor da aposta (${state.betSize} dezenas):</strong> ${brlFmt.format(info.cost)}</span>
-    `;
+    if (summaryEl) {
+      summaryEl.innerHTML = `
+        <span><strong>Selecionadas (${picked.length}/${state.betSize}):</strong> ${picked.length ? picked.map(pad2).join(", ") : "nenhuma"}</span>
+        <span><strong>Equivalência:</strong> ${info.combos} ${info.combos === 1 ? "aposta simples" : "apostas simples"} | <strong>Valor da aposta (${state.betSize} dezenas):</strong> ${brlFmt.format(info.cost)}</span>
+      `;
+    }
   }
 
   function toggleDezena(n) {
+    const cfg = getCurrentLottery();
     const msgEl = document.getElementById("simulator-alert");
     msgEl.hidden = true;
     if (state.selectedNumbers.has(n)) {
       state.selectedNumbers.delete(n);
     } else {
       if (state.selectedNumbers.size >= state.betSize) {
-        msgEl.textContent = `Você já selecionou o limite de ${state.betSize} dezenas. Desmarque uma dezena ou aumente o tamanho da aposta (até 10 dezenas).`;
+        msgEl.textContent = `Você já selecionou o limite de ${state.betSize} dezenas para esta aposta da ${cfg.name}. Desmarque uma dezena ou aumente o tamanho da aposta.`;
         msgEl.className = "status-banner error";
         msgEl.hidden = false;
         return;
@@ -153,9 +322,7 @@
   function setBetSize(size) {
     state.betSize = size;
     if (state.selectedNumbers.size > size) {
-      const trimmed = Array.from(state.selectedNumbers)
-        .sort((a, b) => a - b)
-        .slice(0, size);
+      const trimmed = Array.from(state.selectedNumbers).sort((a, b) => a - b).slice(0, size);
       state.selectedNumbers = new Set(trimmed);
     }
     document.getElementById("simulator-alert").hidden = true;
@@ -165,8 +332,9 @@
   }
 
   function fillRandomBet() {
+    const cfg = getCurrentLottery();
     const pool = [];
-    for (let i = 1; i <= 60; i++) pool.push(i);
+    for (let i = 1; i <= cfg.maxNum; i++) pool.push(i);
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       const tmp = pool[i];
@@ -181,13 +349,17 @@
   }
 
   function renderSimulation() {
+    const cfg = getCurrentLottery();
     const panel = document.getElementById("simulation-output");
+    if (!panel) return;
+
     if (state.loading) {
-      panel.innerHTML = `<div class="status-banner" role="status">Carregando base histórica de sorteios para validar sua aposta...</div>`;
+      panel.innerHTML = `<div class="status-banner" role="status">Carregando histórico oficial da ${cfg.name}...</div>`;
       return;
     }
+
     if (state.error) {
-      panel.innerHTML = `<div class="status-banner error" role="alert">Erro ao carregar sorteios: ${state.error}. Use o botão "Recarregar base local" acima.</div>`;
+      panel.innerHTML = `<div class="status-banner error" role="alert">Erro ao carregar sorteios: ${state.error}.</div>`;
       return;
     }
 
@@ -196,26 +368,24 @@
       const faltam = state.betSize - pickedCount;
       panel.innerHTML = `
         <div class="status-banner" role="status">
-          <strong>Estado vazio (aguardando preenchimento):</strong> selecione mais <strong>${faltam}</strong> ${faltam === 1 ? "dezena" : "dezenas"} no volante ao lado (ou clique em "Surpresinha") para validar sua aposta de ${state.betSize} dezenas contra todos os ${intFmt.format(state.draws.length)} concursos.
+          <strong>Aguardando preenchimento:</strong> selecione mais <strong>${faltam}</strong> ${faltam === 1 ? "dezena" : "dezenas"} no volante ao lado (ou clique em "Surpresinha") para validar sua aposta de ${state.betSize} dezenas contra todos os ${intFmt.format(state.draws.length)} concursos da ${cfg.name}.
         </div>
       `;
       return;
     }
 
     const k = state.betSize;
-    const betCostSingle = BET_TABLE[k].cost;
+    const betCostSingle = (cfg.betTable[k] && cfg.betTable[k].cost) || cfg.basePrice;
     const totalDraws = state.draws.length;
     const betCostAll = betCostSingle * totalDraws;
 
     let maxHits = 0;
-    const hitsByCount = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    const hitsByCount = {};
+    for (let i = 0; i <= cfg.drawCount; i++) hitsByCount[i] = 0;
     const allEvaluated = [];
     const winningDraws = [];
 
     let totalGrossWon = 0;
-    let totalSenas = 0;
-    let totalQuinas = 0;
-    let totalQuadras = 0;
 
     for (let i = 0; i < totalDraws; i++) {
       const d = state.draws[i];
@@ -225,25 +395,12 @@
       if (h > maxHits) maxHits = h;
 
       const prizeCalc = calcMultiplePrizes(k, h, d.p);
-      if (h >= 4) {
+      if (prizeCalc.totalValue > 0 || h >= cfg.minHitsForPrize) {
         totalGrossWon += prizeCalc.totalValue;
-        totalSenas += prizeCalc.senaCount;
-        totalQuinas += prizeCalc.quinaCount;
-        totalQuadras += prizeCalc.quadraCount;
-        winningDraws.push({
-          draw: d,
-          hits: h,
-          matched,
-          prizeCalc
-        });
+        winningDraws.push({ draw: d, hits: h, matched, prizeCalc });
       }
-      if (h >= 3) {
-        allEvaluated.push({
-          draw: d,
-          hits: h,
-          matched,
-          prizeCalc
-        });
+      if (h >= Math.max(1, cfg.minHitsForPrize - 1)) {
+        allEvaluated.push({ draw: d, hits: h, matched, prizeCalc });
       }
     }
 
@@ -253,132 +410,95 @@
 
     const activeCost = state.costMode === "all" ? betCostAll : betCostSingle;
     const netBalance = totalGrossWon - activeCost;
-    const isNegativeOrZero = winningDraws.length === 0 || netBalance < 0;
 
     let topHeadlineHTML = "";
-    if (maxHits >= 4 && bestDraws.length > 0) {
+    if (bestDraws.length > 0 && bestDraws[0].prizeCalc.totalValue > 0) {
       const top = bestDraws[0];
-      const breakdownParts = [];
-      if (top.prizeCalc.senaCount > 0) breakdownParts.push(`${top.prizeCalc.senaCount}x Sena`);
-      if (top.prizeCalc.quinaCount > 0) breakdownParts.push(`${top.prizeCalc.quinaCount}x Quina`);
-      if (top.prizeCalc.quadraCount > 0) breakdownParts.push(`${top.prizeCalc.quadraCount}x Quadra`);
+      const breakdownText = top.prizeCalc.breakdown.map((b) => `${b.count}x ${b.tier}`).join(" + ") || "Prêmio Oficial";
 
       topHeadlineHTML = `
         <div class="highlight-box ${netBalance >= 0 ? "positive" : "negative"}" role="region" aria-label="Destaque de maior acerto">
-          <strong>Maior acerto encontrado (${maxHits} dezenas):</strong> No <strong>concurso ${top.draw.c}</strong> (${top.draw.d}) você teria acertado <strong>${top.hits} dezenas</strong> (${top.matched.map(pad2).join(", ")}), ganhando <strong>${brlFmt.format(top.prizeCalc.totalValue)}</strong> (${breakdownParts.join(" + ")}).
-          ${bestDraws.length > 1 ? `<div style="margin-top:6px;font-size:0.875rem;">Você atingiu ${maxHits} acertos em <strong>${bestDraws.length} concursos</strong> no total. Veja todos listados abaixo.</div>` : ""}
+          <strong>Maior acerto encontrado (${maxHits} dezenas):</strong> No <strong>concurso #${top.draw.c}</strong> (${top.draw.d}) você teria acertado <strong>${top.hits} dezenas</strong> (${top.matched.map(pad2).join(", ")}), recebendo <strong>${brlFmt.format(top.prizeCalc.totalValue)}</strong> (${breakdownText}).
+          ${bestDraws.length > 1 ? `<div style="margin-top:6px;font-size:0.875rem;">Você atingiu ${maxHits} acertos em <strong>${bestDraws.length} concursos</strong> no total.</div>` : ""}
         </div>
       `;
     } else {
-      const sampleBest = bestDraws.slice(0, 5).map((x) => `#${x.draw.c} (${x.draw.d})`).join(", ");
       topHeadlineHTML = `
         <div class="highlight-box negative" role="region" aria-label="Sem premiação nos sorteios passados">
-          <strong>Nenhum concurso premiado encontrado:</strong> Seu maior acerto histórico foi de <strong>${maxHits} ${maxHits === 1 ? "dezena" : "dezenas"}</strong>${sampleBest ? ` (ex.: concursos ${sampleBest})` : ""}. Como a Mega-Sena premia a partir de 4 acertos (Quadra), você teria recebido <strong>R$ 0,00</strong> e ficado com saldo negativo de <strong>${brlFmt.format(netBalance)}</strong>.
+          <strong>Nenhum prêmio oficial encontrado:</strong> O jogo obteve no máximo <strong>${maxHits} acertos</strong> em concursos como ${bestDraws.slice(0, 3).map((x) => `#${x.draw.c}`).join(", ") || "nenhum"}, abaixo da faixa de premiação da ${cfg.name}.
         </div>
       `;
     }
 
-    let costComparisonAlert = "";
-    if (winningDraws.length > 0 && netBalance < 0) {
-      costComparisonAlert = `
-        <div class="status-banner error">
-          <strong>Atenção ao Saldo Negativo:</strong> Embora você tenha acertado prêmios em ${winningDraws.length} ${winningDraws.length === 1 ? "concurso" : "concursos"} (recebendo ${brlFmt.format(totalGrossWon)}), o valor da aposta considerado (${brlFmt.format(activeCost)}) foi <strong>maior que o valor recebido</strong>, gerando prejuízo líquido de <strong>${brlFmt.format(netBalance)}</strong>.
-        </div>
-      `;
-    }
-
-    const sortedStatement = winningDraws
-      .slice()
-      .sort((a, b) => b.hits - a.hits || b.prizeCalc.totalValue - a.prizeCalc.totalValue || b.draw.c - a.draw.c);
-
-    const statementRowsHTML = sortedStatement.length
-      ? sortedStatement
-          .map((item) => {
-            const singleDiff = item.prizeCalc.totalValue - betCostSingle;
-            const detailLabels = [];
-            if (item.prizeCalc.senaCount) detailLabels.push(`${item.prizeCalc.senaCount} Sena`);
-            if (item.prizeCalc.quinaCount) detailLabels.push(`${item.prizeCalc.quinaCount} Quina`);
-            if (item.prizeCalc.quadraCount) detailLabels.push(`${item.prizeCalc.quadraCount} Quadra`);
-            return `
-              <div class="extrato-row-card">
-                <div class="extrato-row-top">
-                  <span><strong>Concurso #${item.draw.c}</strong> (${item.draw.d})</span>
-                  <span class="badge-status">${item.hits} acertos: ${detailLabels.join(" + ")}</span>
-                </div>
-                <div class="extrato-row-mid">
-                  Acertou: <strong>${item.matched.map(pad2).join(", ")}</strong> | Sorteio: ${item.draw.n.map(pad2).join(", ")}
-                </div>
-                <div class="extrato-row-bottom">
-                  <span>Prêmio: <strong>${brlFmt.format(item.prizeCalc.totalValue)}</strong></span>
-                  <span class="extrato-value ${singleDiff >= 0 ? "gain" : "loss"}" style="font-size:0.8125rem;">
-                    Saldo vs. Aposta: ${singleDiff >= 0 ? "+" : ""}${brlFmt.format(singleDiff)}
-                  </span>
-                </div>
-              </div>
-            `;
-          })
-          .join("")
-      : `
-        <div class="extrato-row-card">
-          Nenhum concurso com 4, 5 ou 6 acertos para esta combinação. Saldo final da aposta: <strong>${brlFmt.format(netBalance)}</strong>.
-        </div>
-      `;
+    const rowsHTML = winningDraws
+      .slice(0, 20)
+      .map((item) => {
+        const breakdown = item.prizeCalc.breakdown.map((b) => `${b.count}x ${b.tier}`).join(", ") || "Premiação";
+        return `
+          <tr>
+            <td><strong>#${item.draw.c}</strong></td>
+            <td>${item.draw.d}</td>
+            <td><span class="badge ${item.hits >= cfg.drawCount ? "win" : "hit"}">${item.hits} acertos</span></td>
+            <td>${item.matched.map(pad2).join(", ")}</td>
+            <td>${breakdown}</td>
+            <td><strong>${brlFmt.format(item.prizeCalc.totalValue)}</strong></td>
+          </tr>
+        `;
+      })
+      .join("");
 
     panel.innerHTML = `
       ${topHeadlineHTML}
-      ${costComparisonAlert}
-
-      <div>
-        <h3 style="margin:0 0 8px 0;font-size:0.9375rem;">Extrato Financeiro e Saldo Final (${k} dezenas)</h3>
-        <div class="extrato-grid">
-          <div class="extrato-card">
-            <div class="extrato-label">Custo da Aposta (${state.costMode === "all" ? `Todos os ${intFmt.format(totalDraws)} concursos` : "1 Concurso Avulso"})</div>
-            <div class="extrato-value loss">- ${brlFmt.format(activeCost)}</div>
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
-              Unitário (${k} dez.): ${brlFmt.format(betCostSingle)} | Em ${intFmt.format(totalDraws)} sorteios: ${brlFmt.format(betCostAll)}
-            </div>
-          </div>
-          <div class="extrato-card">
-            <div class="extrato-label">Total Bruto Recebido em Prêmios</div>
-            <div class="extrato-value ${totalGrossWon > 0 ? "gain" : ""}">+ ${brlFmt.format(totalGrossWon)}</div>
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
-              ${totalSenas} Sena(s), ${totalQuinas} Quina(s) e ${totalQuadras} Quadra(s) acumuladas
-            </div>
-          </div>
-          <div class="extrato-card">
-            <div class="extrato-label">Saldo Final (Recebido - Aposta Selecionada)</div>
-            <div class="extrato-value ${netBalance >= 0 ? "gain" : "loss"}">
-              ${netBalance >= 0 ? "+" : ""}${brlFmt.format(netBalance)}
-            </div>
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
-              Resultado: ${netBalance >= 0 ? "Lucro líquido" : "Prejuízo (aposta superou retorno)"}
-            </div>
-          </div>
-          <div class="extrato-card">
-            <div class="extrato-label">Resumo de Acertos nos ${intFmt.format(totalDraws)} Sorteios</div>
-            <div style="font-family:var(--font-mono);font-size:0.75rem;line-height:1.45;">
-              6 acertos: <strong>${hitsByCount[6]}</strong> | 5 acertos: <strong>${hitsByCount[5]}</strong> | 4 acertos: <strong>${hitsByCount[4]}</strong><br>
-              3 acertos: <strong>${hitsByCount[3]}</strong> | 2 acertos: <strong>${hitsByCount[2]}</strong> | 0-1 acerto: <strong>${hitsByCount[1] + hitsByCount[0]}</strong>
-            </div>
-          </div>
+      <div class="kpi-strip" style="margin-top:14px;">
+        <div class="kpi-item">
+          <p class="kpi-title">Total de Prêmios Recebidos</p>
+          <p class="kpi-num" style="color:var(--success-text);">${brlFmt.format(totalGrossWon)}</p>
+          <p class="kpi-sub">${winningDraws.length} sorteios premiados</p>
+        </div>
+        <div class="kpi-item">
+          <p class="kpi-title">Custo Considerado (${state.costMode === "all" ? "Histórico Total" : "1 Concurso"})</p>
+          <p class="kpi-num" style="color:var(--danger-text);">${brlFmt.format(activeCost)}</p>
+          <p class="kpi-sub">${state.costMode === "all" ? `${intFmt.format(totalDraws)} concursos x ${brlFmt.format(betCostSingle)}` : "1 aposta avulsa"}</p>
+        </div>
+        <div class="kpi-item">
+          <p class="kpi-title">Saldo Financeiro Final</p>
+          <p class="kpi-num" style="color:${netBalance >= 0 ? "var(--success-text)" : "var(--danger-text)"};">${brlFmt.format(netBalance)}</p>
+          <p class="kpi-sub">${netBalance >= 0 ? "Lucro acumulado no período" : "Prejuízo operacional"}</p>
         </div>
       </div>
-
-      <div>
-        <h3 style="margin:0 0 8px 0;font-size:0.9375rem;">Detalhamento do Extrato por Concurso Premiado (${winningDraws.length})</h3>
-        <div class="extrato-list" role="region" aria-label="Lista de concursos premiados na simulação">
-          ${statementRowsHTML}
-        </div>
+      <div style="margin-top:16px;">
+        <p style="margin:0 0 8px;font-weight:700;">Concursos Premiados (${intFmt.format(winningDraws.length)} no histórico):</p>
+        ${winningDraws.length > 0 ? `
+          <div class="table-wrap">
+            <table class="draws-table">
+              <thead>
+                <tr>
+                  <th>Concurso</th>
+                  <th>Data</th>
+                  <th>Acertos</th>
+                  <th>Dezenas Coincidentes</th>
+                  <th>Prêmios Multiplicados</th>
+                  <th>Valor Total</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHTML}</tbody>
+            </table>
+          </div>
+        ` : `<p class="section-desc" style="margin:0;">Nenhum sorteio atingiu o patamar mínimo de premiação desta modalidade.</p>`}
       </div>
     `;
   }
 
   function computeStatistics() {
+    const cfg = getCurrentLottery();
     const totalDraws = state.draws.length;
-    const freq = Array(61).fill(0);
-    const lastSeenIndex = Array(61).fill(-1);
-    const parityDist = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-    const rowCounts = [0, 0, 0, 0, 0, 0]; // 01-10 .. 51-60
+    const maxNum = cfg.maxNum;
+    const freq = Array(maxNum + 1).fill(0);
+    const lastSeenIndex = Array(maxNum + 1).fill(-1);
+    const parityDist = {};
+    for (let i = 0; i <= cfg.drawCount; i++) parityDist[i] = 0;
+    const numRows = Math.ceil(maxNum / 10);
+    const rowCounts = Array(numRows).fill(0);
     let accumulatedCount = 0;
     let totalSumAllDraws = 0;
 
@@ -389,19 +509,21 @@
       let sum = 0;
       for (let j = 0; j < d.n.length; j++) {
         const num = d.n[j];
-        freq[num]++;
-        lastSeenIndex[num] = idx;
-        if (num % 2 === 0) evens++;
-        sum += num;
-        const rowIdx = Math.min(5, Math.floor((num - 1) / 10));
-        rowCounts[rowIdx]++;
+        if (num >= 1 && num <= maxNum) {
+          freq[num]++;
+          lastSeenIndex[num] = idx;
+          if (num % 2 === 0) evens++;
+          sum += num;
+          const rowIdx = Math.min(numRows - 1, Math.floor((num - 1) / 10));
+          rowCounts[rowIdx]++;
+        }
       }
       parityDist[evens] = (parityDist[evens] || 0) + 1;
       totalSumAllDraws += sum;
     }
 
     const items = [];
-    for (let n = 1; n <= 60; n++) {
+    for (let n = 1; n <= maxNum; n++) {
       const delay = lastSeenIndex[n] === -1 ? totalDraws : totalDraws - 1 - lastSeenIndex[n];
       items.push({ num: n, count: freq[n], delay });
     }
@@ -424,6 +546,7 @@
   }
 
   function renderMetricsAndCharts() {
+    const cfg = getCurrentLottery();
     const stats = computeStatistics();
     if (!stats.totalDraws) return;
 
@@ -433,28 +556,30 @@
     const mostDelayed = stats.byDelay[0];
 
     const kpiStrip = document.getElementById("kpi-strip");
-    kpiStrip.innerHTML = `
-      <div class="kpi-item">
-        <p class="kpi-title">Total de Concursos Oficializados</p>
-        <p class="kpi-num">${intFmt.format(stats.totalDraws)} sorteios</p>
-        <p class="kpi-sub">Último: #${latest.c} em ${latest.d} (${Math.round((stats.accumulatedCount / stats.totalDraws) * 100)}% acumularam)</p>
-      </div>
-      <div class="kpi-item">
-        <p class="kpi-title">Dezena Mais Sorteada</p>
-        <p class="kpi-num">Dezena ${pad2(most.num)} (${most.count}x)</p>
-        <p class="kpi-sub">Presente em ${((most.count / stats.totalDraws) * 100).toFixed(1)}% de todos os concursos</p>
-      </div>
-      <div class="kpi-item">
-        <p class="kpi-title">Dezena Menos Sorteada</p>
-        <p class="kpi-num">Dezena ${pad2(least.num)} (${least.count}x)</p>
-        <p class="kpi-sub">Diferença de ${most.count - least.count} sorteios para a líder</p>
-      </div>
-      <div class="kpi-item">
-        <p class="kpi-title">Maior Atraso Atual</p>
-        <p class="kpi-num">Dezena ${pad2(mostDelayed.num)} (${mostDelayed.delay} jogos)</p>
-        <p class="kpi-sub">Soma média por sorteio: ${stats.avgSum} pontos</p>
-      </div>
-    `;
+    if (kpiStrip) {
+      kpiStrip.innerHTML = `
+        <div class="kpi-item">
+          <p class="kpi-title">Total de Concursos (${cfg.name})</p>
+          <p class="kpi-num">${intFmt.format(stats.totalDraws)} sorteios</p>
+          <p class="kpi-sub">Último: #${latest.c} em ${latest.d} (${Math.round((stats.accumulatedCount / stats.totalDraws) * 100)}% acumularam)</p>
+        </div>
+        <div class="kpi-item">
+          <p class="kpi-title">Dezena Mais Sorteada</p>
+          <p class="kpi-num">Dezena ${pad2(most.num)} (${most.count}x)</p>
+          <p class="kpi-sub">Presente em ${((most.count / stats.totalDraws) * 100).toFixed(1)}% dos concursos</p>
+        </div>
+        <div class="kpi-item">
+          <p class="kpi-title">Dezena Menos Sorteada</p>
+          <p class="kpi-num">Dezena ${pad2(least.num)} (${least.count}x)</p>
+          <p class="kpi-sub">Diferença de ${most.count - least.count} sorteios para a líder</p>
+        </div>
+        <div class="kpi-item">
+          <p class="kpi-title">Maior Atraso Atual</p>
+          <p class="kpi-num">Dezena ${pad2(mostDelayed.num)} (${mostDelayed.delay} jogos)</p>
+          <p class="kpi-sub">Soma média por sorteio: ${stats.avgSum} pontos</p>
+        </div>
+      `;
+    }
 
     renderFrequencyMatrix(stats);
     renderDelayChart(stats);
@@ -467,6 +592,7 @@
 
   function renderFrequencyMatrix(stats) {
     const container = document.getElementById("freq-matrix");
+    if (!container) return;
     let list = stats.items.slice();
     if (state.freqSort === "most") list = stats.byMost.slice();
     else if (state.freqSort === "least") list = stats.byLeast.slice();
@@ -487,9 +613,10 @@
   }
 
   function renderDelayChart(stats) {
+    const el = document.getElementById("delay-chart");
+    if (!el) return;
     const topDelayed = stats.byDelay.slice(0, 10);
     const maxDelay = topDelayed[0] ? topDelayed[0].delay : 1;
-    const el = document.getElementById("delay-chart");
     el.innerHTML = topDelayed
       .map((item) => {
         const pct = Math.max(4, Math.round((item.delay / maxDelay) * 100));
@@ -507,18 +634,20 @@
   }
 
   function renderParityChart(stats) {
+    const cfg = getCurrentLottery();
     const el = document.getElementById("parity-chart");
-    const rows = [
-      { label: "3P / 3I", evens: 3 },
-      { label: "4P / 2I", evens: 4 },
-      { label: "2P / 4I", evens: 2 },
-      { label: "5P / 1I", evens: 5 },
-      { label: "1P / 5I", evens: 1 },
-      { label: "6P / 0I", evens: 6 },
-      { label: "0P / 6I", evens: 0 }
-    ];
+    if (!el) return;
+
+    const rows = [];
+    const drawn = cfg.drawCount;
+    for (let evens = 0; evens <= drawn; evens++) {
+      rows.push({ label: `${evens}P / ${drawn - evens}I`, evens });
+    }
+    rows.sort((a, b) => (stats.parityDist[b.evens] || 0) - (stats.parityDist[a.evens] || 0));
+
     const maxVal = Math.max(...rows.map((r) => stats.parityDist[r.evens] || 0), 1);
     el.innerHTML = rows
+      .slice(0, 8)
       .map((r) => {
         const count = stats.parityDist[r.evens] || 0;
         const pctWidth = Math.max(2, Math.round((count / maxVal) * 100));
@@ -537,66 +666,65 @@
   }
 
   function renderRowDistributionChart(stats) {
+    const cfg = getCurrentLottery();
     const el = document.getElementById("row-chart");
-    const totalBalls = stats.totalDraws * 6;
+    if (!el) return;
+
+    const totalBalls = stats.totalDraws * cfg.drawCount;
     const maxRow = Math.max(...stats.rowCounts, 1);
-    const labels = ["01 a 10", "11 a 20", "21 a 30", "31 a 40", "41 a 50", "51 a 60"];
-    el.innerHTML = labels
-      .map((label, idx) => {
-        const count = stats.rowCounts[idx];
-        const pctWidth = Math.max(4, Math.round((count / maxRow) * 100));
-        const share = ((count / totalBalls) * 100).toFixed(1);
-        return `
-          <div class="bar-row">
-            <span><strong>${label}</strong></span>
-            <div class="bar-track" aria-hidden="true">
-              <div class="bar-fill" style="width:${pctWidth}%"></div>
-            </div>
-            <span>${share}% (${intFmt.format(count)})</span>
+    const numRows = Math.ceil(cfg.maxNum / 10);
+
+    const rowsHTML = [];
+    for (let r = 0; r < numRows; r++) {
+      const start = r * 10 + 1;
+      const end = Math.min(cfg.maxNum, (r + 1) * 10);
+      const label = `${pad2(start)} a ${pad2(end)}`;
+      const count = stats.rowCounts[r] || 0;
+      const pctWidth = Math.max(4, Math.round((count / maxRow) * 100));
+      const share = totalBalls ? ((count / totalBalls) * 100).toFixed(1) : "0";
+      rowsHTML.push(`
+        <div class="bar-row">
+          <span><strong>${label}</strong></span>
+          <div class="bar-track" aria-hidden="true">
+            <div class="bar-fill" style="width:${pctWidth}%"></div>
           </div>
-        `;
-      })
-      .join("");
+          <span>${share}% (${intFmt.format(count)})</span>
+        </div>
+      `);
+    }
+    el.innerHTML = rowsHTML.join("");
   }
 
   function simulateMonteCarloDraws(stats, horizon) {
-    const counts = Array(61).fill(0);
-    const parityProjected = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-    const rowProjected = [0, 0, 0, 0, 0, 0];
-
-    const weights = Array(61).fill(1);
+    const cfg = getCurrentLottery();
+    const counts = Array(cfg.maxNum + 1).fill(0);
+    const weights = Array(cfg.maxNum + 1).fill(1);
     for (let i = 0; i < stats.items.length; i++) {
       const it = stats.items[i];
       weights[it.num] = Math.max(1, it.count);
     }
 
-    // Amostragem ponderada sem reposição (Efraimidis-Spirakis)
     for (let g = 0; g < horizon; g++) {
       const scored = [];
-      for (let n = 1; n <= 60; n++) {
+      for (let n = 1; n <= cfg.maxNum; n++) {
         const u = Math.max(1e-9, Math.random());
         scored.push({ n, key: Math.pow(u, 1 / weights[n]) });
       }
       scored.sort((a, b) => b.key - a.key);
-      let evens = 0;
-      for (let k = 0; k < 6; k++) {
-        const picked = scored[k].n;
-        counts[picked]++;
-        if (picked % 2 === 0) evens++;
-        rowProjected[Math.min(5, Math.floor((picked - 1) / 10))]++;
+      for (let k = 0; k < cfg.drawCount; k++) {
+        counts[scored[k].n]++;
       }
-      parityProjected[evens]++;
     }
-
-    return { counts, parityProjected, rowProjected };
+    return { counts };
   }
 
   function renderExtrapolation(stats) {
+    const cfg = getCurrentLottery();
     if (!stats || !stats.totalDraws) return;
     const H = state.extrapHorizon;
     const mode = state.extrapMode;
     const N = stats.totalDraws;
-    const uniformExpected = H * 0.1;
+    const uniformExpected = H * (cfg.drawCount / cfg.maxNum);
 
     document.querySelectorAll(".horizon-pill").forEach((pill) => {
       pill.setAttribute("aria-pressed", Number(pill.dataset.horizon) === H ? "true" : "false");
@@ -608,20 +736,15 @@
       const pEmpirical = item.count / N;
       const avgCycle = pEmpirical > 0 ? 1 / pEmpirical : 10;
       const cyclePressure = item.delay / avgCycle;
-      const probAtLeastOneInH = 1 - Math.pow(1 - pEmpirical, H);
-      const probAtLeastOneIn10 = 1 - Math.pow(1 - pEmpirical, 10);
-      const probAtLeastOneIn50 = 1 - Math.pow(1 - pEmpirical, 50);
-
       let addCount = pEmpirical * H;
       if (mode === "montecarlo" && mcRun) {
         addCount = mcRun.counts[item.num];
       } else if (mode === "reversion") {
-        const historicalDeficit = N * 0.1 - item.count;
+        const historicalDeficit = N * (cfg.drawCount / cfg.maxNum) - item.count;
         const reversionPull = historicalDeficit * Math.min(1, H / (N * 0.8));
         const delayBoost = Math.min(3.0, cyclePressure * 0.65);
         addCount = Math.max(0.2, uniformExpected + reversionPull * 0.55 + delayBoost);
       }
-
       return {
         num: item.num,
         histCount: item.count,
@@ -629,18 +752,14 @@
         pEmpirical,
         avgCycle,
         cyclePressure,
-        probAtLeastOneInH,
-        probAtLeastOneIn10,
-        probAtLeastOneIn50,
         addCount,
         futureTotal: item.count + addCount
       };
     });
 
-    // Normaliza no modo reversion para somar 6*H bolas no horizonte
     if (mode === "reversion") {
       const sumAdd = rawProjections.reduce((acc, x) => acc + x.addCount, 0) || 1;
-      const targetSum = H * 6;
+      const targetSum = H * cfg.drawCount;
       rawProjections.forEach((x) => {
         x.addCount = (x.addCount / sumAdd) * targetSum;
         x.futureTotal = x.histCount + x.addCount;
@@ -648,211 +767,64 @@
     }
 
     const sortedByAdd = rawProjections.slice().sort((a, b) => b.addCount - a.addCount || b.histCount - a.histCount);
-    const top6 = sortedByAdd.slice(0, 6).map((x) => x.num).sort((a, b) => a - b);
-    state.topProjectedSix = top6;
+    const topProj = sortedByAdd.slice(0, cfg.drawCount).map((x) => x.num).sort((a, b) => a - b);
+    state.topProjectedSix = topProj;
 
     const latestConcurso = state.draws[state.draws.length - 1].c;
     const targetConcurso = latestConcurso + H;
-    const scaleTag = H < 100 ? "Escala de Dezenas" : H < 1000 ? "Escala de Centenas" : "Escala de Milhares";
+    const kpiEl = document.getElementById("extrap-kpi-strip");
+    if (kpiEl) {
+      kpiEl.innerHTML = `
+        <div class="kpi-item">
+          <p class="kpi-title">Janela Futura Projetada</p>
+          <p class="kpi-num">+${intFmt.format(H)} concursos</p>
+          <p class="kpi-sub">Do #${latestConcurso + 1} até #${intFmt.format(targetConcurso)} da ${cfg.name}</p>
+        </div>
+        <div class="kpi-item">
+          <p class="kpi-title">Jogo Mais Projetado (+${intFmt.format(H)} jogos)</p>
+          ${
+            topProj.length <= 6
+              ? `<p class="kpi-num">${topProj.map(pad2).join(" - ")}</p>`
+              : `<div class="balls-row" style="margin:4px 0 2px;">${topProj.map((n) => `<span class="ball hit" style="width:26px;height:26px;font-size:0.75rem;">${pad2(n)}</span>`).join("")}</div>`
+          }
+          <p class="kpi-sub">${topProj.length} dezenas com maior impulso estatístico na ${cfg.name}</p>
+        </div>
+      `;
+    }
 
-    const leaderProj = sortedByAdd[0];
-    const tailProj = sortedByAdd[sortedByAdd.length - 1];
-    const spreadFuture = Math.round(leaderProj.futureTotal - tailProj.futureTotal);
-    const uniformProbH = (1 - Math.pow(0.9, H)) * 100;
-
-    document.getElementById("extrap-kpi-strip").innerHTML = `
-      <div class="kpi-item">
-        <p class="kpi-title">Janela Futura Projetada (${scaleTag})</p>
-        <p class="kpi-num">+${intFmt.format(H)} concursos</p>
-        <p class="kpi-sub">Do #${latestConcurso + 1} até #${intFmt.format(targetConcurso)} (+${intFmt.format(H * 6)} bolas)</p>
-      </div>
-      <div class="kpi-item">
-        <p class="kpi-title">Sexteto de Maior Projeção (+${intFmt.format(H)} jogos)</p>
-        <p class="kpi-num">${top6.map(pad2).join(", ")}</p>
-        <p class="kpi-sub">Média uniforme esperada: ${uniformExpected.toFixed(1)} saídas/dezena</p>
-      </div>
-      <div class="kpi-item">
-        <p class="kpi-title">Líder Projetada no Horizonte</p>
-        <p class="kpi-num">Dezena ${pad2(leaderProj.num)} (+${leaderProj.addCount.toFixed(1)}x)</p>
-        <p class="kpi-sub">Total estimado no #${intFmt.format(targetConcurso)}: ${Math.round(leaderProj.futureTotal)} sorteios (amplitude: ${spreadFuture})</p>
-      </div>
-      <div class="kpi-item">
-        <p class="kpi-title">Chance de Sair ao Menos 1x em +${intFmt.format(H)} Jogos</p>
-        <p class="kpi-num">${uniformProbH >= 99.95 ? "> 99,9%" : uniformProbH.toFixed(1).replace(".", ",") + "%"}</p>
-        <p class="kpi-sub">Em +10 jogos: 65,1% | Em +50 jogos: 99,5%</p>
-      </div>
-    `;
-
-    renderMultiScaleSVG(stats, mode);
-
-    // Gráfico 2: Top 12 dezenas projetadas no horizonte +H
-    document.getElementById("title-extrap-top").textContent =
-      `Quais dezenas terão mais sorteios adicionais nos próximos +${intFmt.format(H)} concursos?`;
-    const top12 = sortedByAdd.slice(0, 12);
-    const maxAdd = Math.max(...top12.map((x) => x.addCount), 1);
-    document.getElementById("extrap-top-chart").innerHTML = top12
-      .map((item) => {
-        const pct = Math.max(6, Math.round((item.addCount / maxAdd) * 100));
-        const diff = item.addCount - uniformExpected;
-        const sign = diff >= 0 ? "+" : "";
-        return `
-          <div class="bar-row">
-            <span>Dez. <strong>${pad2(item.num)}</strong></span>
-            <div class="bar-track" aria-hidden="true">
-              <div class="bar-fill" style="width:${pct}%"></div>
+    const gridEl = document.getElementById("extrap-grid");
+    if (gridEl) {
+      const topSet = new Set(topProj);
+      gridEl.innerHTML = sortedByAdd
+        .map((x) => `
+          <div class="extrap-card ${topSet.has(x.num) ? "top" : ""}">
+            <div class="extrap-head">
+              <span class="extrap-num">${pad2(x.num)}</span>
+              <span class="badge ${topSet.has(x.num) ? "win" : "hit"}">+${x.addCount.toFixed(1)} bolas</span>
             </div>
-            <span>+${item.addCount.toFixed(1)} (${sign}${diff.toFixed(1)})</span>
-          </div>
-        `;
-      })
-      .join("");
-
-    // Gráfico 3: Pressão de ciclo e probabilidade acumulada das dezenas atrasadas
-    document.getElementById("title-extrap-prob").textContent =
-      `Como as 10 dezenas mais atrasadas se comportam nos próximos +10, +50 e +${intFmt.format(H)} jogos?`;
-    const topDelayedProj = rawProjections
-      .slice()
-      .sort((a, b) => b.cyclePressure - a.cyclePressure)
-      .slice(0, 10);
-    const maxPressure = Math.max(...topDelayedProj.map((x) => x.cyclePressure), 1);
-    document.getElementById("extrap-cycle-chart").innerHTML = topDelayedProj
-      .map((item) => {
-        const pct = Math.max(8, Math.round((item.cyclePressure / maxPressure) * 100));
-        const p10 = (item.probAtLeastOneIn10 * 100).toFixed(0);
-        return `
-          <div class="bar-row">
-            <span>Dez. <strong>${pad2(item.num)}</strong></span>
-            <div class="bar-track" aria-hidden="true">
-              <div class="bar-fill" style="width:${pct}%"></div>
+            <div style="font-size:0.8125rem;color:var(--text-muted);margin-top:6px;">
+              Histórico: <strong>${x.histCount}x</strong> | Atraso: <strong>${x.delay}</strong> jogos
             </div>
-            <span>${item.cyclePressure.toFixed(1)}x ciclo (${p10}%/10j | +${item.addCount.toFixed(0)})</span>
           </div>
-        `;
-      })
-      .join("");
-
-    // Gráfico 4: Extrapolação de Paridade para +H jogos
-    document.getElementById("title-extrap-parity").textContent =
-      `Quantos dos próximos +${intFmt.format(H)} concursos terão cada proporção de Pares e Ímpares?`;
-    const parityRows = [
-      { label: "3P / 3I", evens: 3 },
-      { label: "4P / 2I", evens: 4 },
-      { label: "2P / 4I", evens: 2 },
-      { label: "5P / 1I", evens: 5 },
-      { label: "1P / 5I", evens: 1 },
-      { label: "6P / 0I", evens: 6 },
-      { label: "0P / 6I", evens: 0 }
-    ];
-    const parityCountsH = parityRows.map((r) => {
-      const val =
-        mode === "montecarlo" && mcRun
-          ? mcRun.parityProjected[r.evens] || 0
-          : ((stats.parityDist[r.evens] || 0) / N) * H;
-      return { label: r.label, val };
-    });
-    const maxParityH = Math.max(...parityCountsH.map((x) => x.val), 1);
-    document.getElementById("extrap-parity-chart").innerHTML = parityCountsH
-      .map((r) => {
-        const pct = Math.max(3, Math.round((r.val / maxParityH) * 100));
-        return `
-          <div class="bar-row">
-            <span><strong>${r.label}</strong></span>
-            <div class="bar-track" aria-hidden="true">
-              <div class="bar-fill" style="width:${pct}%"></div>
-            </div>
-            <span>+${r.val.toFixed(1)} jogos</span>
-          </div>
-        `;
-      })
-      .join("");
-
-    // Gráfico 5: Extrapolação por Linhas do Volante em +H jogos
-    document.getElementById("title-extrap-rows").textContent =
-      `Quantas dezenas sairão em cada linha do volante nos próximos +${intFmt.format(H)} jogos?`;
-    const rowLabels = ["01 a 10", "11 a 20", "21 a 30", "31 a 40", "41 a 50", "51 a 60"];
-    const totalHistBalls = N * 6;
-    const rowVals = rowLabels.map((label, idx) => {
-      const val =
-        mode === "montecarlo" && mcRun
-          ? mcRun.rowProjected[idx]
-          : (stats.rowCounts[idx] / totalHistBalls) * (H * 6);
-      return { label, val };
-    });
-    const maxRowVal = Math.max(...rowVals.map((x) => x.val), 1);
-    document.getElementById("extrap-rows-chart").innerHTML = rowVals
-      .map((r) => {
-        const pct = Math.max(6, Math.round((r.val / maxRowVal) * 100));
-        return `
-          <div class="bar-row">
-            <span><strong>${r.label}</strong></span>
-            <div class="bar-track" aria-hidden="true">
-              <div class="bar-fill" style="width:${pct}%"></div>
-            </div>
-            <span>+${Math.round(r.val)} bolas</span>
-          </div>
-        `;
-      })
-      .join("");
+        `)
+        .join("");
+    }
   }
-
-  // Tabela oficial de reajustes da aposta simples (6 dezenas) da Mega-Sena (Caixa)
-  const OFFICIAL_PRICE_ERAS = [
-    { id: "1996-2003", label: "Mar/1996 a Ago/2003", startYM: 1996 * 12 + 3, endYM: 2003 * 12 + 8, unitPrice: 1.0 },
-    { id: "2003-2005", label: "Set/2003 a Jan/2005 (+50%)", startYM: 2003 * 12 + 9, endYM: 2005 * 12 + 1, unitPrice: 1.5 },
-    { id: "2005-2014", label: "Fev/2005 a Abr/2014 (+33%)", startYM: 2005 * 12 + 2, endYM: 2014 * 12 + 4, unitPrice: 2.0 },
-    { id: "2014-2015", label: "Mai/2014 a Abr/2015 (+25%)", startYM: 2014 * 12 + 5, endYM: 2015 * 12 + 4, unitPrice: 2.5 },
-    { id: "2015-2019", label: "Mai/2015 a Out/2019 (+40%)", startYM: 2015 * 12 + 5, endYM: 2019 * 12 + 10, unitPrice: 3.5 },
-    { id: "2019-2023", label: "Nov/2019 a Abr/2023 (+28,6%)", startYM: 2019 * 12 + 11, endYM: 2023 * 12 + 4, unitPrice: 4.5 },
-    { id: "2023-2025", label: "Mai/2023 a Jun/2025 (+11,1%)", startYM: 2023 * 12 + 5, endYM: 2025 * 12 + 6, unitPrice: 5.0 },
-    { id: "2025-2026", label: "Jul/2025 a Out/2026 (+20%)", startYM: 2025 * 12 + 7, endYM: 2026 * 12 + 10, unitPrice: 6.0 }
-  ];
 
   const INVESTMENT_OPTIONS = [
-    {
-      id: "poupanca",
-      name: "Poupança Tradicional",
-      annualRate: 0.0617,
-      profile: "Conservador | Isenta de IR, liquidez imediata, menor rentabilidade real"
-    },
-    {
-      id: "ipca",
-      name: "Tesouro IPCA+ (Inflação + Juros Reais)",
-      annualRate: 0.095,
-      profile: "Moderado/Conservador | Protege o poder de compra no longo prazo (~9,5% a.a. nominal)"
-    },
-    {
-      id: "selic_cdi",
-      name: "Tesouro Selic / CDB 100% do CDI",
-      annualRate: 0.1075,
-      profile: "Conservador | Liquidez diária, segurança soberana/FGC (~10,75% a.a. líquido)"
-    },
-    {
-      id: "lci_fiis",
-      name: "LCI/LCA Isentas ou Fundos Imobiliários (FIIs)",
-      annualRate: 0.12,
-      profile: "Moderado | Renda isenta de IR com reinvestimento mensal de proventos (~12,0% a.a.)"
-    },
-    {
-      id: "diversificada",
-      name: "Carteira Diversificada (Renda Fixa + ETFs Globais)",
-      annualRate: 0.135,
-      profile: "Arrojado/Longo Prazo | Multiplicação patrimonial com juros compostos (~13,5% a.a.)"
-    }
+    { id: "selic_cdi", name: "Tesouro Selic / 100% CDI", annualRate: 0.105 },
+    { id: "ipca_mais", name: "Tesouro IPCA+ (IPCA + 6%)", annualRate: 0.102 },
+    { id: "cdb_prefixado", name: "CDB Prefixado (11,5% a.a.)", annualRate: 0.115 },
+    { id: "poupanca", name: "Caderneta de Poupança (TR + 6,17%)", annualRate: 0.068 }
   ];
 
-  function getOfficialUnitPriceForYM(ym) {
-    for (let i = 0; i < OFFICIAL_PRICE_ERAS.length; i++) {
-      const era = OFFICIAL_PRICE_ERAS[i];
-      if (ym >= era.startYM && ym <= era.endYM) return era;
-    }
-    return OFFICIAL_PRICE_ERAS[OFFICIAL_PRICE_ERAS.length - 1];
-  }
-
   function populateSpendYears() {
+    const cfg = getCurrentLottery();
     const sel = document.getElementById("spend-start-year");
     if (!sel) return;
     sel.innerHTML = "";
-    for (let y = 2026; y >= 1996; y--) {
+    const startYr = cfg.startYear || 1996;
+    for (let y = 2026; y >= startYr; y--) {
       const opt = document.createElement("option");
       opt.value = String(y);
       opt.textContent = `${y} (${2026 - y === 0 ? "ano atual" : "há " + (2026 - y) + (2026 - y === 1 ? " ano" : " anos")})`;
@@ -861,29 +833,45 @@
     }
   }
 
+  function populateSpendBetSizes() {
+    const cfg = getCurrentLottery();
+    const sel = document.getElementById("spend-bet-size");
+    if (!sel) return;
+    sel.innerHTML = "";
+    cfg.allowedSizes.forEach((sz) => {
+      const opt = document.createElement("option");
+      opt.value = String(sz);
+      const info = cfg.betTable[sz] || { combos: 1 };
+      opt.textContent = `${sz} dezenas (${info.combos}x valor base)`;
+      if (sz === state.spendBetSize) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
   function renderSpendingSimulator() {
+    const cfg = getCurrentLottery();
     const kpiEl = document.getElementById("spend-kpi-strip");
     if (!kpiEl) return;
 
     const betsPerMonth = Math.max(1, Math.min(500, Number(state.spendBetsPerMonth) || 1));
     const k = state.spendBetSize;
-    const combosPerBet = BET_TABLE[k] ? BET_TABLE[k].combos : 1;
+    const combosPerBet = (cfg.betTable[k] && cfg.betTable[k].combos) || 1;
 
-    const endYM = 2026 * 12 + 10; // Outubro/2026
+    const endYM = 2026 * 12 + 10;
+    const startYr = cfg.startYear || 1996;
     let startYM;
     if (state.spendTimeMode === "sinceYear") {
-      const yr = Math.max(1996, Math.min(2026, Number(state.spendStartYear) || 2015));
-      startYM = yr === 1996 ? 1996 * 12 + 3 : yr * 12 + 1;
+      const yr = Math.max(startYr, Math.min(2026, Number(state.spendStartYear) || 2015));
+      startYM = yr === startYr ? startYr * 12 + 3 : yr * 12 + 1;
     } else {
       const yrs = Math.max(1, Math.min(30, Number(state.spendYearsCount) || 10));
-      startYM = Math.max(1996 * 12 + 3, endYM - yrs * 12 + 1);
+      startYM = Math.max(startYr * 12 + 3, endYM - yrs * 12 + 1);
     }
 
     const totalMonths = Math.max(1, endYM - startYM + 1);
     const totalBetsPlaced = totalMonths * betsPerMonth;
     const totalSimpleEquiv = totalBetsPlaced * combosPerBet;
 
-    // Simula mês a mês os gastos considerando reajustes e capitaliza cada opção de investimento
     const invBalances = {};
     const invMonthlyRate = {};
     INVESTMENT_OPTIONS.forEach((opt) => {
@@ -891,292 +879,39 @@
       invMonthlyRate[opt.id] = Math.pow(1 + opt.annualRate, 1 / 12) - 1;
     });
 
-    const cdiRate = invMonthlyRate["selic_cdi"];
     let totalSpent = 0;
-    let firstMonthCost = 0;
-    let lastMonthCost = 0;
-    const eraBuckets = new Map();
-
-    const initialOfficial = getOfficialUnitPriceForYM(startYM).unitPrice;
+    const unitPrice = cfg.basePrice;
 
     for (let mIdx = 0; mIdx < totalMonths; mIdx++) {
-      const currentYM = startYM + mIdx;
-      let unitPrice;
-      let eraKey;
-      let eraLabel;
-
-      if (state.spendAdjustMode === "official") {
-        const eraObj = getOfficialUnitPriceForYM(currentYM);
-        unitPrice = eraObj.unitPrice;
-        eraKey = eraObj.id;
-        eraLabel = eraObj.label;
-      } else {
-        const cycleIdx = Math.floor(mIdx / 36);
-        unitPrice = Number((initialOfficial * Math.pow(1.25, cycleIdx)).toFixed(2));
-        const startYrCycle = Math.floor((startYM + cycleIdx * 36 - 1) / 12);
-        const endYrCycle = Math.min(2026, startYrCycle + 3);
-        eraKey = "cycle-" + cycleIdx;
-        eraLabel = `${ cycleIdx === 0 ? "Valor Inicial" : `${cycleIdx}º Reajuste (+25%)` } (${startYrCycle} a ${endYrCycle})`;
-      }
-
       const singleBetCost = unitPrice * combosPerBet;
       const monthSpend = singleBetCost * betsPerMonth;
-
-      if (mIdx === 0) firstMonthCost = monthSpend;
-      if (mIdx === totalMonths - 1) lastMonthCost = monthSpend;
-
       totalSpent += monthSpend;
 
       INVESTMENT_OPTIONS.forEach((opt) => {
         invBalances[opt.id] = (invBalances[opt.id] + monthSpend) * (1 + invMonthlyRate[opt.id]);
       });
-
-      const monthsRemaining = totalMonths - 1 - mIdx;
-      const monthFutureCDI = monthSpend * Math.pow(1 + cdiRate, monthsRemaining + 1);
-
-      if (!eraBuckets.has(eraKey)) {
-        eraBuckets.set(eraKey, {
-          label: eraLabel,
-          unitPrice,
-          singleBetCost,
-          months: 0,
-          spent: 0,
-          cdiValueToday: 0
-        });
-      }
-      const b = eraBuckets.get(eraKey);
-      b.months += 1;
-      b.spent += monthSpend;
-      b.cdiValueToday += monthFutureCDI;
     }
 
-    // Probabilidade acumulada de acertar a Sena ao menos 1 vez no período (1 em 50.063.860 por aposta simples)
-    const pSingleSena = 1 / 50063860;
-    const probWinSenaOnce = 1 - Math.pow(1 - pSingleSena, totalSimpleEquiv);
-    const probPct = (probWinSenaOnce * 100).toFixed(4).replace(".", ",");
-
+    const pSingleJackpot = 1 / comb(cfg.maxNum, cfg.drawCount);
+    const probWinOnce = 1 - Math.pow(1 - pSingleJackpot, totalSimpleEquiv);
+    const probPct = (probWinOnce * 100).toFixed(4).replace(".", ",");
     const cdiTotal = invBalances["selic_cdi"];
-    const cdiInterest = cdiTotal - totalSpent;
-    const priceGrowthPct = firstMonthCost > 0 ? Math.round(((lastMonthCost - firstMonthCost) / firstMonthCost) * 100) : 0;
 
     kpiEl.innerHTML = `
       <div class="kpi-item">
         <p class="kpi-title">Total Gasto em Apostas (${totalMonths} meses)</p>
         <p class="kpi-num" style="color:var(--danger-text);">${brlFmt.format(totalSpent)}</p>
-        <p class="kpi-sub">${intFmt.format(totalBetsPlaced)} apostas de ${k} dez. (${intFmt.format(totalSimpleEquiv)} jogos simples)</p>
+        <p class="kpi-sub">${intFmt.format(totalBetsPlaced)} apostas de ${k} dezenas na ${cfg.name}</p>
       </div>
       <div class="kpi-item">
-        <p class="kpi-title">Impacto dos Reajustes no Bolso</p>
-        <p class="kpi-num">${brlFmt.format(firstMonthCost)}/mês -> ${brlFmt.format(lastMonthCost)}/mês</p>
-        <p class="kpi-sub">Alta de +${priceGrowthPct}% no custo mensal das mesmas ${betsPerMonth} apostas</p>
-      </div>
-      <div class="kpi-item">
-        <p class="kpi-title">Patrimônio em Tesouro Selic / 100% CDI</p>
+        <p class="kpi-title">Patrimônio se Investido em CDI</p>
         <p class="kpi-num" style="color:var(--success-text);">${brlFmt.format(cdiTotal)}</p>
-        <p class="kpi-sub">Lucro só de juros: <strong>+${brlFmt.format(cdiInterest)}</strong> sobre o valor apostado</p>
+        <p class="kpi-sub">Lucro de juros compostos: <strong>+${brlFmt.format(cdiTotal - totalSpent)}</strong></p>
       </div>
       <div class="kpi-item">
-        <p class="kpi-title">Chance Acumulada de Ganhar a Sena</p>
+        <p class="kpi-title">Chance Acumulada de Prêmio Máximo</p>
         <p class="kpi-num">${probPct}%</p>
-        <p class="kpi-sub">Probabilidade de NÃO ganhar a Sena no período: ${(100 - probWinSenaOnce * 100).toFixed(4).replace(".", ",")}%</p>
-      </div>
-    `;
-
-    // Gráfico comparativo de investimentos vs Gasto na Loteria
-    const maxInvVal = Math.max(totalSpent, ...INVESTMENT_OPTIONS.map((o) => invBalances[o.id]), 1);
-    const chartRows = [
-      {
-        label: "Gasto Loteria",
-        total: totalSpent,
-        pct: Math.max(6, Math.round((totalSpent / maxInvVal) * 100)),
-        isBase: true
-      },
-      ...INVESTMENT_OPTIONS.map((opt) => ({
-        label: opt.name.split(" ")[0] + " (" + (opt.annualRate * 100).toFixed(1).replace(".", ",") + "%)",
-        fullName: opt.name,
-        profile: opt.profile,
-        annualRate: opt.annualRate,
-        total: invBalances[opt.id],
-        interest: invBalances[opt.id] - totalSpent,
-        pct: Math.max(6, Math.round((invBalances[opt.id] / maxInvVal) * 100)),
-        isBase: false
-      }))
-    ];
-
-    document.getElementById("spend-investments-chart").innerHTML = chartRows
-      .map(
-        (r) => `
-        <div class="bar-row">
-          <span><strong>${r.label}</strong></span>
-          <div class="bar-track" aria-hidden="true">
-            <div class="bar-fill" style="width:${r.pct}%;background:${r.isBase ? "var(--danger-text)" : "var(--accent)"};"></div>
-          </div>
-          <span>${brlFmt.format(r.total)}</span>
-        </div>
-      `
-      )
-      .join("");
-
-    document.getElementById("spend-investments-cards").innerHTML = chartRows
-      .filter((r) => !r.isBase)
-      .map((r) => {
-        const mult = totalSpent > 0 ? (r.total / totalSpent).toFixed(2).replace(".", ",") : "1,00";
-        return `
-          <div class="extrato-row-card">
-            <div class="extrato-row-top">
-              <span><strong>${r.fullName}</strong></span>
-              <span class="badge-status">${mult}x o valor gasto</span>
-            </div>
-            <div class="extrato-row-mid">${r.profile}</div>
-            <div class="extrato-row-bottom">
-              <span>Total Acumulado: <strong class="extrato-value gain" style="font-size:0.875rem;">${brlFmt.format(r.total)}</strong></span>
-              <span>Juros Ganhos: <strong>+${brlFmt.format(r.interest)}</strong></span>
-            </div>
-          </div>
-        `;
-      })
-      .join("");
-
-    const erasArray = Array.from(eraBuckets.values());
-    document.getElementById("spend-eras-list").innerHTML = erasArray
-      .map(
-        (era) => `
-        <div class="extrato-row-card">
-          <div class="extrato-row-top">
-            <span><strong>${era.label}</strong></span>
-            <span class="badge-status">${era.months} ${era.months === 1 ? "mês" : "meses"}</span>
-          </div>
-          <div class="extrato-row-mid">
-            Aposta simples: ${brlFmt.format(era.unitPrice)} | Sua aposta (${k} dez.): <strong>${brlFmt.format(era.singleBetCost)}</strong> (${betsPerMonth}x/mês = ${brlFmt.format(era.singleBetCost * betsPerMonth)}/mês)
-          </div>
-          <div class="extrato-row-bottom">
-            <span>Gasto na faixa: <strong class="extrato-value loss" style="font-size:0.8125rem;">-${brlFmt.format(era.spent)}</strong></span>
-            <span>No CDI até hoje: <strong class="extrato-value gain" style="font-size:0.8125rem;">${brlFmt.format(era.cdiValueToday)}</strong></span>
-          </div>
-        </div>
-      `
-      )
-      .join("");
-  }
-
-  function renderMultiScaleSVG(stats, mode) {
-    const container = document.getElementById("extrap-svg-container");
-    const N = stats.totalDraws;
-    const horizons = [0, 50, 500, 1000, 5000];
-    const xLabels = ["Atual (3.076)", "+50 (Dez.)", "+500 (Cent.)", "+1.000 (Mil.)", "+5.000 (Mil.)"];
-
-    const leader = stats.byMost[0];
-    const second = stats.byMost[1];
-    const coldest = stats.byLeast[0];
-
-    function projectAt(item, h) {
-      const p = item.count / N;
-      if (mode === "reversion") {
-        const deficit = N * 0.1 - item.count;
-        return Math.round(item.count + 0.1 * h + deficit * Math.min(1, h / (N * 0.8)) * 0.55);
-      }
-      return Math.round(item.count + p * h);
-    }
-
-    const seriesLeader = horizons.map((h) => projectAt(leader, h));
-    const seriesSecond = horizons.map((h) => projectAt(second, h));
-    const seriesUniform = horizons.map((h) => Math.round((N + h) * 0.1));
-    const seriesColdest = horizons.map((h) => projectAt(coldest, h));
-
-    const allVals = [...seriesLeader, ...seriesSecond, ...seriesUniform, ...seriesColdest];
-    const minY = Math.min(...allVals) - 20;
-    const maxY = Math.max(...allVals) + 30;
-
-    const width = 760;
-    const height = 250;
-    const padL = 56;
-    const padR = 32;
-    const padT = 24;
-    const padB = 42;
-    const plotW = width - padL - padR;
-    const plotH = height - padT - padB;
-
-    function xPos(idx) {
-      return Math.round(padL + (idx / (horizons.length - 1)) * plotW);
-    }
-
-    function yPos(val) {
-      const ratio = (val - minY) / Math.max(1, maxY - minY);
-      return Math.round(padT + plotH - ratio * plotH);
-    }
-
-    function polyPoints(arr) {
-      return arr.map((v, i) => `${xPos(i)},${yPos(v)}`).join(" ");
-    }
-
-    const gridYSteps = [0, 0.25, 0.5, 0.75, 1].map((r) => Math.round(minY + r * (maxY - minY)));
-
-    const gridLinesSVG = gridYSteps
-      .map((gv) => {
-        const y = yPos(gv);
-        return `
-          <line x1="${padL}" y1="${y}" x2="${width - padR}" y2="${y}" stroke="var(--border)" stroke-dasharray="3,3" stroke-width="1" />
-          <text x="${padL - 8}" y="${y + 4}" text-anchor="end" fill="var(--text-muted)" font-size="11" font-family="monospace">${gv}</text>
-        `;
-      })
-      .join("");
-
-    const xAxisLabelsSVG = xLabels
-      .map((lbl, idx) => {
-        const x = xPos(idx);
-        return `
-          <line x1="${x}" y1="${padT}" x2="${x}" y2="${height - padB}" stroke="var(--border)" stroke-width="0.75" />
-          <text x="${x}" y="${height - 14}" text-anchor="middle" fill="var(--text)" font-size="11" font-weight="700" font-family="monospace">${lbl}</text>
-        `;
-      })
-      .join("");
-
-    const leaderDots = seriesLeader
-      .map(
-        (v, i) => `
-        <circle cx="${xPos(i)}" cy="${yPos(v)}" r="4.5" fill="var(--accent)" />
-        <text x="${xPos(i)}" y="${yPos(v) - 8}" text-anchor="middle" fill="var(--text)" font-size="10" font-weight="700" font-family="monospace">${v}</text>
-      `
-      )
-      .join("");
-
-    const coldestDots = seriesColdest
-      .map(
-        (v, i) => `
-        <circle cx="${xPos(i)}" cy="${yPos(v)}" r="4" fill="var(--danger-text)" />
-        <text x="${xPos(i)}" y="${yPos(v) + 14}" text-anchor="middle" fill="var(--danger-text)" font-size="10" font-weight="700" font-family="monospace">${v}</text>
-      `
-      )
-      .join("");
-
-    container.innerHTML = `
-      <svg class="extrap-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
-        ${gridLinesSVG}
-        ${xAxisLabelsSVG}
-        <polyline fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-dasharray="6,4" points="${polyPoints(seriesUniform)}" />
-        <polyline fill="none" stroke="var(--border-strong)" stroke-width="2" points="${polyPoints(seriesSecond)}" />
-        <polyline fill="none" stroke="var(--danger-text)" stroke-width="2.5" points="${polyPoints(seriesColdest)}" />
-        <polyline fill="none" stroke="var(--accent)" stroke-width="3" points="${polyPoints(seriesLeader)}" />
-        ${leaderDots}
-        ${coldestDots}
-      </svg>
-      <div class="svg-legend">
-        <span class="svg-legend-item">
-          <span class="legend-swatch" style="background:var(--accent);"></span>
-          <strong>Líder (Dez. ${pad2(leader.num)}):</strong> ${seriesLeader[0]} -> ${seriesLeader[1]} (+50) -> ${seriesLeader[2]} (+500) -> ${seriesLeader[3]} (+1k) -> ${seriesLeader[4]} (+5k)
-        </span>
-        <span class="svg-legend-item">
-          <span class="legend-swatch" style="background:var(--border-strong);"></span>
-          <strong>2ª Líder (Dez. ${pad2(second.num)}):</strong> ${seriesSecond[0]} -> ${seriesSecond[4]} (+5k)
-        </span>
-        <span class="svg-legend-item">
-          <span class="legend-swatch" style="background:var(--text-muted);"></span>
-          <strong>Média Teórica (10%):</strong> ${seriesUniform[0]} -> ${seriesUniform[4]} (+5k)
-        </span>
-        <span class="svg-legend-item">
-          <span class="legend-swatch" style="background:var(--danger-text);"></span>
-          <strong>Lanterna (Dez. ${pad2(coldest.num)}):</strong> ${seriesColdest[0]} -> ${seriesColdest[1]} (+50) -> ${seriesColdest[2]} (+500) -> ${seriesColdest[3]} (+1k) -> ${seriesColdest[4]} (+5k)
-        </span>
+        <p class="kpi-sub">1 em ${intFmt.format(Math.round(1 / (probWinOnce || 1e-12)))} no período</p>
       </div>
     `;
   }
@@ -1192,9 +927,7 @@
         const matchDate = d.d.toLowerCase().includes(q);
         if (!matchConcurso && !matchDate) return false;
       }
-      if (numFilter && !d.n.includes(numFilter)) {
-        return false;
-      }
+      if (numFilter && !d.n.includes(numFilter)) return false;
       if (status === "winners" && d.a) return false;
       if (status === "accumulated" && !d.a) return false;
       return true;
@@ -1205,29 +938,31 @@
   }
 
   function renderDrawsTable() {
+    const cfg = getCurrentLottery();
     const tbody = document.getElementById("draws-tbody");
     const countLabel = document.getElementById("draws-count-label");
     const pageInfo = document.getElementById("page-info");
     const prevBtn = document.getElementById("prev-page");
     const nextBtn = document.getElementById("next-page");
 
+    const thMain = document.getElementById("th-prize-main");
+    const thSub = document.getElementById("th-prize-sub");
+    if (thMain && thSub) {
+      thMain.textContent = cfg.tablePrizeCols.main;
+      thSub.textContent = cfg.tablePrizeCols.sub;
+    }
+
     if (state.loading) {
-      tbody.innerHTML = `<tr><td colspan="6">Carregando histórico de concursos...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6">Carregando histórico oficial da ${cfg.name}...</td></tr>`;
       return;
     }
 
     const filtered = getFilteredDraws();
     const total = filtered.length;
-    countLabel.textContent = `Exibindo ${intFmt.format(total)} de ${intFmt.format(state.draws.length)} concursos`;
+    countLabel.textContent = `Exibindo ${intFmt.format(total)} de ${intFmt.format(state.draws.length)} concursos da ${cfg.name}`;
 
     if (total === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6">
-            <strong>Nenhum concurso encontrado para este filtro.</strong> Clique em "Limpar filtros" para exibir todos os ${intFmt.format(state.draws.length)} sorteios novamente.
-          </td>
-        </tr>
-      `;
+      tbody.innerHTML = `<tr><td colspan="6">Nenhum concurso encontrado para os filtros selecionados.</td></tr>`;
       pageInfo.textContent = "Página 0 de 0";
       prevBtn.disabled = true;
       nextBtn.disabled = true;
@@ -1243,127 +978,93 @@
 
     tbody.innerHTML = slice
       .map((d) => {
-        const sena = (d.p && d.p["6"]) || { g: 0, v: 0 };
-        const quina = (d.p && d.p["5"]) || { g: 0, v: 0 };
-        const quadra = (d.p && d.p["4"]) || { g: 0, v: 0 };
-
         const ballsHTML = d.n
           .map((n) => `<span class="ball ${state.selectedNumbers.has(n) ? "hit" : ""}">${pad2(n)}</span>`)
           .join("");
 
-        const senaText =
-          sena.g > 0
-            ? `<strong>${sena.g} ganhador(es)</strong><br><small>${brlFmt.format(sena.v)}</small>`
-            : `<span class="badge-status">Acumulou (${brlFmt.format(sena.v)})</span>`;
+        const mainTierKey = cfg.tiers[0].key;
+        const mainPz = (d.p && d.p[mainTierKey]) || { g: 0, v: 0 };
+        const mainWon = mainPz.g > 0;
+
+        const mainPrizeHTML = `
+          <span class="badge ${mainWon ? "win" : "acum"}">${mainWon ? `${mainPz.g} ${mainPz.g === 1 ? "ganhador" : "ganhadores"}` : "Acumulou"}</span>
+          <span class="prize-val">${brlFmt.format(mainPz.v)}</span>
+        `;
+
+        const subPrizesHTML = cfg.tiers.slice(1, 3).map((t) => {
+          const pz = (d.p && d.p[t.key]) || { g: 0, v: 0 };
+          return `<span style="display:block;font-size:0.8125rem;">${t.name}: <strong>${intFmt.format(pz.g)}</strong> (${brlFmt.format(pz.v)})</span>`;
+        }).join("");
 
         return `
           <tr>
-            <td data-label="Concurso"><strong>#${d.c}</strong></td>
-            <td data-label="Data">${d.d}</td>
-            <td data-label="Dezenas Sorteadas"><div class="balls-row">${ballsHTML}</div></td>
-            <td data-label="Sena (6 acertos)">${senaText}</td>
-            <td data-label="Quina e Quadra"><small>Quina (${quina.g}): ${brlFmt.format(quina.v)}<br>Quadra (${quadra.g}): ${brlFmt.format(quadra.v)}</small></td>
-            <td data-label="Ação">
-              <button type="button" class="btn open-detail-btn" data-concurso="${d.c}">
-                Ver rateio / Simular
-              </button>
-            </td>
+            <td><strong>#${d.c}</strong></td>
+            <td>${d.d}</td>
+            <td><div class="balls-row">${ballsHTML}</div></td>
+            <td>${mainPrizeHTML}</td>
+            <td>${subPrizesHTML}</td>
+            <td><button type="button" class="btn btn-sm btn-open-draw" data-concurso="${d.c}">Detalhes</button></td>
           </tr>
         `;
       })
       .join("");
 
-    pageInfo.textContent = `Página ${state.page} de ${intFmt.format(totalPages)}`;
+    pageInfo.textContent = `Página ${state.page} de ${totalPages}`;
     prevBtn.disabled = state.page <= 1;
     nextBtn.disabled = state.page >= totalPages;
 
-    tbody.querySelectorAll(".open-detail-btn").forEach((btn) => {
-      btn.addEventListener("click", () => openContestModal(Number(btn.dataset.concurso)));
+    tbody.querySelectorAll(".btn-open-draw").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        openModalForDraw(Number(btn.dataset.concurso));
+      });
     });
   }
 
-  let lastFocusedTrigger = null;
-
-  function openContestModal(concursoNum) {
-    const d = state.draws.find((x) => x.c === concursoNum);
+  function openModalForDraw(c) {
+    const cfg = getCurrentLottery();
+    const d = state.draws.find((x) => x.c === c);
     if (!d) return;
-    lastFocusedTrigger = document.activeElement;
+    const modal = document.getElementById("contest-modal");
+    const title = document.getElementById("modal-title");
+    const body = document.getElementById("modal-body");
 
-    const sena = (d.p && d.p["6"]) || { g: 0, v: 0 };
-    const quina = (d.p && d.p["5"]) || { g: 0, v: 0 };
-    const quadra = (d.p && d.p["4"]) || { g: 0, v: 0 };
+    title.textContent = `${cfg.name} - Concurso #${d.c} (${d.d})`;
+    const ballsHTML = d.n.map((n) => `<span class="ball ${state.selectedNumbers.has(n) ? "hit" : ""}">${pad2(n)}</span>`).join(" ");
 
-    const modalTitle = document.getElementById("modal-title");
-    const modalBody = document.getElementById("modal-body");
-    modalTitle.textContent = `Concurso #${d.c} (${d.d})`;
+    const prizesHTML = cfg.tiers.map((t) => {
+      const pz = (d.p && d.p[t.key]) || { g: 0, v: 0 };
+      return `
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+          <span><strong>${t.name}:</strong></span>
+          <span>${intFmt.format(pz.g)} apostas &mdash; <strong>${brlFmt.format(pz.v)}</strong></span>
+        </div>
+      `;
+    }).join("");
 
-    modalBody.innerHTML = `
-      <p style="margin:0 0 8px 0;"><strong>Dezenas sorteadas:</strong></p>
-      <div class="balls-row" style="margin-bottom:16px;">
-        ${d.n.map((n) => `<span class="ball hit">${pad2(n)}</span>`).join("")}
+    body.innerHTML = `
+      <div style="margin-bottom:14px;">
+        <p style="margin:0 0 8px;"><strong>Dezenas sorteadas:</strong></p>
+        <div class="balls-row">${ballsHTML}</div>
       </div>
-      <div class="table-wrap" style="margin-bottom:16px;">
-        <table class="draws-table">
-          <thead>
-            <tr>
-              <th>Faixa</th>
-              <th>Ganhadores</th>
-              <th>Prêmio Individual</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td data-label="Faixa"><strong>6 acertos (Sena)</strong></td>
-              <td data-label="Ganhadores">${sena.g > 0 ? intFmt.format(sena.g) : "0 (Acumulou)"}</td>
-              <td data-label="Prêmio Individual">${brlFmt.format(sena.v)}</td>
-            </tr>
-            <tr>
-              <td data-label="Faixa"><strong>5 acertos (Quina)</strong></td>
-              <td data-label="Ganhadores">${intFmt.format(quina.g)}</td>
-              <td data-label="Prêmio Individual">${brlFmt.format(quina.v)}</td>
-            </tr>
-            <tr>
-              <td data-label="Faixa"><strong>4 acertos (Quadra)</strong></td>
-              <td data-label="Ganhadores">${intFmt.format(quadra.g)}</td>
-              <td data-label="Prêmio Individual">${brlFmt.format(quadra.v)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;">
-        <button type="button" class="btn btn-primary" id="modal-load-bet">
-          Carregar estas 6 dezenas no Simulador
-        </button>
+      <div>
+        <p style="margin:0 0 8px;"><strong>Premiação Oficial:</strong></p>
+        ${prizesHTML}
       </div>
     `;
 
-    const backdrop = document.getElementById("contest-modal");
-    backdrop.hidden = false;
-    const closeBtn = document.getElementById("modal-close-btn");
-    closeBtn.focus();
-
-    document.getElementById("modal-load-bet").addEventListener("click", () => {
-      state.betSize = 6;
-      state.selectedNumbers = new Set(d.n);
-      closeModal();
-      syncVolanteUI();
-      renderSimulation();
-      renderDrawsTable();
-      document.getElementById("simulador").scrollIntoView({ behavior: "smooth" });
-    });
+    modal.hidden = false;
   }
 
   function closeModal() {
-    const backdrop = document.getElementById("contest-modal");
-    backdrop.hidden = true;
-    if (lastFocusedTrigger && typeof lastFocusedTrigger.focus === "function") {
-      lastFocusedTrigger.focus();
-    }
+    document.getElementById("contest-modal").hidden = true;
   }
 
   function populateFilterNumberSelect() {
+    const cfg = getCurrentLottery();
     const sel = document.getElementById("filter-number");
-    for (let i = 1; i <= 60; i++) {
+    if (!sel) return;
+    sel.innerHTML = `<option value="">Todas as dezenas (01 a ${pad2(cfg.maxNum)})</option>`;
+    for (let i = 1; i <= cfg.maxNum; i++) {
       const opt = document.createElement("option");
       opt.value = String(i);
       opt.textContent = "Dezena " + pad2(i);
@@ -1371,12 +1072,27 @@
     }
   }
 
-  let baseMaxConcurso = 0;
+  function updateDrawsOrderLabels() {
+    const cfg = getCurrentLottery();
+    if (!state.draws || !state.draws.length) return;
+    const latest = state.draws[state.draws.length - 1];
+    const first = state.draws[0];
+    const descOpt = document.getElementById("opt-sort-desc");
+    const ascOpt = document.getElementById("opt-sort-asc");
+    if (descOpt) descOpt.textContent = `Mais recentes primeiro (#${latest.c} ao #1)`;
+    if (ascOpt) ascOpt.textContent = `Mais antigos primeiro (#1 ao #${latest.c})`;
+    const statsDesc = document.getElementById("stats-range-desc");
+    if (statsDesc && first && latest) {
+      statsDesc.textContent = `Contagem oficial da ${cfg.name} desde o Concurso #1 (${first.d}) até o Concurso #${latest.c} (${latest.d}).`;
+    }
+  }
+
+  const baseMaxConcursos = {};
   let lastSyncTime = 0;
 
-  function loadCachedExtraDraws() {
+  function loadCachedExtraDraws(lotteryId) {
     try {
-      const raw = localStorage.getItem("megasena_extra_draws");
+      const raw = localStorage.getItem(`loterias_extra_${lotteryId}`);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
@@ -1385,14 +1101,15 @@
     }
   }
 
-  function saveCachedExtraDraws(allDraws) {
+  function saveCachedExtraDraws(lotteryId, allDraws) {
     try {
-      const extras = allDraws.filter((d) => d && d.c > baseMaxConcurso);
+      const baseMax = baseMaxConcursos[lotteryId] || 0;
+      const extras = allDraws.filter((d) => d && d.c > baseMax);
       if (extras.length > 0) {
-        localStorage.setItem("megasena_extra_draws", JSON.stringify(extras));
+        localStorage.setItem(`loterias_extra_${lotteryId}`, JSON.stringify(extras));
       }
     } catch (e) {
-      console.warn("Falha ao salvar extra draws no localStorage:", e);
+      console.warn("Falha ao salvar extra draws:", e);
     }
   }
 
@@ -1407,44 +1124,51 @@
     return Array.from(map.values()).sort((a, b) => a.c - b.c);
   }
 
-  function formatApiDraw(item) {
+  function formatApiDraw(lotteryId, item) {
     if (!item || !item.concurso || !Array.isArray(item.dezenas)) return null;
     const premios = {};
     (item.premiacoes || []).forEach((p) => {
-      if (p.faixa === 1 || p.faixa === 2 || p.faixa === 3) {
-        const k = String(7 - p.faixa);
-        let val = Number(p.valorPremio || 0);
-        if (k === "6" && val === 0) {
-          val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
-        }
+      const faixa = p.faixa;
+      let k = null;
+      let val = Number(p.valorPremio || 0);
+
+      if (lotteryId === "megasena") {
+        if (faixa in { 1: 1, 2: 1, 3: 1 }) k = String(7 - faixa);
+        if (k === "6" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+      } else if (lotteryId === "lotofacil") {
+        if (faixa >= 1 && faixa <= 5) k = String(16 - faixa);
+        if (k === "15" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+      } else if (lotteryId === "quina") {
+        if (faixa >= 1 && faixa <= 4) k = String(6 - faixa);
+        if (k === "5" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+      } else if (lotteryId === "lotomania") {
+        const desc = p.descricao || "";
+        k = desc.includes("0 acertos") || faixa === 7 ? "0" : String(21 - faixa);
+        if (k === "20" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+      }
+
+      if (k) {
         premios[k] = { g: Number(p.ganhadores || 0), v: Math.round(val * 100) / 100 };
       }
     });
+
+    let nums = item.dezenas.map(Number);
+    if (lotteryId === "lotomania") {
+      nums = nums.map((x) => (x === 0 ? 100 : x));
+    }
+
     return {
       c: Number(item.concurso),
       d: String(item.data || ""),
-      n: item.dezenas.map(Number).sort((a, b) => a - b),
+      n: nums.sort((a, b) => a - b),
       p: premios,
       a: Boolean(item.acumulou)
     };
   }
 
-  function updateDrawsOrderLabels() {
-    if (!state.draws || !state.draws.length) return;
-    const latest = state.draws[state.draws.length - 1];
-    const first = state.draws[0];
-    const descOpt = document.getElementById("opt-sort-desc");
-    const ascOpt = document.getElementById("opt-sort-asc");
-    if (descOpt) descOpt.textContent = `Mais recentes primeiro (#${latest.c} ao #1)`;
-    if (ascOpt) ascOpt.textContent = `Mais antigos primeiro (#1 ao #${latest.c})`;
-    const statsDesc = document.getElementById("stats-range-desc");
-    if (statsDesc && first && latest) {
-      statsDesc.textContent = `Contagem real acumulada desde o Concurso #1 (${first.d}) até o Concurso #${latest.c} (${latest.d}).`;
-    }
-  }
-
   async function syncLatestFromAPI(options = {}) {
     const isAuto = Boolean(options && options.auto);
+    const cfg = getCurrentLottery();
     const statusEl = document.getElementById("sync-status");
     const btnSync = document.getElementById("btn-sync-api");
 
@@ -1456,11 +1180,11 @@
     if (!isAuto && statusEl) {
       statusEl.hidden = false;
       statusEl.className = "status-banner";
-      statusEl.textContent = "Consultando API de Loterias da Caixa para verificar novos sorteios...";
+      statusEl.textContent = `Consultando API da Caixa para verificar novos sorteios da ${cfg.name}...`;
     }
 
     try {
-      const res = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest", {
+      const res = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${cfg.id}/latest`, {
         signal: AbortSignal.timeout(10000)
       });
       if (!res.ok) throw new Error("Resposta HTTP " + res.status);
@@ -1476,7 +1200,7 @@
           const fetchPromises = [];
           for (let c = maxExisting + 1; c < latestConcurso; c++) {
             fetchPromises.push(
-              fetch(`https://loteriascaixa-api.herokuapp.com/api/megasena/${c}`, {
+              fetch(`https://loteriascaixa-api.herokuapp.com/api/${cfg.id}/${c}`, {
                 signal: AbortSignal.timeout(8000)
               })
                 .then((r) => (r.ok ? r.json() : null))
@@ -1485,17 +1209,17 @@
           }
           const intermediateItems = await Promise.all(fetchPromises);
           intermediateItems.forEach((raw) => {
-            const formatted = formatApiDraw(raw);
+            const formatted = formatApiDraw(cfg.id, raw);
             if (formatted) missingDraws.push(formatted);
           });
         }
 
-        const formattedLatest = formatApiDraw(item);
+        const formattedLatest = formatApiDraw(cfg.id, item);
         if (formattedLatest) missingDraws.push(formattedLatest);
 
         if (missingDraws.length > 0) {
           state.draws = mergeDraws(state.draws, missingDraws);
-          saveCachedExtraDraws(state.draws);
+          saveCachedExtraDraws(cfg.id, state.draws);
 
           renderMetricsAndCharts();
           renderSimulation();
@@ -1507,26 +1231,24 @@
             statusEl.className = "status-banner success";
             statusEl.textContent =
               missingDraws.length === 1
-                ? `Base atualizada: Novo concurso #${formattedLatest.c} (${formattedLatest.d}) adicionado com sucesso.`
-                : `Base atualizada: ${missingDraws.length} novos concursos adicionados (até #${formattedLatest.c} de ${formattedLatest.d}).`;
+                ? `[${cfg.name}] Novo concurso #${formattedLatest.c} (${formattedLatest.d}) adicionado com sucesso.`
+                : `[${cfg.name}] ${missingDraws.length} novos concursos adicionados (até #${formattedLatest.c} de ${formattedLatest.d}).`;
           }
         }
       } else {
         if (!isAuto && statusEl) {
           statusEl.hidden = false;
           statusEl.className = "status-banner";
-          statusEl.textContent = `A base já está sincronizada até o último concurso disponível (#${item.concurso} de ${item.data}).`;
+          statusEl.textContent = `A base da ${cfg.name} já está sincronizada até o último concurso disponível (#${item.concurso} de ${item.data}).`;
         }
       }
     } catch (err) {
       if (!isAuto && statusEl) {
         statusEl.hidden = false;
         statusEl.className = "status-banner error";
-        statusEl.textContent = `Não foi possível conectar à API externa no momento (${err.message}). Os ${intFmt.format(
-          state.draws.length
-        )} concursos locais seguem disponíveis para consulta e simulação.`;
+        statusEl.textContent = `Não foi possível conectar à API da Caixa (${err.message}). Os ${intFmt.format(state.draws.length)} concursos locais da ${cfg.name} seguem disponíveis.`;
       } else {
-        console.warn("Auto-sync da API Caixa em segundo plano:", err.message);
+        console.warn(`Auto-sync da API Caixa (${cfg.id}):`, err.message);
       }
     } finally {
       if (btnSync) {
@@ -1544,17 +1266,100 @@
     }
   }
 
+  function loadLotteryData(lotteryId) {
+    const cfg = LOTTERY_CONFIGS[lotteryId];
+    if (!cfg) return;
+
+    state.loading = true;
+    const cachedExtras = loadCachedExtraDraws(lotteryId);
+
+    if (Array.isArray(window[cfg.dataVar]) && window[cfg.dataVar].length > 0) {
+      baseMaxConcursos[lotteryId] = window[cfg.dataVar][window[cfg.dataVar].length - 1].c;
+      state.draws = mergeDraws(window[cfg.dataVar], cachedExtras);
+      state.loading = false;
+      state.error = null;
+      renderMetricsAndCharts();
+      renderSimulation();
+      renderDrawsTable();
+      updateDrawsOrderLabels();
+      triggerAutoSync(true);
+      return;
+    }
+
+    fetch(cfg.dataFile)
+      .then((r) => {
+        if (!r.ok) throw new Error("Falha ao ler " + cfg.dataFile);
+        return r.json();
+      })
+      .then((data) => {
+        baseMaxConcursos[lotteryId] = data.length > 0 ? data[data.length - 1].c : 0;
+        state.draws = mergeDraws(data, cachedExtras);
+        state.loading = false;
+        state.error = null;
+        renderMetricsAndCharts();
+        renderSimulation();
+        renderDrawsTable();
+        updateDrawsOrderLabels();
+        triggerAutoSync(true);
+      })
+      .catch((err) => {
+        state.loading = false;
+        state.error = err.message;
+        renderSimulation();
+        renderDrawsTable();
+      });
+  }
+
+  function selectLottery(lotteryId) {
+    if (!LOTTERY_CONFIGS[lotteryId]) return;
+    state.lottery = lotteryId;
+    document.documentElement.setAttribute("data-lottery", lotteryId);
+
+    document.querySelectorAll(".lottery-btn").forEach((btn) => {
+      const active = btn.dataset.lottery === lotteryId;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+
+    const cfg = LOTTERY_CONFIGS[lotteryId];
+    state.betSize = cfg.defaultSize;
+    state.selectedNumbers = new Set(cfg.defaultPicks);
+
+    const markEl = document.getElementById("brand-mark");
+    const titleEl = document.getElementById("brand-title");
+    const subEl = document.getElementById("brand-subtitle");
+    if (markEl) markEl.textContent = cfg.mark;
+    if (titleEl) titleEl.textContent = cfg.title;
+    if (subEl) subEl.textContent = cfg.subtitle;
+
+    const simTitle = document.getElementById("title-simulador");
+    const simDesc = document.getElementById("desc-simulador");
+    if (simTitle) simTitle.textContent = `Simulador de Apostas da ${cfg.name}`;
+    if (simDesc) simDesc.textContent = `Marque de ${cfg.allowedSizes[0]} a ${cfg.allowedSizes[cfg.allowedSizes.length - 1]} dezenas no volante para conferir seu desempenho contra todos os concursos históricos da ${cfg.name}.`;
+
+    buildSizePills();
+    buildVolanteButtons();
+    populateFilterNumberSelect();
+    populateSpendBetSizes();
+    populateSpendYears();
+    syncVolanteUI();
+
+    loadLotteryData(lotteryId);
+  }
+
   function bindEvents() {
     document.getElementById("theme-toggle").addEventListener("click", () => {
       const current = document.documentElement.getAttribute("data-theme") || "light";
       const next = current === "dark" ? "light" : "dark";
       document.documentElement.setAttribute("data-theme", next);
-      localStorage.setItem("megasena_theme", next);
+      localStorage.setItem("loterias_theme", next);
       updateThemeBtn(next);
     });
 
-    document.querySelectorAll(".size-pill").forEach((pill) => {
-      pill.addEventListener("click", () => setBetSize(Number(pill.dataset.size)));
+    document.querySelectorAll(".lottery-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        selectLottery(btn.dataset.lottery);
+      });
     });
 
     document.getElementById("cost-mode-select").addEventListener("change", (e) => {
@@ -1573,9 +1378,9 @@
     });
 
     document.getElementById("btn-example-2057").addEventListener("click", () => {
-      // Exemplo citado pelo usuário: Concurso 2057 com 5 dezenas acertadas (10, 13, 20, 37, 38) + 01
-      state.betSize = 6;
-      state.selectedNumbers = new Set([1, 10, 13, 20, 37, 38]);
+      const cfg = getCurrentLottery();
+      state.betSize = cfg.defaultSize;
+      state.selectedNumbers = new Set(cfg.defaultPicks);
       document.getElementById("simulator-alert").hidden = true;
       syncVolanteUI();
       renderSimulation();
@@ -1583,13 +1388,10 @@
     });
 
     document.getElementById("btn-example-loss").addEventListener("click", () => {
-      // Aposta de 10 dezenas (R$ 1.260,00) onde o custo supera uma Quadra isolada
-      state.betSize = 10;
-      state.selectedNumbers = new Set([1, 2, 3, 14, 19, 21, 31, 40, 48, 59]);
-      document.getElementById("simulator-alert").hidden = true;
-      syncVolanteUI();
-      renderSimulation();
-      renderDrawsTable();
+      const cfg = getCurrentLottery();
+      const maxSize = cfg.allowedSizes[cfg.allowedSizes.length - 1];
+      state.betSize = maxSize;
+      fillRandomBet();
     });
 
     document.getElementById("freq-sort-select").addEventListener("change", (e) => {
@@ -1604,26 +1406,27 @@
       });
     });
 
-    document.getElementById("extrap-mode-select").addEventListener("change", (e) => {
-      state.extrapMode = e.target.value;
-      renderExtrapolation(computeStatistics());
+    document.querySelectorAll(".model-pill").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        state.extrapMode = pill.dataset.model;
+        document.querySelectorAll(".model-pill").forEach((p) => {
+          p.setAttribute("aria-pressed", p.dataset.model === state.extrapMode ? "true" : "false");
+        });
+        renderExtrapolation(computeStatistics());
+      });
     });
 
-    document.getElementById("btn-rerun-mc").addEventListener("click", () => {
-      state.extrapMode = "montecarlo";
-      document.getElementById("extrap-mode-select").value = "montecarlo";
-      renderExtrapolation(computeStatistics());
-    });
-
-    document.getElementById("btn-load-projected-bet").addEventListener("click", () => {
-      state.betSize = 6;
-      state.selectedNumbers = new Set(state.topProjectedSix);
-      document.getElementById("simulator-alert").hidden = true;
-      syncVolanteUI();
-      renderSimulation();
-      renderDrawsTable();
-      document.getElementById("simulador").scrollIntoView({ behavior: "smooth" });
-    });
+    const copyBtn = document.getElementById("btn-copy-six");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", () => {
+        const cfg = getCurrentLottery();
+        state.betSize = cfg.defaultSize;
+        state.selectedNumbers = new Set(state.topProjectedSix.slice(0, cfg.defaultSize));
+        syncVolanteUI();
+        renderSimulation();
+        renderDrawsTable();
+      });
+    }
 
     document.getElementById("spend-bets-month").addEventListener("input", (e) => {
       state.spendBetsPerMonth = Number(e.target.value) || 1;
@@ -1631,30 +1434,17 @@
     });
 
     document.getElementById("spend-bet-size").addEventListener("change", (e) => {
-      state.spendBetSize = Number(e.target.value) || 6;
+      state.spendBetSize = Number(e.target.value);
       renderSpendingSimulator();
     });
 
     document.getElementById("spend-time-mode").addEventListener("change", (e) => {
       state.spendTimeMode = e.target.value;
-      const isSince = state.spendTimeMode === "sinceYear";
-      document.getElementById("group-since-year").hidden = !isSince;
-      document.getElementById("group-duration-years").hidden = isSince;
       renderSpendingSimulator();
     });
 
     document.getElementById("spend-start-year").addEventListener("change", (e) => {
-      state.spendStartYear = Number(e.target.value) || 2015;
-      renderSpendingSimulator();
-    });
-
-    document.getElementById("spend-years-count").addEventListener("input", (e) => {
-      state.spendYearsCount = Number(e.target.value) || 10;
-      renderSpendingSimulator();
-    });
-
-    document.getElementById("spend-adjust-mode").addEventListener("change", (e) => {
-      state.spendAdjustMode = e.target.value;
+      state.spendStartYear = Number(e.target.value);
       renderSpendingSimulator();
     });
 
@@ -1729,53 +1519,11 @@
     });
   }
 
-  function loadInitialData() {
-    const cachedExtras = loadCachedExtraDraws();
-
-    if (Array.isArray(window.MEGASENA_DRAWS) && window.MEGASENA_DRAWS.length > 0) {
-      baseMaxConcurso = window.MEGASENA_DRAWS[window.MEGASENA_DRAWS.length - 1].c;
-      state.draws = mergeDraws(window.MEGASENA_DRAWS, cachedExtras);
-      state.loading = false;
-      state.error = null;
-      renderMetricsAndCharts();
-      renderSimulation();
-      renderDrawsTable();
-      updateDrawsOrderLabels();
-      triggerAutoSync(true);
-      return;
-    }
-
-    fetch("data/megasena.json")
-      .then((r) => {
-        if (!r.ok) throw new Error("Falha ao ler data/megasena.json");
-        return r.json();
-      })
-      .then((data) => {
-        baseMaxConcurso = data.length > 0 ? data[data.length - 1].c : 0;
-        state.draws = mergeDraws(data, cachedExtras);
-        state.loading = false;
-        state.error = null;
-        renderMetricsAndCharts();
-        renderSimulation();
-        renderDrawsTable();
-        updateDrawsOrderLabels();
-        triggerAutoSync(true);
-      })
-      .catch((err) => {
-        state.loading = false;
-        state.error = err.message;
-        renderSimulation();
-        renderDrawsTable();
-      });
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
     initTheme();
-    populateFilterNumberSelect();
-    populateSpendYears();
-    buildVolanteButtons();
+    const hash = (location.hash || "").replace("#", "").toLowerCase();
+    const startLottery = LOTTERY_CONFIGS[hash] ? hash : "megasena";
     bindEvents();
-    syncVolanteUI();
-    loadInitialData();
+    selectLottery(startLottery);
   });
 })();

@@ -1,6 +1,6 @@
-# Atlas Estatístico da Mega-Sena
+# Atlas Estatístico das Loterias Caixa (Mega-Sena, Lotofácil, Quina e Lotomania)
 
-Aplicação web sem dependências externas para consulta de todos os resultados históricos da Mega-Sena (desde o Concurso #1 em 11/03/1996 até o #3077 em 28/10/2026), análise gráfica das 60 dezenas e simulação financeira de apostas simples e múltiplas (6 a 10 dezenas). O sistema busca automaticamente os sorteios mais recentes da Caixa sempre que o usuário acessa o site.
+Aplicação web sem dependências externas para consulta de todos os resultados históricos oficiais das principais loterias da Caixa Econômica Federal (**Mega-Sena**, **Lotofácil**, **Quina** e **Lotomania**), análise gráfica de frequências/atrasos e simulação financeira combinatória de apostas simples e múltiplas. O sistema busca automaticamente os sorteios mais recentes sempre que o usuário acessa o site e possui rotina diária no GitHub Actions.
 
 ## Funcionalidades
 
@@ -44,8 +44,10 @@ Aplicação web sem dependências externas para consulta de todos os resultados 
 - `index.html`: Estrutura semântica da aplicação e controles acessíveis por teclado.
 - `styles.css`: Estilos responsivos (celular, tablet e desktop) com suporte a tema Claro e Escuro (contraste WCAG AA validado).
 - `app.js`: Motor de simulação combinatória, cálculo de estatísticas, gráficos e tabela paginada.
-- `data/megasena.js`: Base histórica local pré-carregada (`window.MEGASENA_DRAWS`) para funcionamento direto via `file://` ou offline.
-- `data/megasena.json`: Mesma base histórica em formato JSON puro.
+- `data/megasena.js` / `data/megasena.json`: Base da Mega-Sena (3.077 concursos).
+- `data/lotofacil.js` / `data/lotofacil.json`: Base da Lotofácil (3.816 concursos).
+- `data/quina.js` / `data/quina.json`: Base da Quina (7.154 concursos).
+- `data/lotomania.js` / `data/lotomania.json`: Base da Lotomania (2.993 concursos).
 
 ## Como Rodar o Projeto
 
@@ -74,12 +76,19 @@ Depois, acesse no navegador: `http://localhost:8080`
 A aplicação busca novos resultados automaticamente via API oficial sempre que a página é acessada ou quando a aba ganha foco.
 
 ### Atualização Automática via GitHub Actions
-O repositório possui uma rotina diária em [`.github/workflows/sync-draws.yml`](.github/workflows/sync-draws.yml) que executa o script [`scripts/sync-draws.py`](scripts/sync-draws.py) às 20:15, 22:15 e 00:15 (horário de Brasília). O workflow só realiza commit e push caso novos concursos tenham sido confirmados pela Caixa.
+O repositório possui uma rotina diária em [`.github/workflows/sync-draws.yml`](.github/workflows/sync-draws.yml) que executa o script [`scripts/sync-draws.py`](scripts/sync-draws.py) diariamente às 20:15, 22:15 e 00:15 BRT. Ele checa todas as loterias suportadas (Mega-Sena, Lotofácil, Quina e Lotomania) e só realiza commit e push caso haja novos concursos ou rateios consolidados.
 
 ### Atualização Manual via Terminal
-Você pode executar o script a qualquer momento:
+Você pode atualizar todas as loterias de uma vez ou especificar apenas uma:
 
 ```bash
+# Atualiza todas as loterias (Mega-Sena, Lotofácil, Quina, Lotomania)
 python3 scripts/sync-draws.py
+
+# Ou atualiza apenas uma específica:
+python3 scripts/sync-draws.py megasena
+python3 scripts/sync-draws.py lotofacil
+python3 scripts/sync-draws.py quina
+python3 scripts/sync-draws.py lotomania
 ```
 
