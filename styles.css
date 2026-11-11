@@ -433,6 +433,11 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Simulador Layout */
 .simulator-grid {
   display: grid;
@@ -1329,4 +1334,440 @@ body {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* =========================================================
+   EXPORTAÇÃO PAGA DE RESULTADOS (STRIPE GATEWAY - R$ 15,00)
+   ========================================================= */
+
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-export-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  background-color: var(--surface-alt);
+  color: var(--text);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.btn-export-action:hover {
+  background-color: var(--surface);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.btn-export-action:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.btn-export-action.is-unlocked {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border-color: var(--accent);
+}
+
+.btn-export-svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+.export-pill-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  background-color: var(--accent);
+  color: var(--accent-fg);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.btn-export-action.is-unlocked .export-pill-badge {
+  background-color: var(--success-text);
+  color: #FFFFFF;
+}
+
+.modal-dialog-lg {
+  max-width: 680px;
+}
+
+.modal-body-export {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.export-intro {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.export-features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 580px) {
+  .export-features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.export-feature-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.feature-icon-badge {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.xlsx-badge {
+  background: #107C41;
+  color: #FFFFFF;
+}
+
+.pdf-badge {
+  background: #D83B01;
+  color: #FFFFFF;
+}
+
+.lock-badge {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.feature-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.feature-desc {
+  margin: 4px 0 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.checkout-cta-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  align-items: stretch;
+}
+
+@media (min-width: 580px) {
+  .checkout-cta-box {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.checkout-price-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checkout-price-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.checkout-price-val {
+  display: flex;
+  align-items: baseline;
+  color: var(--text);
+}
+
+.price-currency {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.price-number {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.price-cents {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.checkout-price-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.checkout-action-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  max-width: 320px;
+}
+
+.btn-checkout-stripe {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background-color: var(--accent);
+  color: var(--accent-fg);
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-checkout-stripe:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.btn-checkout-stripe:active {
+  transform: translateY(0);
+}
+
+.btn-checkout-stripe:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.btn-checkout-svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.checkout-trust-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.trust-pill {
+  font-size: 0.725rem;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.already-paid-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.btn-link-action {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+.btn-link-action:hover {
+  opacity: 0.85;
+}
+
+.export-scope-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.scope-radio-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-alt);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.scope-radio-label:hover {
+  border-color: var(--border-strong);
+}
+
+.scope-radio-label input {
+  margin-top: 2px;
+}
+
+.download-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 580px) {
+  .download-actions-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.btn-download-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+
+.btn-download-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.btn-download-card:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.btn-download-card .card-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.btn-download-card .card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn-download-card .card-text strong {
+  font-size: 0.95rem;
+}
+
+.btn-download-card .card-text span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.btn-download-card.xlsx-card:hover {
+  border-color: #107C41;
+}
+
+.btn-download-card.pdf-card:hover {
+  border-color: #D83B01;
+}
+
+.btn-download-card.both-card {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.export-status-box {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--text);
+  border: 1px solid var(--accent);
+}
+
+.payment-toast-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  max-width: 420px;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 300;
+}
+
+.payment-toast-notification[hidden] {
+  display: none;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
 

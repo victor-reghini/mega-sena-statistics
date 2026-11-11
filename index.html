@@ -467,13 +467,22 @@
     <!-- SEÇÃO 3: TODOS OS RESULTADOS DE CONCURSOS PASSADOS -->
     <section id="historico" class="section-block" aria-labelledby="title-historico">
       <div class="section-header">
-        <div>
+        <div class="section-header-text">
           <h2 id="title-historico" class="section-title">Resultados de Todos os Concursos Passados</h2>
           <p class="section-desc">
             Pesquise por número do concurso, data ou filtre pelos sorteios onde determinada dezena saiu. Dezenas marcadas no simulador ficam realçadas na tabela.
           </p>
         </div>
-        <span id="draws-count-label" class="badge-status">Carregando...</span>
+        <div class="section-header-actions">
+          <span id="draws-count-label" class="badge-status">Carregando...</span>
+          <button type="button" id="btn-open-export" class="btn-export-action" aria-haspopup="dialog" aria-controls="export-pay-modal" title="Exportar resultados completos em Excel (.xlsx) e PDF">
+            <svg class="btn-export-svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M3 13.5v2.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.5M10 2.5v10m0 0-3.5-3.5m3.5 3.5 3.5-3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="export-btn-label">Exportar Resultados</span>
+            <span id="export-badge-pill" class="export-pill-badge">R$ 15 (XLSX / PDF)</span>
+          </button>
+        </div>
       </div>
 
       <div class="controls-row">
@@ -688,12 +697,178 @@
     </div>
   </div>
 
+  <!-- MODAL DE PAGAMENTO STRIPE (EXPORTAÇÃO PAGA - R$ 15,00) -->
+  <div id="export-pay-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pay-modal-title" hidden>
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <div>
+          <span class="badge-status" style="margin-bottom:6px;display:inline-block;">Download Completo</span>
+          <h3 id="pay-modal-title" style="margin:0;font-size:1.3rem;">Exportar Resultados Oficiais (XLSX / PDF)</h3>
+        </div>
+        <button type="button" id="pay-modal-close-btn" class="btn" aria-label="Fechar modal de pagamento">Fechar (Esc)</button>
+      </div>
+      <div class="modal-body-export">
+        <p class="export-intro">
+          Acesse toda a base de dados histórica oficial das Loterias Caixa consolidada desde o 1º concurso até os sorteios mais recentes de 2026, pronta para suas análises, conferências e relatórios.
+        </p>
+
+        <div class="export-features-grid">
+          <div class="export-feature-card">
+            <div class="feature-icon-badge xlsx-badge">XLSX</div>
+            <div>
+              <h4 class="feature-title">Planilha Excel Completa (.xlsx)</h4>
+              <p class="feature-desc">Todas as colunas formatadas: Concurso, Data, Dezenas individuais e combinadas, Acumulado, Ganhadores e Rateio de todas as faixas (Sena, Quina, Quadra, etc.) e estatísticas de soma e paridade.</p>
+            </div>
+          </div>
+
+          <div class="export-feature-card">
+            <div class="feature-icon-badge pdf-badge">PDF</div>
+            <div>
+              <h4 class="feature-title">Relatório Diagramado (.pdf)</h4>
+              <p class="feature-desc">Documento em alta resolução formatado para impressão ou arquivamento, com cabeçalho oficial, métricas gerais e paginação automática.</p>
+            </div>
+          </div>
+
+          <div class="export-feature-card">
+            <div class="feature-icon-badge lock-badge">4 em 1</div>
+            <div>
+              <h4 class="feature-title">Todas as 4 Loterias Inclusas</h4>
+              <p class="feature-desc">Válido para Mega-Sena (3.084+ sorteios), Lotofácil (3.816+ sorteios), Quina (7.154+ sorteios) e Lotomania (2.993+ sorteios) em um único pacote.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkout-cta-box">
+          <div class="checkout-price-col">
+            <span class="checkout-price-label">Pagamento Único • Acesso Vitalício</span>
+            <div class="checkout-price-val">
+              <span class="price-currency">R$</span>
+              <span class="price-number">15</span>
+              <span class="price-cents">,00</span>
+            </div>
+            <span class="checkout-price-sub">Sem mensalidade • Liberação Imediata</span>
+          </div>
+
+          <div class="checkout-action-col">
+            <button type="button" id="btn-stripe-checkout" class="btn-checkout-stripe">
+              <svg class="btn-checkout-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+              <span>Pagar R$ 15,00 com Pix ou Cartão</span>
+            </button>
+            <div class="checkout-trust-info">
+              <span class="trust-pill">⚡ Pix instantâneo</span>
+              <span class="trust-pill">💳 Cartão de Crédito</span>
+              <span class="trust-pill">🔒 Stripe Seguro</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="already-paid-row">
+          <span>Já realizou o pagamento em outra aba ou dispositivo?</span>
+          <button type="button" id="btn-check-paid" class="btn-link-action">Validar ou Desbloquear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE DOWNLOAD LIBERADO (XLSX / PDF) -->
+  <div id="export-download-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="download-modal-title" hidden>
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <div>
+          <span class="badge-status badge-success" style="margin-bottom:6px;display:inline-block;">✓ Acesso Liberado</span>
+          <h3 id="download-modal-title" style="margin:0;font-size:1.3rem;">Exportar Resultados Oficiais</h3>
+        </div>
+        <button type="button" id="download-modal-close-btn" class="btn" aria-label="Fechar modal de download">Fechar (Esc)</button>
+      </div>
+      <div class="modal-body-export">
+        <p class="export-intro">
+          Seu acesso à exportação está ativo. Selecione a modalidade e o escopo para gerar os arquivos desejados:
+        </p>
+
+        <div class="export-options-form">
+          <div class="field-group" style="margin-bottom:14px;">
+            <label class="field-label" for="export-lottery-select">Escolha a Loteria:</label>
+            <select id="export-lottery-select" class="select-input">
+              <option value="current">Loteria Atual na Tela</option>
+              <option value="megasena">Mega-Sena (3.084 concursos)</option>
+              <option value="lotofacil">Lotofácil (3.816 concursos)</option>
+              <option value="quina">Quina (7.154 concursos)</option>
+              <option value="lotomania">Lotomania (2.993 concursos)</option>
+              <option value="all">Todas as 4 Loterias (Planilha Excel Multi-Abas)</option>
+            </select>
+          </div>
+
+          <div class="field-group" style="margin-bottom:18px;">
+            <label class="field-label">Escopo dos Concursos:</label>
+            <div class="export-scope-options">
+              <label class="scope-radio-label">
+                <input type="radio" name="export-scope" value="all" checked>
+                <span><strong>Histórico Completo:</strong> Todos os concursos desde o nº 1 até o mais recente</span>
+              </label>
+              <label class="scope-radio-label">
+                <input type="radio" name="export-scope" value="filtered">
+                <span id="scope-filtered-desc"><strong>Concursos Filtrados:</strong> Apenas os resultados filtrados na tabela agora</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div id="export-status-banner" class="export-status-box" hidden></div>
+
+        <div class="download-actions-grid">
+          <button type="button" id="btn-download-xlsx" class="btn-download-card xlsx-card">
+            <div class="card-icon">📊</div>
+            <div class="card-text">
+              <strong>Baixar Excel (.xlsx)</strong>
+              <span>Tabela formatada pronta para Excel e PowerBI</span>
+            </div>
+          </button>
+
+          <button type="button" id="btn-download-pdf" class="btn-download-card pdf-card">
+            <div class="card-icon">📑</div>
+            <div class="card-text">
+              <strong>Baixar Relatório (.pdf)</strong>
+              <span>Documento diagramado pronto para impressão</span>
+            </div>
+          </button>
+
+          <button type="button" id="btn-download-both" class="btn-download-card both-card">
+            <div class="card-icon">📦</div>
+            <div class="card-text">
+              <strong>Baixar Ambos (XLSX + PDF)</strong>
+              <span>Gera e baixa os dois formatos de uma vez</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION DE SUCESSO DO PAGAMENTO -->
+  <div id="payment-toast" class="payment-toast-notification" role="status" aria-live="polite" hidden>
+    <div class="toast-content">
+      <span class="toast-icon">🎉</span>
+      <div>
+        <strong>Pagamento de R$ 15,00 confirmado!</strong>
+        <p style="margin:2px 0 0;font-size:0.875rem;">Seu acesso à exportação em XLSX e PDF está desbloqueado.</p>
+      </div>
+    </div>
+    <button type="button" id="btn-toast-close" class="btn btn-sm" aria-label="Fechar aviso">✕</button>
+  </div>
+
   <footer class="site-footer">
     <p style="margin:0;">
       Dados históricos oficiais da Mega-Sena (Caixa Econômica Federal): 3.076 concursos entre 11/03/1996 e 27/10/2026. Valores de aposta conforme tabela vigente da loteria (6 a 10 dezenas). Estatísticas, simulador e resultados de sorteios para consulta pública e educacional.
     </p>
   </footer>
 
+  <!-- Bibliotecas para Exportação XLSX e PDF (Vendor local + CDN fallback) -->
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="vendor/jspdf.plugin.autotable.min.js"></script>
   <script src="data/megasena.js"></script>
   <script src="data/lotofacil.js"></script>
   <script src="data/quina.js"></script>

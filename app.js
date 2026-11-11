@@ -1345,6 +1345,7 @@
     syncVolanteUI();
 
     loadLotteryData(lotteryId);
+    updateExportButtonUI();
   }
 
   function bindEvents() {
@@ -1512,11 +1513,528 @@
     document.getElementById("contest-modal").addEventListener("click", (e) => {
       if (e.target.id === "contest-modal") closeModal();
     });
+
+    // Eventos do Sistema de Exportação Paga (Stripe)
+    const btnOpenExport = document.getElementById("btn-open-export");
+    if (btnOpenExport) {
+      btnOpenExport.addEventListener("click", () => {
+        if (isExportPaid()) {
+          openExportDownloadModal();
+        } else {
+          openExportPayModal();
+        }
+      });
+    }
+
+    const payCloseBtn = document.getElementById("pay-modal-close-btn");
+    if (payCloseBtn) {
+      payCloseBtn.addEventListener("click", closeExportPayModal);
+    }
+
+    const downloadCloseBtn = document.getElementById("download-modal-close-btn");
+    if (downloadCloseBtn) {
+      downloadCloseBtn.addEventListener("click", closeExportDownloadModal);
+    }
+
+    const payModalEl = document.getElementById("export-pay-modal");
+    if (payModalEl) {
+      payModalEl.addEventListener("click", (e) => {
+        if (e.target.id === "export-pay-modal") closeExportPayModal();
+      });
+    }
+
+    const downloadModalEl = document.getElementById("export-download-modal");
+    if (downloadModalEl) {
+      downloadModalEl.addEventListener("click", (e) => {
+        if (e.target.id === "export-download-modal") closeExportDownloadModal();
+      });
+    }
+
+    const btnStripeCheckout = document.getElementById("btn-stripe-checkout");
+    if (btnStripeCheckout) {
+      btnStripeCheckout.addEventListener("click", handleStripeCheckout);
+    }
+
+    const btnCheckPaid = document.getElementById("btn-check-paid");
+    if (btnCheckPaid) {
+      btnCheckPaid.addEventListener("click", () => {
+        const confirmUnlock = window.confirm(
+          "Você já concluiu o pagamento de R$ 15,00 pelo Stripe?\n\nClique em OK para liberar seu acesso imediatamente aos downloads em Excel (.xlsx) e PDF."
+        );
+        if (confirmUnlock) {
+          markExportPaid();
+          closeExportPayModal();
+          openExportDownloadModal();
+          showPaymentToast("Acesso liberado! Seus arquivos estão disponíveis para download.");
+        }
+      });
+    }
+
+    const btnXLSX = document.getElementById("btn-download-xlsx");
+    if (btnXLSX) {
+      btnXLSX.addEventListener("click", exportToXLSX);
+    }
+
+    const btnPDF = document.getElementById("btn-download-pdf");
+    if (btnPDF) {
+      btnPDF.addEventListener("click", exportToPDF);
+    }
+
+    const btnBoth = document.getElementById("btn-download-both");
+    if (btnBoth) {
+      btnBoth.addEventListener("click", () => {
+        exportToXLSX();
+        setTimeout(() => {
+          exportToPDF();
+        }, 1000);
+      });
+    }
+
+    const btnToastClose = document.getElementById("btn-toast-close");
+    if (btnToastClose) {
+      btnToastClose.addEventListener("click", () => {
+        const toast = document.getElementById("payment-toast");
+        if (toast) toast.hidden = true;
+      });
+    }
+
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !document.getElementById("contest-modal").hidden) {
-        closeModal();
+      if (e.key === "Escape") {
+        const cModal = document.getElementById("contest-modal");
+        const pModal = document.getElementById("export-pay-modal");
+        const dModal = document.getElementById("export-download-modal");
+        if (cModal && !cModal.hidden) closeModal();
+        if (pModal && !pModal.hidden) closeExportPayModal();
+        if (dModal && !dModal.hidden) closeExportDownloadModal();
       }
     });
+  }
+
+  /* =========================================================
+     EXPORTAÇÃO PAGA E INTEGRAÇÃO STRIPE (R$ 15,00)
+     ========================================================= */
+  const STRIPE_CONFIG = {
+    publicKey: "pk_live_51UZBcCLbOL7pa0nJ9KZUc0S3yOubmdMqUXKPITZioDaIJZspSTytfWfkANsqEG59zA4v4xrHwofLRzPHN3XNXVhc00xahGUgKA",
+    paymentLink: "https://buy.stripe.com/bJe6oI5Sd2JbgDLewzeQM00",
+    price: 15.0,
+    storageKey: "mega_results_export_paid"
+  };
+
+  function isExportPaid() {
+    try {
+      return localStorage.getItem(STRIPE_CONFIG.storageKey) === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function markExportPaid() {
+    try {
+      localStorage.setItem(STRIPE_CONFIG.storageKey, "true");
+    } catch (e) {}
+    updateExportButtonUI();
+  }
+
+  function updateExportButtonUI() {
+    const btn = document.getElementById("btn-open-export");
+    const label = document.getElementById("export-btn-label");
+    const badge = document.getElementById("export-badge-pill");
+    if (!btn || !label || !badge) return;
+
+    if (isExportPaid()) {
+      btn.classList.add("is-unlocked");
+      btn.title = "Exportação liberada: clique para baixar os resultados em Excel (.xlsx) ou PDF";
+      label.textContent = "Exportar Resultados";
+      badge.textContent = "✓ Liberado (XLSX / PDF)";
+    } else {
+      btn.classList.remove("is-unlocked");
+      btn.title = "Exportar resultados completos em Excel (.xlsx) e PDF por R$ 15";
+      label.textContent = "Exportar Resultados";
+      badge.textContent = "R$ 15 (XLSX / PDF)";
+    }
+  }
+
+  function showPaymentToast(message) {
+    const toast = document.getElementById("payment-toast");
+    if (!toast) return;
+    if (message) {
+      const p = toast.querySelector("p");
+      if (p) p.textContent = message;
+    }
+    toast.hidden = false;
+    setTimeout(() => {
+      toast.hidden = true;
+    }, 7000);
+  }
+
+  function checkStripeReturn() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const isSuccess = params.get("payment") === "success" || params.get("paid") === "true";
+      const sessionId = params.get("session_id");
+
+      if (isSuccess || sessionId) {
+        markExportPaid();
+        showPaymentToast("Seu pagamento de R$ 15,00 foi confirmado! O download dos arquivos está desbloqueado.");
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+        openExportDownloadModal();
+      }
+    } catch (e) {
+      console.warn("Erro ao verificar retorno Stripe:", e);
+    }
+  }
+
+  function openExportPayModal() {
+    const modal = document.getElementById("export-pay-modal");
+    if (modal) modal.hidden = false;
+  }
+
+  function closeExportPayModal() {
+    const modal = document.getElementById("export-pay-modal");
+    if (modal) modal.hidden = true;
+  }
+
+  function openExportDownloadModal() {
+    const modal = document.getElementById("export-download-modal");
+    if (!modal) return;
+
+    const filtered = getFilteredDraws();
+    const scopeDesc = document.getElementById("scope-filtered-desc");
+    if (scopeDesc) {
+      scopeDesc.innerHTML = `<strong>Concursos Filtrados:</strong> Apenas os ${intFmt.format(filtered.length)} concursos filtrados na tabela agora`;
+    }
+
+    const statusBox = document.getElementById("export-status-banner");
+    if (statusBox) statusBox.hidden = true;
+
+    modal.hidden = false;
+  }
+
+  function closeExportDownloadModal() {
+    const modal = document.getElementById("export-download-modal");
+    if (modal) modal.hidden = true;
+  }
+
+  async function handleStripeCheckout() {
+    const btn = document.getElementById("btn-stripe-checkout");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="btn-checkout-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+        <span>Redirecionando para o Stripe...</span>
+      `;
+    }
+
+    try {
+      const resp = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ origin: window.location.origin })
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.url) {
+          window.location.href = data.url;
+          return;
+        }
+      }
+    } catch (e) {
+      // Falha de rede ou executando em ambiente puramente estático
+    }
+
+    // Redireciona para o link permanente oficial da Stripe
+    window.location.href = STRIPE_CONFIG.paymentLink;
+  }
+
+  function getDrawsForLotteryKey(lotteryKey) {
+    if (lotteryKey === "current") {
+      return { cfg: getCurrentLottery(), draws: state.draws };
+    }
+    const cfg = LOTTERY_CONFIGS[lotteryKey];
+    if (!cfg) return null;
+    const globalVar = cfg.dataVar;
+    const raw = window[globalVar] || [];
+    return { cfg, draws: raw };
+  }
+
+  function buildLotterySheetData(cfg, drawsList) {
+    const dezHeaders = Array.from({ length: cfg.drawCount }, (_, i) => `Dezena ${i + 1}`);
+
+    const tierHeaders = [];
+    cfg.tiers.forEach((t) => {
+      tierHeaders.push(`Ganhadores ${t.name}`);
+      tierHeaders.push(`Rateio ${t.name} (R$)`);
+    });
+
+    const headers = [
+      "Concurso",
+      "Data",
+      ...dezHeaders,
+      "Dezenas Combinadas",
+      "Acumulou?",
+      ...tierHeaders,
+      "Soma Dezenas",
+      "Qtd Pares",
+      "Qtd Ímpares"
+    ];
+
+    const rows = drawsList.map((d) => {
+      const nums = (d.n || []).slice().sort((a, b) => a - b);
+      const combined = nums.map(pad2).join(" - ");
+      const sum = nums.reduce((acc, v) => acc + v, 0);
+      const evenCount = nums.filter((n) => n % 2 === 0).length;
+      const oddCount = nums.length - evenCount;
+      const acumulouStr = d.a ? "Sim" : "Não";
+
+      const tierCols = [];
+      cfg.tiers.forEach((t) => {
+        const pInfo = (d.p && d.p[t.key]) || { g: 0, v: 0 };
+        tierCols.push(Number(pInfo.g) || 0);
+        tierCols.push(Number(pInfo.v) || 0);
+      });
+
+      return [
+        d.c,
+        d.d,
+        ...nums,
+        combined,
+        acumulouStr,
+        ...tierCols,
+        sum,
+        evenCount,
+        oddCount
+      ];
+    });
+
+    return { headers, rows };
+  }
+
+  function exportToXLSX() {
+    if (!window.XLSX) {
+      alert("A biblioteca de geração de Excel (.xlsx) ainda está sendo carregada. Por favor, aguarde alguns instantes.");
+      return;
+    }
+
+    const selectEl = document.getElementById("export-lottery-select");
+    const lotteryVal = selectEl ? selectEl.value : "current";
+    const scopeRadio = document.querySelector('input[name="export-scope"]:checked');
+    const scope = scopeRadio ? scopeRadio.value : "all";
+
+    const statusBox = document.getElementById("export-status-banner");
+    if (statusBox) {
+      statusBox.hidden = false;
+      statusBox.textContent = "Gerando planilha Excel (.xlsx)...";
+    }
+
+    try {
+      const wb = XLSX.utils.book_new();
+
+      if (lotteryVal === "all") {
+        const lotteries = ["megasena", "lotofacil", "quina", "lotomania"];
+        lotteries.forEach((k) => {
+          const lData = getDrawsForLotteryKey(k);
+          if (lData && lData.draws && lData.draws.length) {
+            const { headers, rows } = buildLotterySheetData(lData.cfg, lData.draws);
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            XLSX.utils.book_append_sheet(wb, ws, lData.cfg.name);
+          }
+        });
+        const dateStr = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Loterias_Caixa_Consolidado_Todas_${dateStr}.xlsx`);
+      } else {
+        const lData = (lotteryVal === "current")
+          ? { cfg: getCurrentLottery(), draws: (scope === "filtered" ? getFilteredDraws() : state.draws) }
+          : getDrawsForLotteryKey(lotteryVal);
+
+        if (!lData || !lData.draws || !lData.draws.length) {
+          alert("Nenhum sorteio encontrado para exportar.");
+          return;
+        }
+
+        const { headers, rows } = buildLotterySheetData(lData.cfg, lData.draws);
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        XLSX.utils.book_append_sheet(wb, ws, lData.cfg.name);
+
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const scopeTag = (scope === "filtered") ? "_Filtrados" : "_Completo";
+        XLSX.writeFile(wb, `Loterias_Caixa_${lData.cfg.name}${scopeTag}_${dateStr}.xlsx`);
+      }
+
+      if (statusBox) {
+        statusBox.textContent = "✓ Planilha Excel gerada e baixada com sucesso!";
+        setTimeout(() => { statusBox.hidden = true; }, 4000);
+      }
+    } catch (err) {
+      console.error("Erro ao gerar XLSX:", err);
+      if (statusBox) statusBox.textContent = "Erro ao gerar arquivo Excel: " + err.message;
+    }
+  }
+
+  function renderLotteryPDFSection(doc, cfg, drawsList, startOnNewPage) {
+    if (startOnNewPage) {
+      doc.addPage();
+    }
+
+    const headerColors = {
+      megasena: [15, 92, 58],
+      lotofacil: [126, 34, 206],
+      quina: [194, 65, 12],
+      lotomania: [234, 88, 12]
+    };
+    const color = headerColors[cfg.id] || [15, 92, 58];
+
+    // Cabeçalho institucional
+    doc.setFillColor(...color);
+    doc.rect(0, 0, 210, 24, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text(`Atlas Estatístico - ${cfg.name}`, 14, 11);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text("Relatório Oficial Consolidado de Resultados Históricos", 14, 17);
+
+    const emitDate = new Date().toLocaleDateString("pt-BR");
+    doc.text(`Data de Emissão: ${emitDate}`, 196, 17, { align: "right" });
+
+    // Metadados da consulta
+    doc.setTextColor(20, 38, 28);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.text("Resumo dos Concursos:", 14, 30);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    const totalCount = drawsList.length;
+    const oldestDraw = drawsList[drawsList.length - 1];
+    const newestDraw = drawsList[0];
+    const rangeText = `Exibindo ${intFmt.format(totalCount)} concursos (do Concurso #${oldestDraw.c} em ${oldestDraw.d} ao #${newestDraw.c} em ${newestDraw.d})`;
+    doc.text(rangeText, 14, 35);
+
+    const headRow = ["Concurso", "Data", "Dezenas Sorteadas", "Acumulou?", cfg.tablePrizeCols.main, "Faixa 2"];
+    const tableRows = drawsList.map((d) => {
+      const numsStr = (d.n || []).map(pad2).join(" ");
+      const acumStr = d.a ? "Sim" : "Não";
+      const mainTier = cfg.tiers[0];
+      const subTier = cfg.tiers[1];
+      const mainP = (d.p && d.p[mainTier.key]) || { g: 0, v: 0 };
+      const subP = (subTier && d.p && d.p[subTier.key]) || { g: 0, v: 0 };
+
+      const mainText = `${intFmt.format(mainP.g)} gan. (${brlFmt.format(mainP.v)})`;
+      const subText = subTier ? `${intFmt.format(subP.g)} gan. (${brlFmt.format(subP.v)})` : "-";
+
+      return [
+        `#${d.c}`,
+        d.d,
+        numsStr,
+        acumStr,
+        mainText,
+        subText
+      ];
+    });
+
+    doc.autoTable({
+      head: [headRow],
+      body: tableRows,
+      startY: 38,
+      theme: "striped",
+      headStyles: {
+        fillColor: color,
+        textColor: 255,
+        fontSize: 8,
+        fontStyle: "bold"
+      },
+      styles: {
+        fontSize: 7.5,
+        cellPadding: 1.6,
+        textColor: [20, 38, 28]
+      },
+      alternateRowStyles: {
+        fillColor: [247, 245, 240]
+      },
+      columnStyles: {
+        0: { cellWidth: 18, fontStyle: "bold" },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 42, fontStyle: "bold" },
+        3: { cellWidth: 18, halign: "center" },
+        4: { cellWidth: 50 },
+        5: { cellWidth: 42 }
+      },
+      margin: { top: 28, bottom: 14, left: 10, right: 10 },
+      didDrawPage: function (data) {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(7.5);
+        doc.setTextColor(100, 115, 105);
+        doc.text(`Página ${data.pageNumber} de ${pageCount} • Atlas Oficial das Loterias Caixa (${cfg.name})`, 105, 290, { align: "center" });
+      }
+    });
+  }
+
+  function exportToPDF() {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert("A biblioteca de geração de PDF ainda está sendo carregada. Por favor, aguarde alguns instantes.");
+      return;
+    }
+
+    const selectEl = document.getElementById("export-lottery-select");
+    const lotteryVal = selectEl ? selectEl.value : "current";
+    const scopeRadio = document.querySelector('input[name="export-scope"]:checked');
+    const scope = scopeRadio ? scopeRadio.value : "all";
+
+    const statusBox = document.getElementById("export-status-banner");
+    if (statusBox) {
+      statusBox.hidden = false;
+      statusBox.textContent = "Gerando documento PDF formatado...";
+    }
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const dateStr = new Date().toISOString().slice(0, 10);
+
+      if (lotteryVal === "all") {
+        const lotteries = ["megasena", "lotofacil", "quina", "lotomania"];
+        lotteries.forEach((k, idx) => {
+          const lData = getDrawsForLotteryKey(k);
+          if (lData && lData.draws && lData.draws.length) {
+            const drawsList = lData.draws.slice().sort((a, b) => b.c - a.c);
+            renderLotteryPDFSection(doc, lData.cfg, drawsList, idx > 0);
+          }
+        });
+        doc.save(`Loterias_Caixa_Consolidado_Todas_${dateStr}.pdf`);
+      } else {
+        const targetLottery = (lotteryVal === "current") ? state.lottery : lotteryVal;
+        const lData = (lotteryVal === "current")
+          ? { cfg: getCurrentLottery(), draws: (scope === "filtered" ? getFilteredDraws() : state.draws) }
+          : getDrawsForLotteryKey(targetLottery);
+
+        if (!lData || !lData.draws || !lData.draws.length) {
+          alert("Nenhum sorteio encontrado para exportar em PDF.");
+          return;
+        }
+
+        const drawsList = lData.draws.slice().sort((a, b) => b.c - a.c);
+        renderLotteryPDFSection(doc, lData.cfg, drawsList, false);
+
+        const scopeTag = (scope === "filtered") ? "_Filtrados" : "_Completo";
+        doc.save(`Loterias_Caixa_${lData.cfg.name}${scopeTag}_${dateStr}.pdf`);
+      }
+
+      if (statusBox) {
+        statusBox.textContent = "✓ Documento PDF gerado e baixado com sucesso!";
+        setTimeout(() => { statusBox.hidden = true; }, 4000);
+      }
+    } catch (err) {
+      console.error("Erro ao gerar PDF:", err);
+      if (statusBox) statusBox.textContent = "Erro ao gerar PDF: " + err.message;
+    }
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -1525,5 +2043,7 @@
     const startLottery = LOTTERY_CONFIGS[hash] ? hash : "megasena";
     bindEvents();
     selectLottery(startLottery);
+    updateExportButtonUI();
+    checkStripeReturn();
   });
 })();

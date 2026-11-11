@@ -9,5 +9,12 @@ runs/
 AGENTS.md
 CLAUDE.md
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
 # Node & Build outputs
 node_modules/
+.env
+.env.local

@@ -33,17 +33,25 @@ Aplicação web sem dependências externas para consulta de todos os resultados 
    - Três métodos de projeção: **Expectativa Empírica Direta** ($p_i = f_i / N$), **Simulação de Monte Carlo Ponderada** (amostragem sem reposição de $H$ sorteios futuros) e **Regressão à Média + Pressão de Ciclo**.
    - Gráfico SVG multi-escala comparando a trajetória das dezenas líderes, média teórica (10%) e lanterna em `+50`, `+500`, `+1.000` e `+5.000` jogos, além de projeções de aparições adicionais, pressão de ciclo, paridade e linhas do volante.
 
-4. **Histórico Completo de Concursos**
+4. **Histórico Completo de Concursos e Exportação Paga (XLSX / PDF)**
    - Busca por número do concurso ou data (`dd/mm/aaaa`).
    - Filtro por dezena específica sorteada (`01` a `60`) e por status do prêmio principal (Todos, Com ganhadores na Sena, Acumulados).
    - Modal de detalhes com o rateio completo de cada concurso (Sena, Quina e Quadra) e atalho para carregar as dezenas daquele sorteio no simulador.
    - Botão **Atualizar da Caixa** para buscar novos sorteios via API pública sem precisar recarregar a página.
+   - **Exportação Paga de Resultados (R$ 15,00 via Stripe):**
+     - Botão de exportação integrado no cabeçalho da tabela de resultados.
+     - Checkout seguro Stripe com suporte a **Pix instantâneo** e **Cartão de Crédito**.
+     - Download em **Planilha Excel (.xlsx)** formatada (colunas individuais, combinadas, rateios, acumulados, soma e paridade).
+     - Download em **Relatório Diagramado (.pdf)** em alta resolução com cabeçalho oficial e paginação.
+     - Suporte a exportação de concursos filtrados ou base completa de todas as 4 loterias (Mega-Sena, Lotofácil, Quina e Lotomania).
 
 ## Estrutura de Arquivos
 
-- `index.html`: Estrutura semântica da aplicação e controles acessíveis por teclado.
-- `styles.css`: Estilos responsivos (celular, tablet e desktop) com suporte a tema Claro e Escuro (contraste WCAG AA validado).
-- `app.js`: Motor de simulação combinatória, cálculo de estatísticas, gráficos e tabela paginada.
+- `index.html`: Estrutura semântica da aplicação, modais de pagamento e download, e controles acessíveis por teclado.
+- `styles.css`: Estilos responsivos com suporte a tema Claro e Escuro (contraste WCAG AA validado).
+- `app.js`: Motor de simulação combinatória, integração Stripe e geradores XLSX/PDF.
+- `server.py`: Servidor HTTP leve em Python com endpoints para sessões dinâmicas do Stripe Checkout.
+- `vendor/`: Bibliotecas locais de alta performance para geração de planilhas (`xlsx.full.min.js`) e documentos (`jspdf.umd.min.js`, `jspdf.plugin.autotable.min.js`).
 - `data/megasena.js` / `data/megasena.json`: Base da Mega-Sena (3.077 concursos).
 - `data/lotofacil.js` / `data/lotofacil.json`: Base da Lotofácil (3.816 concursos).
 - `data/quina.js` / `data/quina.json`: Base da Quina (7.154 concursos).
@@ -53,23 +61,43 @@ Aplicação web sem dependências externas para consulta de todos os resultados 
 
 O projeto utiliza apenas HTML, CSS e JavaScript nativos, não exigindo instalação de pacotes (`npm install`) ou etapa de build.
 
-### Opção 1: Abrir diretamente no navegador (sem servidor)
+### Opção 1: Servidor Integrado com Checkout Stripe (Recomendado)
+Para servir a aplicação e processar as sessões dinâmicas do Stripe:
+
+```bash
+python3 server.py
+```
+
+Acesse no navegador: `http://localhost:8080`
+
+### Opção 2: Servidor HTTP padrão do Python
+```bash
+python3 -m http.server 8080
+```
+
+### Opção 3: Abrir diretamente no navegador (sem servidor)
 Basta dar duplo clique no arquivo `index.html` ou executar no terminal:
 
 ```bash
 open index.html
 ```
 
-*(Como os dados estão empacotados também em `data/megasena.js`, toda a base de 3.077 sorteios funciona mesmo abrindo via protocolo `file://`).*
+*(Como as bibliotecas XLSX/PDF estão empacotadas em `vendor/` e os dados em `data/`, a aplicação funciona mesmo abrindo via protocolo `file://`).*
 
-### Opção 2: Rodar com servidor HTTP local (Python)
-Para servir via HTTP na porta `8080`:
+## Como Publicar no Netlify
 
-```bash
-python3 -m http.server 8080
-```
+O projeto já está 100% configurado para o **Netlify** com suporte a **Netlify Functions** para o Stripe Checkout:
 
-Depois, acesse no navegador: `http://localhost:8080`
+1. Conecte o repositório no [Netlify Dashboard](https://app.netlify.com/).
+2. As configurações em [`netlify.toml`](netlify.toml) detectam automaticamente:
+   - **Publish directory:** `.` (raiz)
+   - **Functions directory:** `netlify/functions`
+   - **Build command:** *(deixar vazio - zero build)*
+3. No painel do Netlify (**Site configuration > Environment variables**), adicione:
+   - `STRIPE_SECRET_KEY`: sua chave restrita/secreta do Stripe
+   - `STRIPE_PRICE_ID`: `price_1UaaJVLbOL7pa0nJ0ROoF0wr`
+   - `STRIPE_PAYMENT_LINK`: `https://buy.stripe.com/bJe6oI5Sd2JbgDLewzeQM00`
+4. Clique em **Deploy**. As rotas `/api/create-checkout-session` e `/api/verify-session` funcionarão como Serverless Functions automaticamente.
 
 ## Como Atualizar a Base de Dados Local (Opcional)
 
