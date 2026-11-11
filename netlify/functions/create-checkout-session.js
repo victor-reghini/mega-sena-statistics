@@ -22,8 +22,10 @@ export default async (req) => {
   const priceId = process.env.STRIPE_PRICE_ID || "price_1UaaJVLbOL7pa0nJ0ROoF0wr";
   const paymentLink = process.env.STRIPE_PAYMENT_LINK || "https://buy.stripe.com/bJe6oI5Sd2JbgDLewzeQM00";
 
-  let origin = new URL(req.url).origin;
+  let origin = "https://lotery-statistics.netlify.app";
   try {
+    const reqOrigin = new URL(req.url).origin;
+    if (reqOrigin) origin = reqOrigin;
     const body = await req.json();
     if (body && body.origin) origin = body.origin;
   } catch (e) {}
