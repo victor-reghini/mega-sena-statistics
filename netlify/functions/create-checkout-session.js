@@ -22,12 +22,32 @@ export default async (req) => {
   const priceId = process.env.STRIPE_PRICE_ID || "price_1UaaJVLbOL7pa0nJ0ROoF0wr";
   const paymentLink = process.env.STRIPE_PAYMENT_LINK || "https://buy.stripe.com/bJe6oI5Sd2JbgDLewzeQM00";
 
+  const ALLOWED_ORIGINS = [
+    "https://lotery-statistics.netlify.app",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080"
+  ];
+
+  function sanitizeOrigin(candidate, fallback) {
+    if (!candidate) return fallback;
+    try {
+      const u = new URL(candidate);
+      const normalized = `${u.protocol}//${u.host}`;
+      if (ALLOWED_ORIGINS.includes(normalized)) return normalized;
+      if (u.hostname.endsWith(".netlify.app")) return normalized;
+    } catch (e) {}
+    return fallback;
+  }
+
   let origin = "https://lotery-statistics.netlify.app";
   try {
     const reqOrigin = new URL(req.url).origin;
-    if (reqOrigin) origin = reqOrigin;
+    origin = sanitizeOrigin(reqOrigin, origin);
+
     const body = await req.json();
-    if (body && body.origin) origin = body.origin;
+    if (body && body.origin) {
+      origin = sanitizeOrigin(body.origin, origin);
+    }
   } catch (e) { }
 
   const successUrl = `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`;
@@ -65,7 +85,7 @@ export default async (req) => {
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
     });
   } catch (err) {
-    return new Response(JSON.stringify({ ok: true, url: paymentLink, fallback: true, error: err.message }), {
+    return new Response(JSON.stringify({ ok: true, url: paymentLink, fallback: true }), {
       status: 200,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
     });

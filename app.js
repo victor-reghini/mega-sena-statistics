@@ -162,6 +162,16 @@
     return String(n).padStart(2, "0");
   }
 
+  function escapeHtml(str) {
+    if (str == null) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   function getCurrentLottery() {
     return LOTTERY_CONFIGS[state.lottery] || LOTTERY_CONFIGS.megasena;
   }
@@ -359,7 +369,7 @@
     }
 
     if (state.error) {
-      panel.innerHTML = `<div class="status-banner error" role="alert">Erro ao carregar sorteios: ${state.error}.</div>`;
+      panel.innerHTML = `<div class="status-banner error" role="alert">Erro ao carregar sorteios: ${escapeHtml(state.error)}.</div>`;
       return;
     }
 
@@ -1557,15 +1567,34 @@
 
     const btnCheckPaid = document.getElementById("btn-check-paid");
     if (btnCheckPaid) {
-      btnCheckPaid.addEventListener("click", () => {
-        const confirmUnlock = window.confirm(
-          "Você já concluiu o pagamento de R$ 15,00 pelo Stripe?\n\nClique em OK para liberar seu acesso imediatamente aos downloads em Excel (.xlsx) e PDF."
+      btnCheckPaid.addEventListener("click", async () => {
+        const inputSession = window.prompt(
+          "Se você já concluiu o pagamento de R$ 15,00 no Stripe, informe o identificador da sessão (inicia com cs_...):"
         );
-        if (confirmUnlock) {
-          markExportPaid();
-          closeExportPayModal();
-          openExportDownloadModal();
-          showPaymentToast("Acesso liberado! Seus arquivos estão disponíveis para download.");
+        if (!inputSession) return;
+        const cleanId = inputSession.trim();
+        if (!/^cs_(live|test)_[a-zA-Z0-9_-]{20,120}$/.test(cleanId)) {
+          alert("Identificador de sessão com formato inválido. Ele deve começar com cs_live_ ou cs_test_.");
+          return;
+        }
+        btnCheckPaid.disabled = true;
+        btnCheckPaid.textContent = "Verificando...";
+        try {
+          const res = await fetch(`/api/verify-session?session_id=${encodeURIComponent(cleanId)}`);
+          const data = await res.json();
+          if (res.ok && data && data.paid) {
+            markExportPaid(cleanId);
+            closeExportPayModal();
+            openExportDownloadModal();
+            showPaymentToast("Pagamento verificado com sucesso! Arquivos desbloqueados.");
+          } else {
+            alert("Sessão não confirmada como paga. Verifique se a transação foi finalizada no Stripe.");
+          }
+        } catch (e) {
+          alert("Erro temporário ao consultar o servidor de validação.");
+        } finally {
+          btnCheckPaid.disabled = false;
+          btnCheckPaid.textContent = "Já paguei / Validar";
         }
       });
     }
@@ -1628,9 +1657,12 @@
     }
   }
 
-  function markExportPaid() {
+  function markExportPaid(sessionId) {
     try {
       localStorage.setItem(STRIPE_CONFIG.storageKey, "true");
+      if (sessionId) {
+        localStorage.setItem(STRIPE_CONFIG.storageKey + "_session", sessionId);
+      }
     } catch (e) {}
     updateExportButtonUI();
   }
@@ -1667,18 +1699,32 @@
     }, 7000);
   }
 
-  function checkStripeReturn() {
+  async function checkStripeReturn() {
     try {
       const params = new URLSearchParams(window.location.search);
-      const isSuccess = params.get("payment") === "success" || params.get("paid") === "true";
-      const sessionId = params.get("session_id");
+      const sessionId = (params.get("session_id") || "").trim();
 
-      if (isSuccess || sessionId) {
-        markExportPaid();
-        showPaymentToast("Seu pagamento de R$ 15,00 foi confirmado! O download dos arquivos está desbloqueado.");
-        const cleanUrl = window.location.pathname + window.location.hash;
-        window.history.replaceState({}, document.title, cleanUrl);
-        openExportDownloadModal();
+      if (sessionId) {
+        if (!/^cs_(live|test)_[a-zA-Z0-9_-]{20,120}$/.test(sessionId)) {
+          return;
+        }
+        showPaymentToast("Validando pagamento com o Stripe...");
+        try {
+          const res = await fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`);
+          const data = await res.json();
+          if (res.ok && data && data.paid) {
+            markExportPaid(sessionId);
+            showPaymentToast("Seu pagamento de R$ 15,00 foi confirmado! O download dos arquivos está desbloqueado.");
+            const cleanUrl = window.location.pathname + window.location.hash;
+            window.history.replaceState({}, document.title, cleanUrl);
+            openExportDownloadModal();
+            return;
+          } else {
+            alert("O pagamento desta sessão ainda não foi concluído ou não pôde ser confirmado.");
+          }
+        } catch (e) {
+          console.warn("Erro ao validar sessão Stripe:", e);
+        }
       }
     } catch (e) {
       console.warn("Erro ao verificar retorno Stripe:", e);

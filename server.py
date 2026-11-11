@@ -8,6 +8,7 @@ Sem dependências externas - utiliza apenas a biblioteca padrão do Python 3.
 import http.server
 import json
 import os
+import re
 import socketserver
 import sys
 import urllib.error
@@ -67,8 +68,14 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
         if path == "/api/verify-session":
             query = urllib.parse.parse_qs(parsed.query)
             session_id = query.get("session_id", [""])[0].strip()
-            if not session_id:
-                self.send_json({"ok": False, "error": "session_id ausente"}, status=400)
+
+            SESSION_REGEX = r"^cs_(live|test)_[a-zA-Z0-9_-]{20,120}$"
+            if not session_id or not re.match(SESSION_REGEX, session_id):
+                self.send_json({"ok": False, "error": "Identificador de sessão inválido ou ausente."}, status=400)
+                return
+
+            if not STRIPE_SECRET_KEY:
+                self.send_json({"ok": False, "error": "Serviço de pagamento não configurado no servidor."}, status=503)
                 return
 
             try:
@@ -78,21 +85,33 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
                 req.add_header("Authorization", f"Bearer {STRIPE_SECRET_KEY}")
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
-                    paid = (data.get("payment_status") == "paid")
+                    is_paid = (data.get("payment_status") == "paid")
+                    is_completed = (data.get("status") == "complete")
+                    is_correct_amount = (int(data.get("amount_total") or 0) == 1500)
+                    is_correct_currency = (str(data.get("currency") or "").lower() == "brl")
+
+                    verified = is_paid and is_completed and is_correct_amount and is_correct_currency
+
                     self.send_json({
                         "ok": True,
-                        "paid": paid,
+                        "paid": verified,
                         "status": data.get("status"),
                         "customer_email": data.get("customer_details", {}).get("email") if data.get("customer_details") else None
                     })
                     return
             except urllib.error.HTTPError as e:
-                err_body = e.read().decode("utf-8")
-                self.send_json({"ok": False, "error": f"Erro Stripe: {e.code}", "detail": err_body}, status=e.code)
+                self.send_json({"ok": False, "error": "Sessão de pagamento não localizada ou expirada."}, status=e.code)
                 return
             except Exception as e:
-                self.send_json({"ok": False, "error": str(e)}, status=500)
+                self.send_json({"ok": False, "error": "Falha na verificação com o gateway de pagamento."}, status=500)
                 return
+
+        # Bloqueio de arquivos sensíveis (.env, arquivos ocultos, configs de servidor)
+        clean_path = os.path.normpath(urllib.parse.unquote(path)).replace("\\", "/")
+        parts = [p for p in clean_path.split("/") if p]
+        if any(part.startswith(".") for part in parts) or any(part in ("server.py", "netlify.toml", "package.json", "package-lock.json") for part in parts):
+            self.send_error(403, "Acesso proibido.")
+            return
 
         super().do_GET()
 
@@ -108,10 +127,26 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
             except Exception:
                 payload = {}
 
-            # Obter a origem da requisição para montar as URLs de retorno
+            # Validação e sanitização da origem de retorno (Allowlist de segurança)
+            ALLOWED_ORIGINS = [
+                "https://lotery-statistics.netlify.app",
+                f"http://localhost:{PORT}",
+                f"http://127.0.0.1:{PORT}"
+            ]
+
             host_header = self.headers.get("Host", f"localhost:{PORT}")
             scheme = "https" if self.headers.get("X-Forwarded-Proto") == "https" else "http"
-            origin = payload.get("origin") or f"{scheme}://{host_header}"
+            default_origin = f"{scheme}://{host_header}"
+
+            candidate_origin = payload.get("origin") or default_origin
+            origin = "https://lotery-statistics.netlify.app"
+            try:
+                u = urllib.parse.urlparse(candidate_origin)
+                norm = f"{u.scheme}://{u.netloc}"
+                if norm in ALLOWED_ORIGINS or u.netloc.endswith(".netlify.app") or "localhost" in u.netloc or "127.0.0.1" in u.netloc:
+                    origin = norm
+            except Exception:
+                pass
 
             success_url = f"{origin}/?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
             cancel_url = f"{origin}/?payment=canceled"
@@ -145,8 +180,7 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
                         "paymentLink": STRIPE_PAYMENT_LINK
                     })
                     return
-            except urllib.error.HTTPError as e:
-                err_body = e.read().decode("utf-8")
+            except urllib.error.HTTPError:
                 # Fallback para o link de pagamento caso a criação dinâmica falhe
                 self.send_json({
                     "ok": True,
@@ -155,12 +189,11 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "notice": "Usando link direto de pagamento Stripe"
                 })
                 return
-            except Exception as e:
+            except Exception:
                 self.send_json({
                     "ok": True,
                     "url": STRIPE_PAYMENT_LINK,
-                    "fallback": True,
-                    "error": str(e)
+                    "fallback": True
                 })
                 return
 
