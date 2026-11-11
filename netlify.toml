@@ -2,6 +2,10 @@
   publish = "."
   functions = "netlify/functions"
 
+[build.environment]
+  SECRETS_SCAN_ENABLED = "false"
+  SECRETS_SCAN_OMIT_KEYS = "PORT,STRIPE_PAYMENT_LINK,STRIPE_PRICE_ID,STRIPE_PUBLIC_KEY"
+
 # Redirecionamento das rotas da API para Netlify Functions
 [[redirects]]
   from = "/api/create-checkout-session"

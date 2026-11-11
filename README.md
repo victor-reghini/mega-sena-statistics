@@ -95,8 +95,9 @@ O projeto já está 100% configurado para o **Netlify** com suporte a **Netlify 
    - **Build command:** *(deixar vazio - zero build)*
 3. No painel do Netlify (**Site configuration > Environment variables**), adicione:
    - `STRIPE_SECRET_KEY`: sua chave restrita/secreta do Stripe
-   - `STRIPE_PRICE_ID`: `price_1UaaJVLbOL7pa0nJ0ROoF0wr`
-   - `STRIPE_PAYMENT_LINK`: `https://buy.stripe.com/bJe6oI5Sd2JbgDLewzeQM00`
+   - `STRIPE_PRICE_ID`: seu Price ID do Stripe (R$ 15,00)
+   - `STRIPE_PAYMENT_LINK`: seu link de pagamento Stripe
+   *(Nota: não adicione a variável PORT no Netlify, pois o Netlify não necessita de porta).*
 4. Clique em **Deploy**. As rotas `/api/create-checkout-session` e `/api/verify-session` funcionarão como Serverless Functions automaticamente.
 
 ## Como Atualizar a Base de Dados Local (Opcional)
