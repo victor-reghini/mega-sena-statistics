@@ -1794,8 +1794,24 @@
       const tierCols = [];
       cfg.tiers.forEach((t) => {
         const pInfo = (d.p && d.p[t.key]) || { g: 0, v: 0 };
-        tierCols.push(Number(pInfo.g) || 0);
-        tierCols.push(Number(pInfo.v) || 0);
+        const gVal = Number(pInfo.g) || 0;
+        const vVal = Number(pInfo.v) || 0;
+
+        // Ganhadores formatados como número
+        tierCols.push({
+          t: "n",
+          v: gVal,
+          z: "#,##0",
+          w: intFmt.format(gVal)
+        });
+
+        // Rateio/Prêmio formatado como Moeda BRL (R$)
+        tierCols.push({
+          t: "n",
+          v: vVal,
+          z: '"R$" #,##0.00',
+          w: brlFmt.format(vVal)
+        });
       });
 
       return [
@@ -1812,6 +1828,26 @@
     });
 
     return { headers, rows };
+  }
+
+  function createFormattedWorksheet(headers, rows) {
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    // Ajustar largura automática das colunas para visualização ideal no Excel
+    ws["!cols"] = headers.map((h, colIdx) => {
+      let maxLen = String(h).length;
+      const sample = rows.slice(0, 100);
+      sample.forEach((r) => {
+        const cell = r[colIdx];
+        if (cell !== undefined && cell !== null) {
+          const valStr = typeof cell === "object" && cell.w
+            ? cell.w
+            : String(cell.v !== undefined ? cell.v : cell);
+          if (valStr.length > maxLen) maxLen = valStr.length;
+        }
+      });
+      return { wch: Math.min(Math.max(maxLen + 3, 11), 32) };
+    });
+    return ws;
   }
 
   function exportToXLSX() {
@@ -1840,7 +1876,7 @@
           const lData = getDrawsForLotteryKey(k);
           if (lData && lData.draws && lData.draws.length) {
             const { headers, rows } = buildLotterySheetData(lData.cfg, lData.draws);
-            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            const ws = createFormattedWorksheet(headers, rows);
             XLSX.utils.book_append_sheet(wb, ws, lData.cfg.name);
           }
         });
@@ -1857,7 +1893,7 @@
         }
 
         const { headers, rows } = buildLotterySheetData(lData.cfg, lData.draws);
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        const ws = createFormattedWorksheet(headers, rows);
         XLSX.utils.book_append_sheet(wb, ws, lData.cfg.name);
 
         const dateStr = new Date().toISOString().slice(0, 10);

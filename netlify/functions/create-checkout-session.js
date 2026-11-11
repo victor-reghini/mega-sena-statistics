@@ -28,7 +28,7 @@ export default async (req) => {
     if (reqOrigin) origin = reqOrigin;
     const body = await req.json();
     if (body && body.origin) origin = body.origin;
-  } catch (e) {}
+  } catch (e) { }
 
   const successUrl = `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${origin}/?payment=canceled`;
