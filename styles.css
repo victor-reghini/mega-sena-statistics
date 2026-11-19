@@ -2221,5 +2221,304 @@ body {
   gap: 8px;
 }
 
+.email-delivery-box {
+  padding: 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-alt);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.email-delivery-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+}
+
+.email-delivery-header span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.email-delivery-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.email-delivery-row .text-input,
+.email-delivery-row .select-input {
+  flex: 1 1 200px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* =========================================================
+   FLUXO DE COMPRA COM VALIDAÇÃO DE E-MAIL E RECIBO OFICIAL
+   ========================================================= */
+.pf-modal-dialog {
+  max-width: 640px;
+}
+
+.pf-product-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+}
+
+.pf-product-title {
+  display: block;
+  font-size: 0.98rem;
+  color: var(--text);
+}
+
+.pf-product-sub {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.pf-product-price-pill {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1.5px solid var(--accent);
+  border-radius: 6px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.pf-stepper {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+@media (min-width: 560px) {
+  .pf-stepper {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.pf-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.pf-step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 800;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.pf-step.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.pf-step.is-active .pf-step-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.pf-step.is-done {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pf-step.is-done .pf-step-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.pf-step-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pf-panel-desc {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pf-email-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  font-size: 0.875rem;
+}
+
+.pf-instant-code-box {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1.5px dashed var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.85rem;
+}
+
+.pf-instant-code-box strong {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+}
+
+.pf-otp-input {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-align: center;
+  max-width: 240px;
+}
+
+.pf-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.pf-generated-link-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface-alt);
+}
+
+.pf-copy-url-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pf-copy-url-row .text-input {
+  flex: 1 1 220px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.rcpt-card {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+  padding: 16px;
+}
+
+.rcpt-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1.5px solid var(--border);
+}
+
+.rcpt-code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.rcpt-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rcpt-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.875rem;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--border);
+}
+
+.rcpt-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+
+
 
 

@@ -48,7 +48,11 @@ Aplicação web sem dependências externas para consulta de todos os resultados 
      - **Kit Bolão Mega da Virada 2026 (R$ 14,90):** planilha Excel de 4 abas com fórmulas automáticas de rateio de cotas, conferidor automático para o Concurso `#3100`, histórico da Virada e frequência das 60 dezenas + Guia Executivo em PDF.
      - **Dossiê Concursos Especiais (R$ 19,90):** Excel de 5 abas e PDF consolidado comparando Mega da Virada, Lotofácil da Independência, Quina de São João e Lotomania de Páscoa.
      - **Pacote Completo Atlas + Virada (R$ 34,90):** reúne todas as 4 planilhas históricas + Kit Bolão Mega da Virada 2026 + Dossiê Concursos Especiais.
-     - Checkout seguro Stripe com suporte a **Pix instantâneo** e **Cartão de Crédito**.
+     - **Camada de Segurança Anti-Burlamento e Envio por E-mail (`reghinidev@gmail.com`):**
+       - Nenhuma flag em `localStorage`, query string (`?payment=success`) ou comando no Console do navegador (`window.AtlasStore`, `XLSX.writeFile`, `jsPDF.prototype.save`) consegue liberar ou baixar as planilhas sem confirmação real no servidor.
+       - Após o pagamento, `/api/verify-session` consulta a API do Stripe e emite um token criptográfico `exportToken` assinado via **HMAC-SHA256** com `STRIPE_SECRET_KEY`.
+       - Cada download (`.xlsx` ou `.pdf`) exige autorização online em `POST /api/authorize-export`, que valida a assinatura HMAC-SHA256 e reconsulta a sessão no Stripe (`payment_status === "paid"`) antes de emitir um `nonce` de uso único.
+       - O comprador também pode receber a planilha `.xlsx` diretamente por e-mail através de `POST /api/send-export-email`, enviada pelo remetente oficial **`reghinidev@gmail.com`** via SMTP SSL (`smtp.gmail.com:465`).
 
 ## Estrutura de Arquivos
 

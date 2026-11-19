@@ -517,13 +517,28 @@
         <div>
           <h2 id="title-produtos" class="section-title editorial-heading">Planilhas Oficiais por Loteria, Combos e Kits Mega da Virada 2026</h2>
           <p class="section-desc">
-            Compre apenas a planilha da loteria que você joga por R$ 10,00 ou aproveite os pacotes com desconto para levar todas as bases e o Kit Bolão 2026. Pagamento único via Pix ou Cartão no Stripe.
+            Compre apenas a planilha da loteria que você joga por R$ 10,00 ou aproveite os pacotes com desconto para levar todas as bases e o Kit Bolão 2026. Pagamento validado no servidor via Stripe com download imediato e envio opcional por e-mail (<a href="mailto:reghinidev@gmail.com" style="color:var(--accent);font-weight:700;">reghinidev@gmail.com</a>).
           </p>
         </div>
         <button type="button" id="btn-virada-check-paid" class="btn">Já paguei: Validar sessão Stripe</button>
       </div>
 
       <div id="virada-checkout-error" class="status-banner error" role="alert" hidden></div>
+      <div id="virada-email-status" class="status-banner success" role="status" hidden></div>
+
+      <div id="virada-email-delivery-box" class="email-delivery-box" style="margin-bottom:18px;" hidden>
+        <div class="email-delivery-header">
+          <strong>Receber sua Planilha Liberada (.xlsx) por E-mail</strong>
+          <span>Envio oficial via <a href="mailto:reghinidev@gmail.com" class="btn-link-action">reghinidev@gmail.com</a></span>
+        </div>
+        <div class="email-delivery-row">
+          <label class="sr-only" for="virada-email-target">Escolha a planilha liberada para enviar</label>
+          <select id="virada-email-target" class="select-input"></select>
+          <label class="sr-only" for="virada-email-input">Seu e-mail para receber a planilha</label>
+          <input type="email" id="virada-email-input" class="text-input" placeholder="seuemail@exemplo.com" autocomplete="email">
+          <button type="button" id="btn-virada-send-email" class="btn btn-primary">Enviar Planilha por E-mail</button>
+        </div>
+      </div>
 
       <h3 class="store-group-title">1. Exportações Individuais (R$ 10,00 cada) e Combo 4 Loterias</h3>
       <div id="virada-lottery-products" class="lottery-products-grid"></div>
@@ -679,7 +694,7 @@
         <details class="faq-item">
           <summary class="faq-question">Como recebo as planilhas e relatórios após o pagamento?</summary>
           <div class="faq-answer">
-            Assim que o pagamento via Pix ou Cartão é aprovado no checkout Stripe, o navegador retorna automaticamente para esta página com os botões de download em Excel (.xlsx) e PDF liberados na hora, sem necessidade de cadastro ou mensalidade.
+            Assim que o pagamento é aprovado no checkout Stripe, o servidor valida criptograficamente a transação e libera os botões de download em Excel (.xlsx) e PDF na hora. Além do download direto no navegador, você também pode solicitar o envio da planilha (.xlsx) para o seu e-mail através do remetente oficial <strong>reghinidev@gmail.com</strong>.
           </div>
         </details>
       </div>
@@ -717,7 +732,7 @@
 
   <footer class="site-footer">
     <p style="margin:0;">
-      Dossiê Mega da Virada e Atlas Estatístico das Loterias Caixa. Conteúdo analítico e educacional baseado nos registros públicos da Caixa Econômica Federal. <a href="index.html" style="color:var(--accent);font-weight:700;">Acessar Atlas Completo</a>.
+      Dossiê Mega da Virada e Atlas Estatístico das Loterias Caixa. Conteúdo analítico e educacional baseado nos registros públicos da Caixa Econômica Federal. Suporte e envio de planilhas: <a href="mailto:reghinidev@gmail.com" style="color:var(--accent);font-weight:700;">reghinidev@gmail.com</a>. <a href="index.html" style="color:var(--accent);font-weight:700;">Acessar Atlas Completo</a>.
     </p>
   </footer>
 

@@ -4,7 +4,7 @@
 
 [build.environment]
   SECRETS_SCAN_ENABLED = "false"
-  SECRETS_SCAN_OMIT_KEYS = "PORT,STRIPE_PAYMENT_LINK,STRIPE_PRICE_ID,STRIPE_PUBLIC_KEY"
+  SECRETS_SCAN_OMIT_KEYS = "PORT,STRIPE_PAYMENT_LINK,STRIPE_PRICE_ID,STRIPE_PUBLIC_KEY,SMTP_USER,SMTP_HOST,SMTP_PORT,STRIPE_PRICE_ID_EXPORT_MEGASENA,STRIPE_PRICE_ID_EXPORT_LOTOFACIL,STRIPE_PRICE_ID_EXPORT_QUINA,STRIPE_PRICE_ID_EXPORT_LOTOMANIA,STRIPE_PRICE_ID_COMBO_ALL,STRIPE_PRICE_ID_KIT_BOLAO_VIRADA,STRIPE_PRICE_ID_DOSSIE_ESPECIAIS,STRIPE_PRICE_ID_SUPER_COMBO,STRIPE_LINK_EXPORT_MEGASENA,STRIPE_LINK_EXPORT_LOTOFACIL,STRIPE_LINK_EXPORT_QUINA,STRIPE_LINK_EXPORT_LOTOMANIA,STRIPE_LINK_COMBO_ALL,STRIPE_LINK_KIT_BOLAO_VIRADA,STRIPE_LINK_DOSSIE_ESPECIAIS,STRIPE_LINK_SUPER_COMBO"
 
 # Proteção: Bloqueio de acesso direto a arquivos de configuração sensíveis e de servidor
 [[redirects]]
@@ -45,6 +45,21 @@
 [[redirects]]
   from = "/api/verify-session"
   to = "/.netlify/functions/verify-session"
+  status = 200
+
+[[redirects]]
+  from = "/api/authorize-export"
+  to = "/.netlify/functions/authorize-export"
+  status = 200
+
+[[redirects]]
+  from = "/api/send-export-email"
+  to = "/.netlify/functions/send-export-email"
+  status = 200
+
+[[redirects]]
+  from = "/api/email-verification"
+  to = "/.netlify/functions/email-verification"
   status = 200
 
 [[headers]]

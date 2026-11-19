@@ -829,13 +829,13 @@
         <div id="checkout-error-banner" class="status-banner error" role="alert" hidden></div>
 
         <div class="checkout-trust-info">
-          <span class="trust-pill">Pix instantâneo</span>
-          <span class="trust-pill">Cartão de Crédito</span>
-          <span class="trust-pill">Pagamento Seguro via Stripe</span>
+          <span class="trust-pill">Pix ou Cartão</span>
+          <span class="trust-pill">Validação Criptográfica Stripe</span>
+          <span class="trust-pill">Envio por E-mail (reghinidev@gmail.com)</span>
         </div>
 
         <div class="already-paid-row">
-          <span>Já realizou o pagamento em outra aba ou dispositivo?</span>
+          <span>Já realizou o pagamento ou precisa validar seu acesso? Suporte: <a href="mailto:reghinidev@gmail.com" class="btn-link-action">reghinidev@gmail.com</a></span>
           <button type="button" id="btn-check-paid" class="btn-link-action">Validar sessão Stripe</button>
         </div>
       </div>
@@ -854,7 +854,7 @@
       </div>
       <div class="modal-body-export">
         <p class="export-intro">
-          Selecione a loteria e o escopo desejado para gerar sua planilha Excel (.xlsx) ou relatório em PDF:
+          Selecione a loteria e o escopo desejado para gerar sua planilha Excel (.xlsx) ou relatório em PDF, ou solicite o envio da planilha para o seu e-mail:
         </p>
 
         <div class="export-options-form">
@@ -923,6 +923,18 @@
               <span>Gera e baixa os dois formatos de uma vez</span>
             </div>
           </button>
+        </div>
+
+        <div id="email-delivery-box" class="email-delivery-box">
+          <div class="email-delivery-header">
+            <strong>Receber Planilha (.xlsx) por E-mail</strong>
+            <span>Remetente oficial: <a href="mailto:reghinidev@gmail.com" class="btn-link-action">reghinidev@gmail.com</a></span>
+          </div>
+          <div class="email-delivery-row">
+            <label class="sr-only" for="export-email-input">Seu endereço de e-mail para receber a planilha</label>
+            <input type="email" id="export-email-input" class="text-input" placeholder="seuemail@exemplo.com" autocomplete="email">
+            <button type="button" id="btn-send-export-email" class="btn btn-primary">Enviar Planilha por E-mail</button>
+          </div>
         </div>
 
         <div id="extra-products-downloads" class="extra-downloads-section"></div>

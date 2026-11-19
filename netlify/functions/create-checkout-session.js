@@ -1,4 +1,6 @@
-// Netlify Serverless Function: Criação de Sessão Stripe Checkout Multi-Produto
+// Netlify Serverless Function: Criação Resiliente de Sessão Stripe Checkout Multi-Produto (com E-mail Validado)
+import crypto from "node:crypto";
+
 const PRODUCT_CATALOG = {
   export_megasena: {
     name: "Planilha Mega-Sena + Mega da Virada (XLSX + PDF)",
@@ -6,7 +8,9 @@ const PRODUCT_CATALOG = {
     amountCents: 1000,
     unlocks: ["megasena"],
     priceEnv: "STRIPE_PRICE_ID_EXPORT_MEGASENA",
-    linkEnv: "STRIPE_LINK_EXPORT_MEGASENA"
+    linkEnv: "STRIPE_LINK_EXPORT_MEGASENA",
+    defaultPriceId: "price_1UdY0eLbOL7pa0nJXI2uQFTq",
+    defaultLink: "https://buy.stripe.com/aFa6oI94p1F73QZ88beQM01"
   },
   export_lotofacil: {
     name: "Planilha Lotofácil + Independência (XLSX + PDF)",
@@ -14,7 +18,9 @@ const PRODUCT_CATALOG = {
     amountCents: 1000,
     unlocks: ["lotofacil"],
     priceEnv: "STRIPE_PRICE_ID_EXPORT_LOTOFACIL",
-    linkEnv: "STRIPE_LINK_EXPORT_LOTOFACIL"
+    linkEnv: "STRIPE_LINK_EXPORT_LOTOFACIL",
+    defaultPriceId: "price_1UdY0gLbOL7pa0nJBrD7rC7F",
+    defaultLink: "https://buy.stripe.com/eVqfZi1BX5Vndrz9cfeQM02"
   },
   export_quina: {
     name: "Planilha Quina + São João (XLSX + PDF)",
@@ -22,7 +28,9 @@ const PRODUCT_CATALOG = {
     amountCents: 1000,
     unlocks: ["quina"],
     priceEnv: "STRIPE_PRICE_ID_EXPORT_QUINA",
-    linkEnv: "STRIPE_LINK_EXPORT_QUINA"
+    linkEnv: "STRIPE_LINK_EXPORT_QUINA",
+    defaultPriceId: "price_1UdY0hLbOL7pa0nJIH7PZBlW",
+    defaultLink: "https://buy.stripe.com/4gM8wQ5Sd1F7fzH0FJeQM03"
   },
   export_lotomania: {
     name: "Planilha Lotomania + Páscoa (XLSX + PDF)",
@@ -30,15 +38,19 @@ const PRODUCT_CATALOG = {
     amountCents: 1000,
     unlocks: ["lotomania"],
     priceEnv: "STRIPE_PRICE_ID_EXPORT_LOTOMANIA",
-    linkEnv: "STRIPE_LINK_EXPORT_LOTOMANIA"
+    linkEnv: "STRIPE_LINK_EXPORT_LOTOMANIA",
+    defaultPriceId: "price_1UdY0iLbOL7pa0nJO77PSg9g",
+    defaultLink: "https://buy.stripe.com/9B6dRa3K5abDevDewzeQM04"
   },
   combo_all: {
     name: "Combo 4 Loterias Completo (XLSX + PDF)",
-    description: "Acesso vitalício para exportar Mega-Sena, Lotofácil, Quina, Lotomania e todos os concursos especiais.",
+    description: "Acesso para exportar Mega-Sena, Lotofácil, Quina, Lotomania e todos os concursos especiais.",
     amountCents: 2490,
     unlocks: ["megasena", "lotofacil", "quina", "lotomania"],
     priceEnv: "STRIPE_PRICE_ID_COMBO_ALL",
-    linkEnv: "STRIPE_LINK_COMBO_ALL"
+    linkEnv: "STRIPE_LINK_COMBO_ALL",
+    defaultPriceId: "price_1UdY0lLbOL7pa0nJk1nYqxgl",
+    defaultLink: "https://buy.stripe.com/00weVe3K583v9bjewzeQM05"
   },
   kit_bolao_virada: {
     name: "Kit Bolão Mega da Virada 2026 (Excel + Guia PDF)",
@@ -46,7 +58,9 @@ const PRODUCT_CATALOG = {
     amountCents: 1490,
     unlocks: ["kit_bolao_virada"],
     priceEnv: "STRIPE_PRICE_ID_KIT_BOLAO_VIRADA",
-    linkEnv: "STRIPE_LINK_KIT_BOLAO_VIRADA"
+    linkEnv: "STRIPE_LINK_KIT_BOLAO_VIRADA",
+    defaultPriceId: "price_1UdY0nLbOL7pa0nJEJv2AN3m",
+    defaultLink: "https://buy.stripe.com/aFabJ2gwR0B39bj88beQM06"
   },
   dossie_especiais: {
     name: "Dossiê Concursos Especiais (XLSX + PDF)",
@@ -54,7 +68,9 @@ const PRODUCT_CATALOG = {
     amountCents: 1990,
     unlocks: ["dossie_especiais"],
     priceEnv: "STRIPE_PRICE_ID_DOSSIE_ESPECIAIS",
-    linkEnv: "STRIPE_LINK_DOSSIE_ESPECIAIS"
+    linkEnv: "STRIPE_LINK_DOSSIE_ESPECIAIS",
+    defaultPriceId: "price_1UdY0oLbOL7pa0nJiwGingZg",
+    defaultLink: "https://buy.stripe.com/4gM00k94p5VngDLgEHeQM07"
   },
   super_combo: {
     name: "Pacote Completo Atlas + Virada (4 Loterias + Kit Bolão + Dossiê)",
@@ -62,15 +78,11 @@ const PRODUCT_CATALOG = {
     amountCents: 3490,
     unlocks: ["megasena", "lotofacil", "quina", "lotomania", "kit_bolao_virada", "dossie_especiais"],
     priceEnv: "STRIPE_PRICE_ID_SUPER_COMBO",
-    linkEnv: "STRIPE_LINK_SUPER_COMBO"
+    linkEnv: "STRIPE_LINK_SUPER_COMBO",
+    defaultPriceId: "price_1UdY0pLbOL7pa0nJFrkhnZIt",
+    defaultLink: "https://buy.stripe.com/eVqeVebcxgA1cnvbkneQM08"
   }
 };
-
-const ALLOWED_ORIGINS = [
-  "https://lotery-statistics.netlify.app",
-  "http://localhost:8080",
-  "http://127.0.0.1:8080"
-];
 
 const ALLOWED_RETURN_PATHS = [
   "/",
@@ -94,7 +106,8 @@ function sanitizeOrigin(candidate, fallback) {
   try {
     const u = new URL(candidate);
     const normalized = `${u.protocol}//${u.host}`;
-    if (ALLOWED_ORIGINS.includes(normalized)) return normalized;
+    if (normalized === fallback) return normalized;
+    if (u.hostname === "lotery-statistics.netlify.app" && u.protocol === "https:") return normalized;
     if (u.hostname.endsWith(".netlify.app") && u.protocol === "https:") return normalized;
     if ((u.hostname === "localhost" || u.hostname === "127.0.0.1") && (u.protocol === "http:" || u.protocol === "https:")) {
       return normalized;
@@ -109,33 +122,56 @@ function sanitizeReturnPath(candidate) {
   return ALLOWED_RETURN_PATHS.includes(clean) ? clean : "/";
 }
 
-function buildStripeParams(productId, product, successUrl, cancelUrl, includePix) {
-  const params = new URLSearchParams();
-  const configuredPriceId = product.priceEnv ? (process.env[product.priceEnv] || "").trim() : "";
+function verifyEmailToken(tokenStr, secretKey, expectedEmail, expectedProductId) {
+  if (!tokenStr || typeof tokenStr !== "string" || !secretKey) return null;
+  const parts = tokenStr.trim().split(".");
+  if (parts.length !== 2) return null;
+  const [payloadB64, providedSig] = parts;
+  if (!payloadB64 || !providedSig || !/^[a-f0-9]{64}$/i.test(providedSig)) return null;
 
-  if (configuredPriceId) {
-    params.append("line_items[0][price]", configuredPriceId);
-  } else {
-    params.append("line_items[0][price_data][currency]", "brl");
-    params.append("line_items[0][price_data][unit_amount]", String(product.amountCents));
-    params.append("line_items[0][price_data][product_data][name]", product.name);
-    params.append("line_items[0][price_data][product_data][description]", product.description);
+  const expectedSig = crypto.createHmac("sha256", secretKey).update(payloadB64).digest("hex");
+  const bufA = Buffer.from(providedSig.toLowerCase(), "utf8");
+  const bufB = Buffer.from(expectedSig.toLowerCase(), "utf8");
+  if (bufA.length !== bufB.length || !crypto.timingSafeEqual(bufA, bufB)) {
+    return null;
   }
 
+  try {
+    const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8"));
+    if (!payload || typeof payload !== "object") return null;
+    if (payload.purpose !== "verified_purchase_email" || payload.verified !== true) return null;
+    if (Number(payload.exp || 0) <= Date.now()) return null;
+    if (expectedEmail && String(payload.email || "").toLowerCase() !== expectedEmail.toLowerCase()) return null;
+    if (expectedProductId && payload.productId !== expectedProductId) return null;
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
+function buildBaseParams(productId, product, successUrl, cancelUrl, paymentMode, verifiedEmail) {
+  const params = new URLSearchParams();
   params.append("line_items[0][quantity]", "1");
   params.append("mode", "payment");
   params.append("success_url", successUrl);
   params.append("cancel_url", cancelUrl);
   params.append("metadata[product_id]", productId);
   params.append("metadata[unlocks]", product.unlocks.join(","));
-  params.append("payment_method_types[0]", "card");
-  if (includePix) {
+  if (verifiedEmail) {
+    params.append("customer_email", verifiedEmail);
+    params.append("metadata[verified_email]", verifiedEmail);
+  }
+
+  if (paymentMode === "card_pix") {
+    params.append("payment_method_types[0]", "card");
     params.append("payment_method_types[1]", "pix");
+  } else if (paymentMode === "card_only") {
+    params.append("payment_method_types[0]", "card");
   }
   return params;
 }
 
-async function createStripeSession(stripeKey, params) {
+async function postStripeSession(stripeKey, params) {
   const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
     headers: {
@@ -146,6 +182,40 @@ async function createStripeSession(stripeKey, params) {
   });
   const data = await res.json();
   return { ok: res.ok, status: res.status, data };
+}
+
+async function tryCreateWithModes(stripeKey, makeParamsFn) {
+  // Tenta com métodos automáticos do Dashboard, depois card_only, depois card_pix
+  const modes = ["auto", "card_only", "card_pix"];
+  let lastResult = null;
+  for (const mode of modes) {
+    const params = makeParamsFn(mode);
+    const res = await postStripeSession(stripeKey, params);
+    if (res.ok && res.data && res.data.url) {
+      return res;
+    }
+    lastResult = res;
+    const errMsg = String((res.data && res.data.error && res.data.error.message) || "").toLowerCase();
+    // Se o erro for de permissão da chave restrita (403) em price_data, não adianta repetir o mesmo modo
+    if (res.status === 403 || errMsg.includes("permission") || errMsg.includes("rak_")) {
+      break;
+    }
+  }
+  return lastResult;
+}
+
+async function fetchProductFromPrice(stripeKey, priceId) {
+  if (!priceId) return null;
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/prices/${encodeURIComponent(priceId)}`, {
+      headers: { "Authorization": `Bearer ${stripeKey}` }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data && typeof data.product === "string" ? data.product : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 export default async (req) => {
@@ -177,10 +247,33 @@ export default async (req) => {
     return jsonResponse({ ok: false, error: "Produto selecionado inválido." }, 400);
   }
 
+  const email = body && typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const emailVerificationToken = body && typeof body.emailVerificationToken === "string" ? body.emailVerificationToken.trim() : "";
+
+  const stripeKey = (process.env.STRIPE_SECRET_KEY || "").trim();
+  const defaultPriceId = (process.env.STRIPE_PRICE_ID || "price_1UaaJVLbOL7pa0nJ0ROoF0wr").trim();
+  const configuredPriceId = ((product.priceEnv && process.env[product.priceEnv]) || product.defaultPriceId || "").trim();
+  const productLink = ((product.linkEnv && process.env[product.linkEnv]) || product.defaultLink || "").trim();
+
+  if (!stripeKey) {
+    return jsonResponse({ ok: false, error: "Serviço de pagamento não configurado no servidor." }, 503);
+  }
+
+  const verifiedEmailPayload = verifyEmailToken(emailVerificationToken, stripeKey, email, productId);
+  if (!verifiedEmailPayload || !verifiedEmailPayload.email) {
+    return jsonResponse({
+      ok: false,
+      error: "Valide seu endereço de e-mail antes de gerar o link de pagamento."
+    }, 403);
+  }
+  const verifiedEmail = verifiedEmailPayload.email;
+
   let origin = "https://lotery-statistics.netlify.app";
   try {
     const reqOrigin = new URL(req.url).origin;
-    origin = sanitizeOrigin(reqOrigin, origin);
+    if (reqOrigin && reqOrigin !== "null") {
+      origin = reqOrigin;
+    }
     if (body && body.origin) {
       origin = sanitizeOrigin(body.origin, origin);
     }
@@ -190,53 +283,77 @@ export default async (req) => {
   const successUrl = `${origin}${safeReturnPath}?payment=success&session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${origin}${safeReturnPath}?payment=canceled&product=${encodeURIComponent(productId)}`;
 
-  const productLink = product.linkEnv ? (process.env[product.linkEnv] || "").trim() : "";
-  const stripeKey = (process.env.STRIPE_SECRET_KEY || "").trim();
-
-  if (!stripeKey) {
-    if (productLink) {
-      return jsonResponse({ ok: true, url: productLink, fallback: true, productId }, 200);
-    }
-    return jsonResponse({ ok: false, error: "Serviço de pagamento não configurado no servidor." }, 503);
-  }
+  const decorateLinkWithEmail = (url) => {
+    if (!url || !verifiedEmail) return url;
+    const sep = url.includes("?") ? "&" : "?";
+    return `${url}${sep}prefilled_email=${encodeURIComponent(verifiedEmail)}`;
+  };
 
   try {
-    let result = await createStripeSession(
-      stripeKey,
-      buildStripeParams(productId, product, successUrl, cancelUrl, true)
-    );
-
-    if (!result.ok && result.status === 400) {
-      const errMsg = String((result.data && result.data.error && result.data.error.message) || "").toLowerCase();
-      const errParam = String((result.data && result.data.error && result.data.error.param) || "").toLowerCase();
-      if (errMsg.includes("pix") || errParam.includes("payment_method_types")) {
-        result = await createStripeSession(
-          stripeKey,
-          buildStripeParams(productId, product, successUrl, cancelUrl, false)
-        );
+    // Etapa 1: Price ID dedicado configurado para este produto
+    if (configuredPriceId) {
+      const r1 = await tryCreateWithModes(stripeKey, (mode) => {
+        const p = buildBaseParams(productId, product, successUrl, cancelUrl, mode, verifiedEmail);
+        p.append("line_items[0][price]", configuredPriceId);
+        return p;
+      });
+      if (r1 && r1.ok && r1.data && r1.data.url) {
+        return jsonResponse({ ok: true, url: r1.data.url, sessionId: r1.data.id, productId, verifiedEmail }, 200);
       }
     }
 
-    if (result.ok && result.data && result.data.url) {
-      return jsonResponse({
-        ok: true,
-        url: result.data.url,
-        sessionId: result.data.id,
-        productId
-      }, 200);
+    // Etapa 2: price_data dinâmico com product_data inline
+    const r2 = await tryCreateWithModes(stripeKey, (mode) => {
+      const p = buildBaseParams(productId, product, successUrl, cancelUrl, mode, verifiedEmail);
+      p.append("line_items[0][price_data][currency]", "brl");
+      p.append("line_items[0][price_data][unit_amount]", String(product.amountCents));
+      p.append("line_items[0][price_data][product_data][name]", product.name);
+      p.append("line_items[0][price_data][product_data][description]", product.description);
+      return p;
+    });
+    if (r2 && r2.ok && r2.data && r2.data.url) {
+      return jsonResponse({ ok: true, url: r2.data.url, sessionId: r2.data.id, productId, verifiedEmail }, 200);
+    }
+
+    // Etapa 3: se a chave restrita (rk_live_) não tiver Products:Write, reutiliza o Product ID existente de STRIPE_PRICE_ID
+    const existingProdId = await fetchProductFromPrice(stripeKey, defaultPriceId);
+    if (existingProdId) {
+      const r3 = await tryCreateWithModes(stripeKey, (mode) => {
+        const p = buildBaseParams(productId, product, successUrl, cancelUrl, mode, verifiedEmail);
+        p.append("line_items[0][price_data][currency]", "brl");
+        p.append("line_items[0][price_data][unit_amount]", String(product.amountCents));
+        p.append("line_items[0][price_data][product]", existingProdId);
+        return p;
+      });
+      if (r3 && r3.ok && r3.data && r3.data.url) {
+        return jsonResponse({ ok: true, url: r3.data.url, sessionId: r3.data.id, productId, verifiedEmail }, 200);
+      }
+    }
+
+    // Etapa 4: se a chave restrita (rk_live_) só permitir Checkout Sessions com STRIPE_PRICE_ID pré-cadastrado
+    if (defaultPriceId) {
+      const r4 = await tryCreateWithModes(stripeKey, (mode) => {
+        const p = buildBaseParams(productId, product, successUrl, cancelUrl, mode, verifiedEmail);
+        p.append("line_items[0][price]", defaultPriceId);
+        p.append("metadata[used_base_price]", "true");
+        return p;
+      });
+      if (r4 && r4.ok && r4.data && r4.data.url) {
+        return jsonResponse({ ok: true, url: r4.data.url, sessionId: r4.data.id, productId, verifiedEmail }, 200);
+      }
     }
 
     if (productLink) {
-      return jsonResponse({ ok: true, url: productLink, fallback: true, productId }, 200);
+      return jsonResponse({ ok: true, url: decorateLinkWithEmail(productLink), fallback: true, productId, verifiedEmail }, 200);
     }
 
     return jsonResponse({
       ok: false,
-      error: "Não foi possível iniciar o checkout Stripe no momento. Tente novamente em instantes."
+      error: "Não foi possível iniciar a sessão no Stripe. Verifique as permissões da chave STRIPE_SECRET_KEY (Checkout Sessions: Write)."
     }, 502);
   } catch (err) {
     if (productLink) {
-      return jsonResponse({ ok: true, url: productLink, fallback: true, productId }, 200);
+      return jsonResponse({ ok: true, url: decorateLinkWithEmail(productLink), fallback: true, productId, verifiedEmail }, 200);
     }
     return jsonResponse({
       ok: false,

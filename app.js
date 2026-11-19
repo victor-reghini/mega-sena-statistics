@@ -1869,23 +1869,34 @@
 
     const btnXLSX = document.getElementById("btn-download-xlsx");
     if (btnXLSX) {
-      btnXLSX.addEventListener("click", exportToXLSX);
+      btnXLSX.addEventListener("click", () => {
+        exportToXLSX();
+      });
     }
 
     const btnPDF = document.getElementById("btn-download-pdf");
     if (btnPDF) {
-      btnPDF.addEventListener("click", exportToPDF);
+      btnPDF.addEventListener("click", () => {
+        exportToPDF();
+      });
     }
 
     const btnBoth = document.getElementById("btn-download-both");
     if (btnBoth) {
-      btnBoth.addEventListener("click", () => {
-        const ok = exportToXLSX();
+      btnBoth.addEventListener("click", async () => {
+        const ok = await exportToXLSX();
         if (ok) {
           setTimeout(() => {
             exportToPDF();
-          }, 700);
+          }, 500);
         }
+      });
+    }
+
+    const btnSendEmail = document.getElementById("btn-send-export-email");
+    if (btnSendEmail) {
+      btnSendEmail.addEventListener("click", () => {
+        sendExportEmailFromModal();
       });
     }
 
@@ -2070,30 +2081,53 @@
 
     container.innerHTML = parts.join("");
 
+    const runSecureExtraExport = async (fn) => {
+      const statusBox = document.getElementById("export-status-banner");
+      if (statusBox) {
+        statusBox.hidden = false;
+        statusBox.textContent = "Validando autorização criptográfica do pagamento...";
+      }
+      try {
+        await fn();
+        if (statusBox) {
+          statusBox.textContent = "Arquivo gerado e baixado com sucesso!";
+          setTimeout(() => { statusBox.hidden = true; }, 4000);
+        }
+      } catch (err) {
+        updateExportButtonUI();
+        syncDownloadModalAvailability();
+        renderExtraProductsInDownloadModal();
+        if (statusBox) {
+          statusBox.hidden = false;
+          statusBox.textContent = err.message;
+        }
+      }
+    };
+
     const dlBolaoX = document.getElementById("btn-dl-bolao-xlsx");
     if (dlBolaoX) {
       dlBolaoX.addEventListener("click", () => {
         const ms = getDrawsForLotteryKey("megasena");
-        Store.exportKitBolaoViradaXLSX(ms ? ms.draws : []);
+        runSecureExtraExport(() => Store.exportKitBolaoViradaXLSX(ms ? ms.draws : []));
       });
     }
     const dlBolaoP = document.getElementById("btn-dl-bolao-pdf");
     if (dlBolaoP) {
       dlBolaoP.addEventListener("click", () => {
         const ms = getDrawsForLotteryKey("megasena");
-        Store.exportKitBolaoViradaPDF(ms ? ms.draws : []);
+        runSecureExtraExport(() => Store.exportKitBolaoViradaPDF(ms ? ms.draws : []));
       });
     }
     const dlDossieX = document.getElementById("btn-dl-dossie-xlsx");
     if (dlDossieX) {
       dlDossieX.addEventListener("click", () => {
-        Store.exportDossieEspeciaisXLSX(getAllLotteriesDataMap());
+        runSecureExtraExport(() => Store.exportDossieEspeciaisXLSX(getAllLotteriesDataMap()));
       });
     }
     const dlDossieP = document.getElementById("btn-dl-dossie-pdf");
     if (dlDossieP) {
       dlDossieP.addEventListener("click", () => {
-        Store.exportDossieEspeciaisPDF(getAllLotteriesDataMap());
+        runSecureExtraExport(() => Store.exportDossieEspeciaisPDF(getAllLotteriesDataMap()));
       });
     }
 
@@ -2162,15 +2196,25 @@
     const unlockBtn = document.getElementById("btn-unlock-selected-export");
     const unlockComboBtn = document.getElementById("btn-unlock-combo-export");
     const statusBox = document.getElementById("export-status-banner");
+    const emailInput = document.getElementById("export-email-input");
+    const emailBtn = document.getElementById("btn-send-export-email");
     const dlButtons = [
       document.getElementById("btn-download-xlsx"),
       document.getElementById("btn-download-pdf"),
-      document.getElementById("btn-download-both")
+      document.getElementById("btn-download-both"),
+      emailBtn
     ];
 
     dlButtons.forEach((b) => {
       if (b) b.disabled = !hasAccess;
     });
+    if (emailInput) {
+      emailInput.disabled = !hasAccess;
+      const verifiedEmail = Store.getVerifiedCustomerEmail && Store.getVerifiedCustomerEmail();
+      if (verifiedEmail && !emailInput.value) {
+        emailInput.value = verifiedEmail;
+      }
+    }
 
     if (notice && noticeText && unlockBtn) {
       if (hasAccess) {
@@ -2288,7 +2332,7 @@
     return { cfg: base.cfg, draws: base.draws, tag: "_Completo", subtitle: "" };
   }
 
-  function exportToXLSX() {
+  async function exportToXLSX() {
     if (!Store) return false;
     const targetId = resolveSelectedExportLottery();
     const scopeRadio = document.querySelector('input[name="export-scope"]:checked');
@@ -2297,12 +2341,12 @@
 
     if (statusBox) {
       statusBox.hidden = false;
-      statusBox.textContent = "Gerando planilha Excel (.xlsx)...";
+      statusBox.textContent = "Validando pagamento no servidor e gerando planilha Excel (.xlsx)...";
     }
 
     try {
       if (targetId === "all") {
-        Store.exportAllLotteriesXLSX(LOTTERY_CONFIGS, (k) => {
+        await Store.exportAllLotteriesXLSX(LOTTERY_CONFIGS, (k) => {
           const entry = getDrawsForLotteryKey(k);
           if (!entry) return [];
           return scope === "special" && Specials
@@ -2312,21 +2356,29 @@
       } else {
         const resolved = resolveDrawsForExport(targetId, scope);
         if (!resolved) throw new Error("Modalidade inválida.");
-        Store.exportLotteryXLSX(resolved.cfg, resolved.draws, resolved.tag);
+        await Store.exportLotteryXLSX(resolved.cfg, resolved.draws, resolved.tag);
       }
       if (statusBox) {
-        statusBox.textContent = "Planilha Excel gerada e baixada com sucesso!";
+        statusBox.textContent = "Planilha Excel (.xlsx) validada, gerada e baixada com sucesso!";
         setTimeout(() => { statusBox.hidden = true; }, 4000);
       }
       return true;
     } catch (err) {
       console.error("Erro ao gerar XLSX:", err);
-      if (statusBox) statusBox.textContent = "Erro ao gerar Excel: " + err.message;
+      updateExportButtonUI();
+      syncDownloadModalAvailability();
+      if (!Store.hasLotteryAccess(targetId === "all" ? state.lottery : targetId)) {
+        closeExportDownloadModal();
+        openExportPayModal(targetId === "all" ? state.lottery : targetId);
+        showCheckoutError(err.message);
+      } else if (statusBox) {
+        statusBox.textContent = "Erro ao gerar Excel: " + err.message;
+      }
       return false;
     }
   }
 
-  function exportToPDF() {
+  async function exportToPDF() {
     if (!Store) return false;
     const targetId = resolveSelectedExportLottery();
     const scopeRadio = document.querySelector('input[name="export-scope"]:checked');
@@ -2335,12 +2387,12 @@
 
     if (statusBox) {
       statusBox.hidden = false;
-      statusBox.textContent = "Gerando documento PDF formatado...";
+      statusBox.textContent = "Validando pagamento no servidor e gerando documento PDF...";
     }
 
     try {
       if (targetId === "all") {
-        Store.exportAllLotteriesPDF(LOTTERY_CONFIGS, (k) => {
+        await Store.exportAllLotteriesPDF(LOTTERY_CONFIGS, (k) => {
           const entry = getDrawsForLotteryKey(k);
           if (!entry) return [];
           return scope === "special" && Specials
@@ -2350,17 +2402,101 @@
       } else {
         const resolved = resolveDrawsForExport(targetId, scope);
         if (!resolved) throw new Error("Modalidade inválida.");
-        Store.exportLotteryPDF(resolved.cfg, resolved.draws, resolved.tag, resolved.subtitle);
+        await Store.exportLotteryPDF(resolved.cfg, resolved.draws, resolved.tag, resolved.subtitle);
       }
       if (statusBox) {
-        statusBox.textContent = "Documento PDF gerado e baixado com sucesso!";
+        statusBox.textContent = "Documento PDF validado, gerado e baixado com sucesso!";
         setTimeout(() => { statusBox.hidden = true; }, 4000);
       }
       return true;
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
-      if (statusBox) statusBox.textContent = "Erro ao gerar PDF: " + err.message;
+      updateExportButtonUI();
+      syncDownloadModalAvailability();
+      if (!Store.hasLotteryAccess(targetId === "all" ? state.lottery : targetId)) {
+        closeExportDownloadModal();
+        openExportPayModal(targetId === "all" ? state.lottery : targetId);
+        showCheckoutError(err.message);
+      } else if (statusBox) {
+        statusBox.textContent = "Erro ao gerar PDF: " + err.message;
+      }
       return false;
+    }
+  }
+
+  async function sendExportEmailFromModal() {
+    if (!Store) return false;
+    const emailInput = document.getElementById("export-email-input");
+    const btnSend = document.getElementById("btn-send-export-email");
+    const statusBox = document.getElementById("export-status-banner");
+    const recipientEmail = emailInput ? emailInput.value.trim() : "";
+
+    if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+      if (statusBox) {
+        statusBox.hidden = false;
+        statusBox.textContent = "Informe um endereço de e-mail válido para receber a planilha.";
+      }
+      if (emailInput) emailInput.focus();
+      return false;
+    }
+
+    const targetId = resolveSelectedExportLottery();
+    const scopeRadio = document.querySelector('input[name="export-scope"]:checked');
+    const scope = scopeRadio ? scopeRadio.value : "all";
+
+    if (btnSend) {
+      btnSend.disabled = true;
+      btnSend.textContent = "Enviando...";
+    }
+    if (statusBox) {
+      statusBox.hidden = false;
+      statusBox.textContent = `Enviando planilha (.xlsx) via ${Store.SUPPORT_EMAIL} para ${recipientEmail}...`;
+    }
+
+    try {
+      let res;
+      if (targetId === "all") {
+        res = await Store.sendExportByEmail({
+          recipientEmail,
+          target: "all",
+          lotteryConfigsMap: LOTTERY_CONFIGS,
+          getDrawsFn: (k) => {
+            const entry = getDrawsForLotteryKey(k);
+            if (!entry) return [];
+            return scope === "special" && Specials
+              ? Specials.getSpecialDraws(k, entry.draws)
+              : entry.draws;
+          }
+        });
+      } else {
+        const resolved = resolveDrawsForExport(targetId, scope);
+        if (!resolved) throw new Error("Modalidade inválida.");
+        res = await Store.sendExportByEmail({
+          recipientEmail,
+          target: targetId,
+          lotteryCfg: resolved.cfg,
+          draws: resolved.draws,
+          scopeTag: resolved.tag
+        });
+      }
+      if (statusBox) {
+        statusBox.textContent =
+          (res && res.message) ||
+          `Planilha enviada com sucesso para ${recipientEmail} (remetente: ${Store.SUPPORT_EMAIL}).`;
+      }
+      return true;
+    } catch (err) {
+      console.error("Erro ao enviar planilha por e-mail:", err);
+      if (statusBox) {
+        statusBox.hidden = false;
+        statusBox.textContent = err.message;
+      }
+      return false;
+    } finally {
+      if (btnSend) {
+        btnSend.disabled = false;
+        btnSend.textContent = "Enviar Planilha por E-mail";
+      }
     }
   }
 
@@ -2383,7 +2519,7 @@
     if (Store) {
       Store.checkStripeReturn({
         onValidating: () => {
-          showPaymentToast("Validando pagamento...", "Consultando confirmação no Stripe.");
+          showPaymentToast("Validando pagamento...", "Consultando confirmação criptográfica no Stripe.");
         },
         onSuccess: (data) => {
           updateExportButtonUI();
@@ -2391,14 +2527,18 @@
           const amountStr = data && data.amountCents ? Store.formatBRLFromCents(data.amountCents) : "";
           showPaymentToast(
             amountStr ? `Pagamento de ${amountStr} confirmado!` : "Pagamento confirmado!",
-            `${label} liberado para download.`
+            `${label} liberado para download e envio por e-mail.`
           );
           openExportDownloadModal();
+        },
+        onRevalidated: () => {
+          updateExportButtonUI();
         },
         onCanceled: () => {
           showPaymentToast("Checkout cancelado", "Nenhuma cobrança foi realizada. Você pode escolher outro plano quando quiser.");
         },
         onError: (msg) => {
+          updateExportButtonUI();
           showPaymentToast("Pagamento não confirmado", msg);
         }
       });

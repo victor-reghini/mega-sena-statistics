@@ -97,7 +97,7 @@
     let saved = "light";
     try {
       saved = localStorage.getItem("loterias_theme") === "dark" ? "dark" : "light";
-    } catch (e) {}
+    } catch (e) { }
     document.documentElement.setAttribute("data-theme", saved);
     updateThemeBtn(saved);
   }
@@ -488,8 +488,137 @@
     });
   }
 
+  async function runSecureViradaExport(fn) {
+    const errEl = document.getElementById("virada-checkout-error");
+    if (errEl) errEl.hidden = true;
+    try {
+      await fn();
+    } catch (err) {
+      renderStoreSection();
+      showViradaError(err.message || "Falha na validação criptográfica do pagamento.");
+    }
+  }
+
+  function renderViradaEmailBox() {
+    if (!Store) return;
+    const box = document.getElementById("virada-email-delivery-box");
+    const sel = document.getElementById("virada-email-target");
+    const emailInput = document.getElementById("virada-email-input");
+    if (!box || !sel) return;
+
+    const options = [];
+    if (Store.hasAllLotteries()) {
+      options.push({ value: "all", label: "Combo 4 Loterias Completo (Multi-Abas .xlsx)" });
+    }
+    Store.ALL_LOTTERIES.forEach((id) => {
+      if (Store.hasLotteryAccess(id)) {
+        const cfg = LOTTERY_META[id];
+        options.push({ value: id, label: `Planilha ${cfg.name} + ${cfg.specialLabel} (.xlsx)` });
+      }
+    });
+    if (Store.hasEntitlement("kit_bolao_virada")) {
+      options.push({ value: "kit_bolao_virada", label: "Kit Bolão Mega da Virada 2026 (.xlsx)" });
+    }
+    if (Store.hasEntitlement("dossie_especiais")) {
+      options.push({ value: "dossie_especiais", label: "Dossiê Concursos Especiais 5 Abas (.xlsx)" });
+    }
+
+    if (options.length === 0) {
+      box.hidden = true;
+      return;
+    }
+
+    sel.innerHTML = options
+      .map((o) => `<option value="${o.value}">${o.label}</option>`)
+      .join("");
+    if (emailInput) {
+      const verifiedEmail = Store.getVerifiedCustomerEmail && Store.getVerifiedCustomerEmail();
+      if (verifiedEmail && !emailInput.value) {
+        emailInput.value = verifiedEmail;
+      }
+    }
+    box.hidden = false;
+  }
+
+  async function sendViradaEmail() {
+    if (!Store) return;
+    const sel = document.getElementById("virada-email-target");
+    const emailInput = document.getElementById("virada-email-input");
+    const btn = document.getElementById("btn-virada-send-email");
+    const statusEl = document.getElementById("virada-email-status");
+    const errEl = document.getElementById("virada-checkout-error");
+
+    if (errEl) errEl.hidden = true;
+    if (statusEl) statusEl.hidden = true;
+
+    const target = sel ? sel.value : "";
+    const recipientEmail = emailInput ? emailInput.value.trim() : "";
+
+    if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+      showViradaError("Informe um endereço de e-mail válido para receber a planilha.");
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Enviando...";
+    }
+
+    try {
+      let res;
+      if (target === "all") {
+        res = await Store.sendExportByEmail({
+          recipientEmail,
+          target: "all",
+          lotteryConfigsMap: LOTTERY_META,
+          getDrawsFn: (k) => window[LOTTERY_META[k].dataVar] || []
+        });
+      } else if (target === "kit_bolao_virada") {
+        res = await Store.sendExportByEmail({
+          recipientEmail,
+          target: "kit_bolao_virada",
+          draws: window.MEGASENA_DRAWS || []
+        });
+      } else if (target === "dossie_especiais") {
+        res = await Store.sendExportByEmail({
+          recipientEmail,
+          target: "dossie_especiais",
+          allLotteriesDataMap: getAllLotteriesDataMap()
+        });
+      } else if (LOTTERY_META[target]) {
+        const cfg = LOTTERY_META[target];
+        res = await Store.sendExportByEmail({
+          recipientEmail,
+          target,
+          lotteryCfg: cfg,
+          draws: window[cfg.dataVar] || [],
+          scopeTag: "_Completo"
+        });
+      } else {
+        throw new Error("Selecione uma planilha válida.");
+      }
+
+      if (statusEl) {
+        statusEl.textContent =
+          (res && res.message) ||
+          `Planilha enviada com sucesso para ${recipientEmail} (remetente: ${Store.SUPPORT_EMAIL}).`;
+        statusEl.hidden = false;
+      }
+    } catch (err) {
+      renderStoreSection();
+      showViradaError(err.message || "Falha ao enviar planilha por e-mail.");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Enviar Planilha por E-mail";
+      }
+    }
+  }
+
   function renderStoreSection() {
     if (!Store) return;
+    renderViradaEmailBox();
 
     const lotteryGrid = document.getElementById("virada-lottery-products");
     if (lotteryGrid) {
@@ -513,16 +642,15 @@
               <span class="product-price-main">${owned ? "Acesso Ativo" : "R$ 10,00"}</span>
             </div>
             <div class="product-actions">
-              ${
-                owned
-                  ? `
+              ${owned
+            ? `
                     <button type="button" class="btn btn-primary btn-dl-lot-xlsx" data-lottery="${id}">Baixar Excel (.xlsx)</button>
                     <button type="button" class="btn btn-dl-lot-pdf" data-lottery="${id}">Baixar Relatório (.pdf)</button>
                   `
-                  : `
+            : `
                     <button type="button" class="btn btn-primary btn-buy-virada" data-product-id="${prod.id}">Comprar Planilha (R$ 10,00)</button>
                   `
-              }
+          }
             </div>
           </article>
         `;
@@ -533,7 +661,7 @@
           const id = btn.dataset.lottery;
           const cfg = LOTTERY_META[id];
           const draws = Array.isArray(window[cfg.dataVar]) ? window[cfg.dataVar] : [];
-          Store.exportLotteryXLSX(cfg, draws, "_Completo");
+          runSecureViradaExport(() => Store.exportLotteryXLSX(cfg, draws, "_Completo"));
         });
       });
 
@@ -542,7 +670,7 @@
           const id = btn.dataset.lottery;
           const cfg = LOTTERY_META[id];
           const draws = Array.isArray(window[cfg.dataVar]) ? window[cfg.dataVar] : [];
-          Store.exportLotteryPDF(cfg, draws, "_Completo");
+          runSecureViradaExport(() => Store.exportLotteryPDF(cfg, draws, "_Completo"));
         });
       });
     }
@@ -557,8 +685,8 @@
         `;
         const bX = document.getElementById("btn-dl-combo-xlsx");
         const bP = document.getElementById("btn-dl-combo-pdf");
-        if (bX) bX.addEventListener("click", () => Store.exportAllLotteriesXLSX(LOTTERY_META, (k) => window[LOTTERY_META[k].dataVar] || []));
-        if (bP) bP.addEventListener("click", () => Store.exportAllLotteriesPDF(LOTTERY_META, (k) => window[LOTTERY_META[k].dataVar] || []));
+        if (bX) bX.addEventListener("click", () => runSecureViradaExport(() => Store.exportAllLotteriesXLSX(LOTTERY_META, (k) => window[LOTTERY_META[k].dataVar] || [])));
+        if (bP) bP.addEventListener("click", () => runSecureViradaExport(() => Store.exportAllLotteriesPDF(LOTTERY_META, (k) => window[LOTTERY_META[k].dataVar] || [])));
       } else {
         comboActions.innerHTML = `
           <div class="product-price-line">
@@ -584,10 +712,10 @@
           <button type="button" id="btn-dl-bolao-pdf" class="btn">Baixar Guia Executivo (.pdf)</button>
         `;
         document.getElementById("btn-dl-bolao-xlsx").addEventListener("click", () => {
-          Store.exportKitBolaoViradaXLSX(window.MEGASENA_DRAWS || []);
+          runSecureViradaExport(() => Store.exportKitBolaoViradaXLSX(window.MEGASENA_DRAWS || []));
         });
         document.getElementById("btn-dl-bolao-pdf").addEventListener("click", () => {
-          Store.exportKitBolaoViradaPDF(window.MEGASENA_DRAWS || []);
+          runSecureViradaExport(() => Store.exportKitBolaoViradaPDF(window.MEGASENA_DRAWS || []));
         });
       } else {
         actionsBolao.innerHTML = `
@@ -601,7 +729,7 @@
       if (hasBolao) {
         calcKitBtn.textContent = "Baixar meu Kit Bolão Virada 2026 (.xlsx)";
         calcKitBtn.removeAttribute("data-product-id");
-        calcKitBtn.onclick = () => Store.exportKitBolaoViradaXLSX(window.MEGASENA_DRAWS || []);
+        calcKitBtn.onclick = () => runSecureViradaExport(() => Store.exportKitBolaoViradaXLSX(window.MEGASENA_DRAWS || []));
       } else {
         calcKitBtn.textContent = "Organizar meu Bolão com o Kit Virada 2026 (R$ 14,90)";
         calcKitBtn.dataset.productId = "kit_bolao_virada";
@@ -620,10 +748,10 @@
           <button type="button" id="btn-dl-dossie-pdf" class="btn">Baixar Dossiê Completo (.pdf)</button>
         `;
         document.getElementById("btn-dl-dossie-xlsx").addEventListener("click", () => {
-          Store.exportDossieEspeciaisXLSX(getAllLotteriesDataMap());
+          runSecureViradaExport(() => Store.exportDossieEspeciaisXLSX(getAllLotteriesDataMap()));
         });
         document.getElementById("btn-dl-dossie-pdf").addEventListener("click", () => {
-          Store.exportDossieEspeciaisPDF(getAllLotteriesDataMap());
+          runSecureViradaExport(() => Store.exportDossieEspeciaisPDF(getAllLotteriesDataMap()));
         });
       } else {
         actionsDossie.innerHTML = `
@@ -656,7 +784,7 @@
       if (Store.hasLotteryAccess("megasena")) {
         bannerBtnMs.textContent = "Baixar Planilha Mega-Sena (.xlsx)";
         bannerBtnMs.removeAttribute("data-product-id");
-        bannerBtnMs.onclick = () => Store.exportLotteryXLSX(LOTTERY_META.megasena, window.MEGASENA_DRAWS || [], "_Completo");
+        bannerBtnMs.onclick = () => runSecureViradaExport(() => Store.exportLotteryXLSX(LOTTERY_META.megasena, window.MEGASENA_DRAWS || [], "_Completo"));
       } else {
         bannerBtnMs.textContent = "Planilha Mega-Sena (R$ 10,00)";
         bannerBtnMs.dataset.productId = "export_megasena";
@@ -682,7 +810,7 @@
         document.documentElement.setAttribute("data-theme", next);
         try {
           localStorage.setItem("loterias_theme", next);
-        } catch (e) {}
+        } catch (e) { }
         updateThemeBtn(next);
       });
     }
@@ -708,6 +836,11 @@
     if (calcDez) calcDez.addEventListener("change", renderBolaoCalculator);
     if (calcCotas) calcCotas.addEventListener("input", renderBolaoCalculator);
 
+    const sendEmailBtn = document.getElementById("btn-virada-send-email");
+    if (sendEmailBtn) {
+      sendEmailBtn.addEventListener("click", sendViradaEmail);
+    }
+
     const checkPaidBtn = document.getElementById("btn-virada-check-paid");
     if (checkPaidBtn && Store) {
       checkPaidBtn.addEventListener("click", async () => {
@@ -722,7 +855,7 @@
         checkPaidBtn.textContent = "Já paguei: Validar sessão Stripe";
         if (res.ok) {
           renderStoreSection();
-          showPaymentToast("Pagamento verificado!", "Seus arquivos já estão disponíveis para download na seção Produtos.");
+          showPaymentToast("Pagamento verificado!", "Seus arquivos já estão disponíveis para download e envio por e-mail.");
         } else {
           showViradaError(res.error || "Sessão não confirmada como paga.");
         }
@@ -740,7 +873,7 @@
     if (Store) {
       Store.checkStripeReturn({
         onValidating: () => {
-          showPaymentToast("Validando pagamento...", "Consultando confirmação no Stripe.");
+          showPaymentToast("Validando pagamento...", "Consultando confirmação criptográfica no Stripe.");
         },
         onSuccess: (data) => {
           renderStoreSection();
@@ -748,15 +881,19 @@
           const amountStr = data && data.amountCents ? Store.formatBRLFromCents(data.amountCents) : "";
           showPaymentToast(
             amountStr ? `Pagamento de ${amountStr} confirmado!` : "Pagamento confirmado!",
-            `${label} liberado. Clique nos botões de download na seção Planilhas.`
+            `${label} liberado. Baixe abaixo ou envie a planilha por e-mail.`
           );
           const prodSec = document.getElementById("produtos");
           if (prodSec) prodSec.scrollIntoView({ behavior: "smooth", block: "start" });
+        },
+        onRevalidated: () => {
+          renderStoreSection();
         },
         onCanceled: () => {
           showPaymentToast("Checkout cancelado", "Nenhuma cobrança foi realizada.");
         },
         onError: (msg) => {
+          renderStoreSection();
           showViradaError(msg);
         }
       });
