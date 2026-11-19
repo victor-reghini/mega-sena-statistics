@@ -219,7 +219,14 @@ function sendViaGmailSmtp({ smtpHost, smtpPort, smtpUser, smtpPass, toEmail, sub
         }
         step++;
         if (step < commands.length) {
-          socket.write(commands[step] + "\r\n");
+          const cmd = commands[step];
+          socket.write(cmd + "\r\n");
+          if (cmd === "QUIT" && !finished) {
+            finished = true;
+            try { socket.end(); } catch (e) {}
+            resolve(true);
+            return;
+          }
         } else if (!finished) {
           finished = true;
           try { socket.end(); } catch (e) {}

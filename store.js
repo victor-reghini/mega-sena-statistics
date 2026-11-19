@@ -742,21 +742,8 @@
       cfg.tiers.forEach((t) => {
         const pInfo = (d.p && d.p[t.key]) || { g: 0, v: 0 };
         const gVal = Number(pInfo.g) || 0;
-        const vVal = Number(pInfo.v) || 0;
-
-        tierCols.push({
-          t: "n",
-          v: gVal,
-          z: "#,##0",
-          w: intFmt.format(gVal)
-        });
-
-        tierCols.push({
-          t: "n",
-          v: vVal,
-          z: '"R$" #,##0.00',
-          w: brlFmt.format(vVal)
-        });
+        const vVal = Math.round((Number(pInfo.v) || 0) * 100) / 100;
+        tierCols.push(gVal, vVal);
       });
 
       return [
@@ -1498,6 +1485,10 @@
     return null;
   }
 
+  function writeCompressedXlsxBase64(XLSX, wb) {
+    return XLSX.write(wb, { type: "base64", bookType: "xlsx", compression: true });
+  }
+
   function buildAttachmentsForTarget(target, options = {}) {
     const XLSX = getXLSX();
     if (!XLSX) throw new Error("A biblioteca de geração de Excel (.xlsx) ainda está carregando.");
@@ -1510,7 +1501,7 @@
       const built = buildKitBolaoViradaWorkbook(XLSX, msDraws);
       attachments.push({
         filename: built.filename,
-        fileBase64: XLSX.write(built.wb, { type: "base64", bookType: "xlsx" }),
+        fileBase64: writeCompressedXlsxBase64(XLSX, built.wb),
         mimeType: xlsxMime
       });
     } else if (target === "dossie_especiais") {
@@ -1518,49 +1509,45 @@
       const built = buildDossieEspeciaisWorkbook(XLSX, allMap);
       attachments.push({
         filename: built.filename,
-        fileBase64: XLSX.write(built.wb, { type: "base64", bookType: "xlsx" }),
+        fileBase64: writeCompressedXlsxBase64(XLSX, built.wb),
         mimeType: xlsxMime
       });
     } else if (target === "all") {
       const cfgMap = options.configsMap || options.lotteryConfigsMap || DEFAULT_LOTTERY_META;
       const fn = options.getDrawsByLotteryFn || options.getDrawsFn || getDefaultDrawsForLottery;
-      const built = buildAllLotteriesWorkbook(XLSX, cfgMap, fn);
-      attachments.push({
-        filename: built.filename,
-        fileBase64: XLSX.write(built.wb, { type: "base64", bookType: "xlsx" }),
-        mimeType: xlsxMime
+      ALL_LOTTERIES.forEach((id) => {
+        const cfg = cfgMap[id] || DEFAULT_LOTTERY_META[id];
+        const draws = fn(id);
+        if (cfg && Array.isArray(draws) && draws.length) {
+          const builtLot = buildLotteryWorkbook(XLSX, cfg, draws, "_Completo");
+          attachments.push({
+            filename: builtLot.filename,
+            fileBase64: writeCompressedXlsxBase64(XLSX, builtLot.wb),
+            mimeType: xlsxMime
+          });
+        }
       });
     } else if (target === "purchased_bundle") {
       const unlocks = new Set(Array.isArray(options.unlocks) ? options.unlocks : Array.from(verifiedEntitlements));
-      const hasAll4 = ALL_LOTTERIES.every((id) => unlocks.has(id));
-      if (hasAll4) {
-        const builtAll = buildAllLotteriesWorkbook(XLSX, DEFAULT_LOTTERY_META, getDefaultDrawsForLottery);
-        attachments.push({
-          filename: builtAll.filename,
-          fileBase64: XLSX.write(builtAll.wb, { type: "base64", bookType: "xlsx" }),
-          mimeType: xlsxMime
-        });
-      } else {
-        ALL_LOTTERIES.forEach((id) => {
-          if (unlocks.has(id)) {
-            const cfg = DEFAULT_LOTTERY_META[id];
-            const draws = getDefaultDrawsForLottery(id);
-            if (cfg && draws.length) {
-              const builtLot = buildLotteryWorkbook(XLSX, cfg, draws, "_Completo");
-              attachments.push({
-                filename: builtLot.filename,
-                fileBase64: XLSX.write(builtLot.wb, { type: "base64", bookType: "xlsx" }),
-                mimeType: xlsxMime
-              });
-            }
+      ALL_LOTTERIES.forEach((id) => {
+        if (unlocks.has(id)) {
+          const cfg = DEFAULT_LOTTERY_META[id];
+          const draws = getDefaultDrawsForLottery(id);
+          if (cfg && draws.length) {
+            const builtLot = buildLotteryWorkbook(XLSX, cfg, draws, "_Completo");
+            attachments.push({
+              filename: builtLot.filename,
+              fileBase64: writeCompressedXlsxBase64(XLSX, builtLot.wb),
+              mimeType: xlsxMime
+            });
           }
-        });
-      }
+        }
+      });
       if (unlocks.has("kit_bolao_virada")) {
         const builtKit = buildKitBolaoViradaWorkbook(XLSX, getDefaultDrawsForLottery("megasena"));
         attachments.push({
           filename: builtKit.filename,
-          fileBase64: XLSX.write(builtKit.wb, { type: "base64", bookType: "xlsx" }),
+          fileBase64: writeCompressedXlsxBase64(XLSX, builtKit.wb),
           mimeType: xlsxMime
         });
       }
@@ -1568,7 +1555,7 @@
         const builtDossie = buildDossieEspeciaisWorkbook(XLSX, getDefaultAllLotteriesDataMap());
         attachments.push({
           filename: builtDossie.filename,
-          fileBase64: XLSX.write(builtDossie.wb, { type: "base64", bookType: "xlsx" }),
+          fileBase64: writeCompressedXlsxBase64(XLSX, builtDossie.wb),
           mimeType: xlsxMime
         });
       }
@@ -1581,12 +1568,34 @@
       const built = buildLotteryWorkbook(XLSX, cfg, drawsList, options.scopeTag || "_Completo");
       attachments.push({
         filename: built.filename,
-        fileBase64: XLSX.write(built.wb, { type: "base64", bookType: "xlsx" }),
+        fileBase64: writeCompressedXlsxBase64(XLSX, built.wb),
         mimeType: xlsxMime
       });
     }
 
     return attachments;
+  }
+
+  function batchAttachmentsByPayloadLimit(attachments, maxBatchB64Chars = 2800000) {
+    const batches = [];
+    let currentBatch = [];
+    let currentLen = 0;
+
+    for (const att of attachments) {
+      const len = (att.fileBase64 || "").length;
+      if (currentBatch.length > 0 && currentLen + len > maxBatchB64Chars) {
+        batches.push(currentBatch);
+        currentBatch = [att];
+        currentLen = len;
+      } else {
+        currentBatch.push(att);
+        currentLen += len;
+      }
+    }
+    if (currentBatch.length > 0) {
+      batches.push(currentBatch);
+    }
+    return batches;
   }
 
   async function sendExportByEmail(options = {}) {
@@ -1598,41 +1607,59 @@
 
     await authorizeExportOnServer(target === "purchased_bundle" ? "status_check" : target, "email");
     const attachments = buildAttachmentsForTarget(target, options);
+    const batches = batchAttachmentsByPayloadLimit(attachments, 2800000);
     const token = activeSignedToken || loadStoredSignedToken();
 
-    const resp = await fetch("/api/send-export-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        token,
-        target,
-        recipientEmail,
-        attachments,
-        filename: attachments[0].filename,
-        fileBase64: attachments[0].fileBase64,
-        mimeType: attachments[0].mimeType
-      })
-    });
+    let lastData = null;
+    const allDeliveredFiles = [];
 
-    let data = {};
-    try {
-      data = await resp.json();
-    } catch (e) {
-      data = {};
-    }
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      const resp = await fetch("/api/send-export-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          target,
+          recipientEmail,
+          attachments: batch,
+          partIndex: i + 1,
+          totalParts: batches.length
+        })
+      });
 
-    if (!resp.ok || !data || !data.sent) {
-      const err = new Error(
-        (data && data.error) ||
-          `Não foi possível enviar o e-mail no momento. Entre em contato com ${OFFICIAL_EMAIL}.`
-      );
-      if (data && data.receipt) {
-        err.receipt = data.receipt;
+      let data = {};
+      try {
+        data = await resp.json();
+      } catch (e) {
+        data = {};
       }
-      throw err;
+
+      if (!resp.ok || !data || !data.sent) {
+        const statusHint = resp && resp.status === 413 ? " (Payload excedeu o limite HTTP 413)" : "";
+        const err = new Error(
+          (data && data.error) ||
+            `Não foi possível enviar o e-mail no momento${statusHint}. Entre em contato com ${OFFICIAL_EMAIL}.`
+        );
+        if (data && data.receipt) {
+          err.receipt = data.receipt;
+        }
+        throw err;
+      }
+
+      lastData = data;
+      if (data.receipt && Array.isArray(data.receipt.filesDelivered)) {
+        data.receipt.filesDelivered.forEach((f) => {
+          if (!allDeliveredFiles.includes(f)) allDeliveredFiles.push(f);
+        });
+      }
     }
 
-    return data;
+    if (lastData && lastData.receipt && allDeliveredFiles.length > 0) {
+      lastData.receipt.filesDelivered = allDeliveredFiles;
+    }
+
+    return lastData;
   }
 
   function ensurePurchaseFlowModalDOM() {
