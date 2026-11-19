@@ -1770,4 +1770,456 @@ body {
   line-height: 1;
 }
 
+.toast-svg-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--success-text);
+}
+
+/* Badges da tabela e simulador */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+.badge.win {
+  background: var(--success-bg);
+  color: var(--success-text);
+  border-color: var(--accent);
+}
+
+.badge.acum {
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+.badge.hit {
+  background: var(--accent-soft);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.prize-val {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Destaque do link Mega da Virada na barra superior */
+:root {
+  --virada-gold: #92400E;
+  --virada-gold-soft: #FEF3C7;
+  --virada-gold-border: #D97706;
+  --virada-row-bg: #FFFBEB;
+}
+
+[data-theme="dark"] {
+  --virada-gold: #FDE68A;
+  --virada-gold-soft: #2E2008;
+  --virada-gold-border: #D97706;
+  --virada-row-bg: #1F2415;
+}
+
+.main-nav .nav-link-virada {
+  background: var(--virada-gold-soft);
+  color: var(--virada-gold);
+  border-color: var(--virada-gold-border);
+}
+
+.main-nav .nav-link-virada:hover {
+  filter: brightness(0.97);
+}
+
+/* Faixa de Concursos Especiais */
+.special-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+}
+
+.special-bar-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.special-bar-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-right: 2px;
+}
+
+.special-chip {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.special-chip:hover {
+  border-color: var(--border-strong);
+}
+
+.special-chip.active,
+.special-chip[aria-pressed="true"] {
+  background: var(--virada-gold-soft);
+  color: var(--virada-gold);
+  border-color: var(--virada-gold-border);
+}
+
+.special-chip-reset {
+  background: transparent;
+  border-style: dashed;
+  color: var(--text-muted);
+}
+
+.special-chip-reset[hidden] {
+  display: none;
+}
+
+.special-guide-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--virada-gold);
+  background: var(--virada-gold-soft);
+  border: 1.5px solid var(--virada-gold-border);
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.special-guide-link:hover {
+  text-decoration: underline;
+}
+
+/* Barra de escopo no Simulador e Métricas */
+.analysis-scope-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.scope-bar-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.875rem;
+}
+
+.scope-bar-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.scope-bar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.scope-toggle-btn {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scope-toggle-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+
+.stats-header-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.scope-inline-btn {
+  white-space: nowrap;
+}
+
+/* Tag e destaque de linha para Concursos Especiais */
+.special-draw-tag {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--virada-gold-soft);
+  color: var(--virada-gold);
+  border: 1px solid var(--virada-gold-border);
+}
+
+@media (min-width: 768px) {
+  .special-draw-tag {
+    display: block;
+    width: fit-content;
+  }
+}
+
+.draws-table tr.draw-row-special {
+  background-color: var(--virada-row-bg);
+}
+
+/* Modal de Pagamento Multi-Produto (R$ 10 separado + Combo R$ 24,90) */
+.pay-plans-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 620px) {
+  .pay-plans-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pay-plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-alt);
+}
+
+.pay-plan-card.recommended {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+}
+
+.pay-plan-tag {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.pay-plan-tag-accent {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.pay-plan-title {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.pay-plan-desc {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  flex-grow: 1;
+}
+
+.pay-plan-price-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.price-compare {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.pay-plan-price {
+  display: flex;
+  align-items: baseline;
+  color: var(--text);
+}
+
+.pay-plan-btn {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.pay-extras-strip {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pay-extras-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.pay-extras-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pay-extra-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.pay-extra-item.pay-extra-highlight {
+  border-color: var(--virada-gold-border);
+  background: var(--virada-row-bg);
+}
+
+.pay-extra-item strong {
+  display: block;
+  font-size: 0.875rem;
+}
+
+.pay-extra-item span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.locked-export-notice {
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1.5px solid var(--virada-gold-border);
+  background: var(--virada-gold-soft);
+  color: var(--virada-gold);
+}
+
+.btn-download-card:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.extra-downloads-section {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.extra-downloads-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.extra-downloads-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 580px) {
+  .extra-downloads-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.extra-dl-card {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-alt);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.extra-dl-card strong {
+  font-size: 0.875rem;
+}
+
+.extra-dl-card span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.extra-dl-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.extra-upsell-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+
 

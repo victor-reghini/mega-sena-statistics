@@ -143,6 +143,10 @@
             <svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 6.5a1.5 1.5 0 0 1 2.8.7c0 .9-.8 1.3-1.3 1.8v.5M8 12h.01" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span>Guia &amp; FAQ</span>
           </a>
+          <a href="mega-da-virada.html" class="nav-link nav-link-virada" title="Dossiê Mega da Virada 2026, Ganhadores e Planilhas">
+            <svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 1.8v2.4M11 1.8v2.4M2 6.5h12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span>Mega da Virada</span>
+          </a>
         </div>
 
         <div class="nav-settings" role="group" aria-label="Configurações e sincronização">
@@ -179,6 +183,18 @@
       </button>
     </nav>
 
+    <div class="special-bar" role="region" aria-label="Atalhos para concursos especiais">
+      <div class="special-bar-group">
+        <span class="special-bar-label">Concursos Especiais:</span>
+        <button type="button" class="special-chip" data-special-lottery="megasena" aria-pressed="false">Mega da Virada</button>
+        <button type="button" class="special-chip" data-special-lottery="lotofacil" aria-pressed="false">Lotofácil da Independência</button>
+        <button type="button" class="special-chip" data-special-lottery="quina" aria-pressed="false">Quina de São João</button>
+        <button type="button" class="special-chip" data-special-lottery="lotomania" aria-pressed="false">Lotomania de Páscoa</button>
+        <button type="button" id="btn-clear-special-scope" class="special-chip special-chip-reset" hidden>Ver todos os concursos</button>
+      </div>
+      <a href="mega-da-virada.html" class="special-guide-link">Dossiê Mega da Virada 2026 e Kit Bolão</a>
+    </div>
+
     <div id="sync-status" class="status-banner" role="status" hidden></div>
 
     <!-- ANÚNCIO ADSENSE: TOPO -->
@@ -213,6 +229,17 @@
       </div>
 
       <div id="simulator-alert" class="status-banner" role="alert" hidden></div>
+
+      <div id="simulator-scope-bar" class="analysis-scope-bar" role="region" aria-label="Escopo histórico do simulador e das métricas">
+        <div class="scope-bar-text">
+          <strong id="simulator-scope-label">Base ativa no simulador e métricas: Todos os concursos</strong>
+          <span id="simulator-scope-meta" class="scope-bar-meta"></span>
+        </div>
+        <div class="scope-bar-actions">
+          <button type="button" id="btn-scope-all" class="scope-toggle-btn" aria-pressed="true">Todos os concursos</button>
+          <button type="button" id="btn-scope-special" class="scope-toggle-btn" aria-pressed="false">Somente Mega da Virada</button>
+        </div>
+      </div>
 
       <div class="simulator-grid">
         <!-- Coluna Esquerda: Volante -->
@@ -328,14 +355,17 @@
             Contagem real acumulada desde o Concurso #1 (11/03/1996) até o Concurso #3077 (28/10/2026).
           </p>
         </div>
-        <div class="field-group">
-          <label class="field-label" for="freq-sort-select">Ordenar matriz das 60 dezenas por:</label>
-          <select id="freq-sort-select" class="select-input">
-            <option value="num">Ordem numérica (01 a 60)</option>
-            <option value="most">Mais sorteadas primeiro</option>
-            <option value="least">Menos sorteadas primeiro</option>
-            <option value="delay">Maior atraso atual primeiro</option>
-          </select>
+        <div class="stats-header-controls">
+          <button type="button" id="btn-stats-special-toggle" class="btn scope-inline-btn" aria-pressed="false">Filtrar somente Mega da Virada</button>
+          <div class="field-group">
+            <label class="field-label" for="freq-sort-select">Ordenar matriz das dezenas por:</label>
+            <select id="freq-sort-select" class="select-input">
+              <option value="num">Ordem numérica (01 a 60)</option>
+              <option value="most">Mais sorteadas primeiro</option>
+              <option value="least">Menos sorteadas primeiro</option>
+              <option value="delay">Maior atraso atual primeiro</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -480,7 +510,7 @@
               <path d="M3 13.5v2.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.5M10 2.5v10m0 0-3.5-3.5m3.5 3.5 3.5-3.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span id="export-btn-label">Exportar Resultados</span>
-            <span id="export-badge-pill" class="export-pill-badge">R$ 15 (XLSX / PDF)</span>
+            <span id="export-badge-pill" class="export-pill-badge">A partir de R$ 10 (XLSX / PDF)</span>
           </button>
         </div>
       </div>
@@ -495,6 +525,15 @@
           <label class="field-label" for="filter-number">Filtrar por dezena sorteada:</label>
           <select id="filter-number" class="select-input">
             <option value="">Todas as dezenas (01 a 60)</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="filter-special">Tipo de concurso:</label>
+          <select id="filter-special" class="select-input">
+            <option value="all">Todos os concursos (regulares e especiais)</option>
+            <option value="special" id="opt-filter-special-only">Somente Concursos Especiais</option>
+            <option value="regular">Somente Concursos Regulares</option>
           </select>
         </div>
 
@@ -697,77 +736,107 @@
     </div>
   </div>
 
-  <!-- MODAL DE PAGAMENTO STRIPE (EXPORTAÇÃO PAGA - R$ 15,00) -->
+  <!-- MODAL DE PAGAMENTO STRIPE (EXPORTAÇÃO SEPARADA R$ 10 + COMBOS) -->
   <div id="export-pay-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pay-modal-title" hidden>
     <div class="modal-dialog modal-dialog-lg">
       <div class="modal-header">
         <div>
-          <span class="badge-status" style="margin-bottom:6px;display:inline-block;">Download Completo</span>
-          <h3 id="pay-modal-title" style="margin:0;font-size:1.3rem;">Exportar Resultados Oficiais (XLSX / PDF)</h3>
+          <span class="badge-status" style="margin-bottom:6px;display:inline-block;">Exportação Oficial</span>
+          <h3 id="pay-modal-title" style="margin:0;font-size:1.3rem;">Exportar Resultados em Excel (.xlsx) e PDF</h3>
         </div>
         <button type="button" id="pay-modal-close-btn" class="btn" aria-label="Fechar modal de pagamento">Fechar (Esc)</button>
       </div>
       <div class="modal-body-export">
-        <p class="export-intro">
-          Acesse toda a base de dados histórica oficial das Loterias Caixa consolidada desde o 1º concurso até os sorteios mais recentes de 2026, pronta para suas análises, conferências e relatórios.
-        </p>
-
-        <div class="export-features-grid">
-          <div class="export-feature-card">
-            <div class="feature-icon-badge xlsx-badge">XLSX</div>
-            <div>
-              <h4 class="feature-title">Planilha Excel Completa (.xlsx)</h4>
-              <p class="feature-desc">Todas as colunas formatadas: Concurso, Data, Dezenas individuais e combinadas, Acumulado, Ganhadores e Rateio de todas as faixas (Sena, Quina, Quadra, etc.) e estatísticas de soma e paridade.</p>
-            </div>
-          </div>
-
-          <div class="export-feature-card">
-            <div class="feature-icon-badge pdf-badge">PDF</div>
-            <div>
-              <h4 class="feature-title">Relatório Diagramado (.pdf)</h4>
-              <p class="feature-desc">Documento em alta resolução formatado para impressão ou arquivamento, com cabeçalho oficial, métricas gerais e paginação automática.</p>
-            </div>
-          </div>
-
-          <div class="export-feature-card">
-            <div class="feature-icon-badge lock-badge">4 em 1</div>
-            <div>
-              <h4 class="feature-title">Todas as 4 Loterias Inclusas</h4>
-              <p class="feature-desc">Válido para Mega-Sena (3.084+ sorteios), Lotofácil (3.816+ sorteios), Quina (7.154+ sorteios) e Lotomania (2.993+ sorteios) em um único pacote.</p>
-            </div>
-          </div>
+        <div id="partial-unlocked-bar" class="status-banner success" hidden>
+          <span id="partial-unlocked-text"></span>
+          <button type="button" id="btn-open-unlocked-downloads" class="btn-link-action" style="margin-left:8px;">Abrir downloads já liberados</button>
         </div>
 
-        <div class="checkout-cta-box">
-          <div class="checkout-price-col">
-            <span class="checkout-price-label">Pagamento Único • Acesso Vitalício</span>
-            <div class="checkout-price-val">
+        <p id="pay-modal-intro" class="export-intro">
+          Cada loteria possui exportação individual em Excel (.xlsx) e PDF por R$ 10,00 (incluindo os concursos especiais da modalidade), ou você pode desbloquear todas as 4 loterias juntas com desconto no Combo.
+        </p>
+
+        <div class="pay-plans-grid">
+          <article class="pay-plan-card">
+            <span class="pay-plan-tag">Loteria Selecionada</span>
+            <h4 id="pay-single-title" class="pay-plan-title">Planilha Mega-Sena + Mega da Virada</h4>
+            <p id="pay-single-desc" class="pay-plan-desc">
+              Histórico completo, concursos filtrados e todas as edições especiais desta loteria em XLSX e PDF.
+            </p>
+            <div class="pay-plan-price">
               <span class="price-currency">R$</span>
-              <span class="price-number">15</span>
+              <span class="price-number">10</span>
               <span class="price-cents">,00</span>
             </div>
-            <span class="checkout-price-sub">Sem mensalidade • Liberação Imediata</span>
-          </div>
+            <span class="checkout-price-sub">Pagamento único, acesso vitalício</span>
+            <button type="button" id="btn-buy-single" class="btn pay-plan-btn" data-product-id="export_megasena">
+              Comprar apenas Mega-Sena (R$ 10,00)
+            </button>
+          </article>
 
-          <div class="checkout-action-col">
-            <button type="button" id="btn-stripe-checkout" class="btn-checkout-stripe">
+          <article class="pay-plan-card recommended">
+            <span class="pay-plan-tag pay-plan-tag-accent">Desconto de 38%</span>
+            <h4 class="pay-plan-title">Combo 4 Loterias Completo</h4>
+            <p class="pay-plan-desc">
+              Desbloqueia Mega-Sena, Lotofácil, Quina e Lotomania (incluindo Virada, Independência, São João e Páscoa) em XLSX multi-abas e PDF.
+            </p>
+            <div class="pay-plan-price-wrap">
+              <span class="price-compare">De R$ 40,00 por</span>
+              <div class="pay-plan-price">
+                <span class="price-currency">R$</span>
+                <span class="price-number">24</span>
+                <span class="price-cents">,90</span>
+              </div>
+            </div>
+            <span class="checkout-price-sub">Economia de R$ 15,10 no pacote</span>
+            <button type="button" id="btn-buy-combo" class="btn-checkout-stripe" data-product-id="combo_all">
               <svg class="btn-checkout-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                 <line x1="2" y1="10" x2="22" y2="10"/>
               </svg>
-              <span>Pagar R$ 15,00 com Pix ou Cartão</span>
+              <span>Comprar Combo 4 Loterias (R$ 24,90)</span>
             </button>
-            <div class="checkout-trust-info">
-              <span class="trust-pill">⚡ Pix instantâneo</span>
-              <span class="trust-pill">💳 Cartão de Crédito</span>
-              <span class="trust-pill">🔒 Stripe Seguro</span>
+          </article>
+        </div>
+
+        <div class="pay-extras-strip">
+          <div class="pay-extras-header">
+            <strong>Produtos Especiais de Fim de Ano</strong>
+            <a href="mega-da-virada.html#produtos" class="btn-link-action">Ver dossiê e detalhes da Mega da Virada</a>
+          </div>
+          <div class="pay-extras-actions">
+            <div class="pay-extra-item">
+              <div>
+                <strong>Kit Bolão Mega da Virada 2026</strong>
+                <span>Planilha com rateio de cotas, conferidor automático #3100 e Guia PDF</span>
+              </div>
+              <button type="button" class="btn btn-buy-product" data-product-id="kit_bolao_virada">
+                Comprar (R$ 14,90)
+              </button>
+            </div>
+            <div class="pay-extra-item pay-extra-highlight">
+              <div>
+                <strong>Pacote Completo Atlas + Virada (De R$ 74,80)</strong>
+                <span>As 4 Loterias + Kit Bolão 2026 + Dossiê Concursos Especiais</span>
+              </div>
+              <button type="button" class="btn btn-primary btn-buy-product" data-product-id="super_combo">
+                Pacote Completo (R$ 34,90)
+              </button>
             </div>
           </div>
         </div>
 
+        <div id="checkout-error-banner" class="status-banner error" role="alert" hidden></div>
+
+        <div class="checkout-trust-info">
+          <span class="trust-pill">Pix instantâneo</span>
+          <span class="trust-pill">Cartão de Crédito</span>
+          <span class="trust-pill">Pagamento Seguro via Stripe</span>
+        </div>
+
         <div class="already-paid-row">
           <span>Já realizou o pagamento em outra aba ou dispositivo?</span>
-          <button type="button" id="btn-check-paid" class="btn-link-action">Validar ou Desbloquear</button>
+          <button type="button" id="btn-check-paid" class="btn-link-action">Validar sessão Stripe</button>
         </div>
       </div>
     </div>
@@ -778,14 +847,14 @@
     <div class="modal-dialog modal-dialog-lg">
       <div class="modal-header">
         <div>
-          <span class="badge-status badge-success" style="margin-bottom:6px;display:inline-block;">✓ Acesso Liberado</span>
+          <span class="badge-status badge-success" style="margin-bottom:6px;display:inline-block;">Acesso Liberado</span>
           <h3 id="download-modal-title" style="margin:0;font-size:1.3rem;">Exportar Resultados Oficiais</h3>
         </div>
         <button type="button" id="download-modal-close-btn" class="btn" aria-label="Fechar modal de download">Fechar (Esc)</button>
       </div>
       <div class="modal-body-export">
         <p class="export-intro">
-          Seu acesso à exportação está ativo. Selecione a modalidade e o escopo para gerar os arquivos desejados:
+          Selecione a loteria e o escopo desejado para gerar sua planilha Excel (.xlsx) ou relatório em PDF:
         </p>
 
         <div class="export-options-form">
@@ -793,11 +862,11 @@
             <label class="field-label" for="export-lottery-select">Escolha a Loteria:</label>
             <select id="export-lottery-select" class="select-input">
               <option value="current">Loteria Atual na Tela</option>
-              <option value="megasena">Mega-Sena (3.084 concursos)</option>
-              <option value="lotofacil">Lotofácil (3.816 concursos)</option>
-              <option value="quina">Quina (7.154 concursos)</option>
-              <option value="lotomania">Lotomania (2.993 concursos)</option>
-              <option value="all">Todas as 4 Loterias (Planilha Excel Multi-Abas)</option>
+              <option value="megasena" id="opt-exp-megasena">Mega-Sena</option>
+              <option value="lotofacil" id="opt-exp-lotofacil">Lotofácil</option>
+              <option value="quina" id="opt-exp-quina">Quina</option>
+              <option value="lotomania" id="opt-exp-lotomania">Lotomania</option>
+              <option value="all" id="opt-exp-all">Todas as 4 Loterias (Planilha Excel Multi-Abas)</option>
             </select>
           </div>
 
@@ -809,6 +878,10 @@
                 <span><strong>Histórico Completo:</strong> Todos os concursos desde o nº 1 até o mais recente</span>
               </label>
               <label class="scope-radio-label">
+                <input type="radio" name="export-scope" value="special">
+                <span id="scope-special-desc"><strong>Somente Concursos Especiais:</strong> Apenas as edições especiais desta modalidade</span>
+              </label>
+              <label class="scope-radio-label">
                 <input type="radio" name="export-scope" value="filtered">
                 <span id="scope-filtered-desc"><strong>Concursos Filtrados:</strong> Apenas os resultados filtrados na tabela agora</span>
               </label>
@@ -816,11 +889,19 @@
           </div>
         </div>
 
+        <div id="locked-export-notice" class="locked-export-notice" hidden>
+          <p id="locked-export-text" style="margin:0 0 10px;font-size:0.875rem;"></p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button type="button" id="btn-unlock-selected-export" class="btn btn-primary"></button>
+            <button type="button" id="btn-unlock-combo-export" class="btn" data-product-id="combo_all">Comprar Combo 4 Loterias (R$ 24,90)</button>
+          </div>
+        </div>
+
         <div id="export-status-banner" class="export-status-box" hidden></div>
 
         <div class="download-actions-grid">
           <button type="button" id="btn-download-xlsx" class="btn-download-card xlsx-card">
-            <div class="card-icon">📊</div>
+            <span class="feature-icon-badge xlsx-badge">XLSX</span>
             <div class="card-text">
               <strong>Baixar Excel (.xlsx)</strong>
               <span>Tabela formatada pronta para Excel e PowerBI</span>
@@ -828,7 +909,7 @@
           </button>
 
           <button type="button" id="btn-download-pdf" class="btn-download-card pdf-card">
-            <div class="card-icon">📑</div>
+            <span class="feature-icon-badge pdf-badge">PDF</span>
             <div class="card-text">
               <strong>Baixar Relatório (.pdf)</strong>
               <span>Documento diagramado pronto para impressão</span>
@@ -836,13 +917,15 @@
           </button>
 
           <button type="button" id="btn-download-both" class="btn-download-card both-card">
-            <div class="card-icon">📦</div>
+            <span class="feature-icon-badge lock-badge">2 em 1</span>
             <div class="card-text">
               <strong>Baixar Ambos (XLSX + PDF)</strong>
               <span>Gera e baixa os dois formatos de uma vez</span>
             </div>
           </button>
         </div>
+
+        <div id="extra-products-downloads" class="extra-downloads-section"></div>
       </div>
     </div>
   </div>
@@ -850,22 +933,25 @@
   <!-- TOAST NOTIFICATION DE SUCESSO DO PAGAMENTO -->
   <div id="payment-toast" class="payment-toast-notification" role="status" aria-live="polite" hidden>
     <div class="toast-content">
-      <span class="toast-icon">🎉</span>
+      <svg class="toast-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M8 12.5l2.5 2.5L16 9.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       <div>
-        <strong>Pagamento de R$ 15,00 confirmado!</strong>
-        <p style="margin:2px 0 0;font-size:0.875rem;">Seu acesso à exportação em XLSX e PDF está desbloqueado.</p>
+        <strong id="payment-toast-title">Pagamento confirmado!</strong>
+        <p id="payment-toast-body" style="margin:2px 0 0;font-size:0.875rem;">Seu acesso aos arquivos está desbloqueado.</p>
       </div>
     </div>
-    <button type="button" id="btn-toast-close" class="btn btn-sm" aria-label="Fechar aviso">✕</button>
+    <button type="button" id="btn-toast-close" class="btn btn-sm" aria-label="Fechar aviso">Fechar</button>
   </div>
 
   <footer class="site-footer">
     <p style="margin:0;">
-      Dados históricos oficiais da Mega-Sena (Caixa Econômica Federal): 3.076 concursos entre 11/03/1996 e 27/10/2026. Valores de aposta conforme tabela vigente da loteria (6 a 10 dezenas). Estatísticas, simulador e resultados de sorteios para consulta pública e educacional.
+      Dados históricos oficiais das Loterias Caixa (Mega-Sena, Lotofácil, Quina e Lotomania). Estatísticas, simulador e resultados de sorteios para consulta pública e educacional.
     </p>
   </footer>
 
-  <!-- Bibliotecas para Exportação XLSX e PDF (Vendor local + CDN fallback) -->
+  <!-- Bibliotecas para Exportação XLSX e PDF (Vendor local) -->
   <script src="vendor/xlsx.full.min.js"></script>
   <script src="vendor/jspdf.umd.min.js"></script>
   <script src="vendor/jspdf.plugin.autotable.min.js"></script>
@@ -873,6 +959,8 @@
   <script src="data/lotofacil.js"></script>
   <script src="data/quina.js"></script>
   <script src="data/lotomania.js"></script>
+  <script src="special-draws.js"></script>
+  <script src="store.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

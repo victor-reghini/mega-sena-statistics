@@ -1,6 +1,9 @@
 (function () {
   "use strict";
 
+  const Specials = window.AtlasSpecials;
+  const Store = window.AtlasStore;
+
   const LOTTERY_CONFIGS = {
     megasena: {
       id: "megasena",
@@ -147,8 +150,10 @@
     spendStartYear: 2015,
     spendYearsCount: 10,
     spendAdjustMode: "official",
+    specialScope: false,
     filterSearch: "",
     filterNumber: "",
+    filterSpecial: "all",
     filterStatus: "all",
     sortOrder: "desc",
     page: 1,
@@ -174,6 +179,76 @@
 
   function getCurrentLottery() {
     return LOTTERY_CONFIGS[state.lottery] || LOTTERY_CONFIGS.megasena;
+  }
+
+  function getAnalysisDraws() {
+    if (!state.specialScope || !Specials) return state.draws;
+    return Specials.getSpecialDraws(state.lottery, state.draws);
+  }
+
+  function updateSpecialUI() {
+    const cfg = getCurrentLottery();
+    const meta = Specials ? Specials.getSpecialMeta(cfg.id) : null;
+    const specialDraws = Specials ? Specials.getSpecialDraws(cfg.id, state.draws) : [];
+    const specialName = meta ? meta.name : "Concursos Especiais";
+    const specialCount = specialDraws.length;
+
+    document.querySelectorAll(".special-chip[data-special-lottery]").forEach((btn) => {
+      const target = btn.dataset.specialLottery;
+      const active =
+        target === state.lottery &&
+        (state.specialScope || state.filterSpecial === "special");
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+
+    const resetChip = document.getElementById("btn-clear-special-scope");
+    if (resetChip) {
+      resetChip.hidden = !state.specialScope && state.filterSpecial === "all";
+    }
+
+    const scopeLabel = document.getElementById("simulator-scope-label");
+    const scopeMeta = document.getElementById("simulator-scope-meta");
+    if (scopeLabel) {
+      scopeLabel.textContent = state.specialScope
+        ? `Base ativa no simulador e métricas: Somente ${specialName}`
+        : `Base ativa no simulador e métricas: Todos os concursos da ${cfg.name}`;
+    }
+    if (scopeMeta) {
+      scopeMeta.textContent = state.specialScope
+        ? `${intFmt.format(specialCount)} edições especiais (${meta ? meta.ruleNote : ""})`
+        : `${intFmt.format(state.draws.length)} concursos no total (${intFmt.format(specialCount)} edições de ${specialName})`;
+    }
+
+    const btnAll = document.getElementById("btn-scope-all");
+    const btnSpec = document.getElementById("btn-scope-special");
+    if (btnAll) btnAll.setAttribute("aria-pressed", state.specialScope ? "false" : "true");
+    if (btnSpec) {
+      btnSpec.textContent = `Somente ${meta ? meta.shortName : "Especiais"} (${specialCount})`;
+      btnSpec.setAttribute("aria-pressed", state.specialScope ? "true" : "false");
+    }
+
+    const statsToggle = document.getElementById("btn-stats-special-toggle");
+    if (statsToggle) {
+      statsToggle.setAttribute("aria-pressed", state.specialScope ? "true" : "false");
+      statsToggle.classList.toggle("btn-primary", state.specialScope);
+      statsToggle.textContent = state.specialScope
+        ? `Voltar para todos os ${intFmt.format(state.draws.length)} concursos`
+        : `Filtrar somente ${specialName} (${specialCount})`;
+    }
+
+    const optSpecialOnly = document.getElementById("opt-filter-special-only");
+    if (optSpecialOnly) {
+      optSpecialOnly.textContent = `Somente ${specialName} (${specialCount})`;
+    }
+
+    const costAllOpt = document.querySelector('#cost-mode-select option[value="all"]');
+    if (costAllOpt) {
+      const count = getAnalysisDraws().length;
+      costAllOpt.textContent = state.specialScope
+        ? `Custo Acumulado nos ${intFmt.format(count)} Concursos (${specialName})`
+        : `Custo Acumulado nos ${intFmt.format(count)} Concursos (Teimosinha Histórica)`;
+    }
   }
 
   function comb(n, r) {
@@ -373,12 +448,23 @@
       return;
     }
 
+    const analysisDraws = getAnalysisDraws();
+    const meta = Specials ? Specials.getSpecialMeta(cfg.id) : null;
+    const scopeText = state.specialScope && meta
+      ? `${intFmt.format(analysisDraws.length)} concursos de ${meta.name}`
+      : `todos os ${intFmt.format(analysisDraws.length)} concursos da ${cfg.name}`;
+
+    if (analysisDraws.length === 0) {
+      panel.innerHTML = `<div class="status-banner" role="status">Nenhum concurso encontrado no escopo selecionado para a ${cfg.name}.</div>`;
+      return;
+    }
+
     const pickedCount = state.selectedNumbers.size;
     if (pickedCount < state.betSize) {
       const faltam = state.betSize - pickedCount;
       panel.innerHTML = `
         <div class="status-banner" role="status">
-          <strong>Aguardando preenchimento:</strong> selecione mais <strong>${faltam}</strong> ${faltam === 1 ? "dezena" : "dezenas"} no volante ao lado (ou clique em "Surpresinha") para validar sua aposta de ${state.betSize} dezenas contra todos os ${intFmt.format(state.draws.length)} concursos da ${cfg.name}.
+          <strong>Aguardando preenchimento:</strong> selecione mais <strong>${faltam}</strong> ${faltam === 1 ? "dezena" : "dezenas"} no volante ao lado (ou clique em "Surpresinha") para validar sua aposta de ${state.betSize} dezenas contra ${scopeText}.
         </div>
       `;
       return;
@@ -386,7 +472,7 @@
 
     const k = state.betSize;
     const betCostSingle = (cfg.betTable[k] && cfg.betTable[k].cost) || cfg.basePrice;
-    const totalDraws = state.draws.length;
+    const totalDraws = analysisDraws.length;
     const betCostAll = betCostSingle * totalDraws;
 
     let maxHits = 0;
@@ -398,7 +484,7 @@
     let totalGrossWon = 0;
 
     for (let i = 0; i < totalDraws; i++) {
-      const d = state.draws[i];
+      const d = analysisDraws[i];
       const matched = d.n.filter((num) => state.selectedNumbers.has(num));
       const h = matched.length;
       hitsByCount[h] = (hitsByCount[h] || 0) + 1;
@@ -424,18 +510,20 @@
     let topHeadlineHTML = "";
     if (bestDraws.length > 0 && bestDraws[0].prizeCalc.totalValue > 0) {
       const top = bestDraws[0];
+      const spTop = Specials ? Specials.getSpecialDrawInfo(cfg.id, top.draw) : null;
+      const topLabel = spTop ? ` (${spTop.label})` : "";
       const breakdownText = top.prizeCalc.breakdown.map((b) => `${b.count}x ${b.tier}`).join(" + ") || "Prêmio Oficial";
 
       topHeadlineHTML = `
         <div class="highlight-box ${netBalance >= 0 ? "positive" : "negative"}" role="region" aria-label="Destaque de maior acerto">
-          <strong>Maior acerto encontrado (${maxHits} dezenas):</strong> No <strong>concurso #${top.draw.c}</strong> (${top.draw.d}) você teria acertado <strong>${top.hits} dezenas</strong> (${top.matched.map(pad2).join(", ")}), recebendo <strong>${brlFmt.format(top.prizeCalc.totalValue)}</strong> (${breakdownText}).
+          <strong>Maior acerto encontrado (${maxHits} dezenas):</strong> No <strong>concurso #${top.draw.c}${escapeHtml(topLabel)}</strong> (${top.draw.d}) você teria acertado <strong>${top.hits} dezenas</strong> (${top.matched.map(pad2).join(", ")}), recebendo <strong>${brlFmt.format(top.prizeCalc.totalValue)}</strong> (${breakdownText}).
           ${bestDraws.length > 1 ? `<div style="margin-top:6px;font-size:0.875rem;">Você atingiu ${maxHits} acertos em <strong>${bestDraws.length} concursos</strong> no total.</div>` : ""}
         </div>
       `;
     } else {
       topHeadlineHTML = `
         <div class="highlight-box negative" role="region" aria-label="Sem premiação nos sorteios passados">
-          <strong>Nenhum prêmio oficial encontrado:</strong> O jogo obteve no máximo <strong>${maxHits} acertos</strong> em concursos como ${bestDraws.slice(0, 3).map((x) => `#${x.draw.c}`).join(", ") || "nenhum"}, abaixo da faixa de premiação da ${cfg.name}.
+          <strong>Nenhum prêmio oficial encontrado:</strong> O jogo obteve no máximo <strong>${maxHits} acertos</strong> em concursos como ${bestDraws.slice(0, 3).map((x) => `#${x.draw.c}`).join(", ") || "nenhum"}, abaixo da faixa de premiação no recorte selecionado.
         </div>
       `;
     }
@@ -443,15 +531,16 @@
     const rowsHTML = winningDraws
       .slice(0, 20)
       .map((item) => {
+        const sp = Specials ? Specials.getSpecialDrawInfo(cfg.id, item.draw) : null;
         const breakdown = item.prizeCalc.breakdown.map((b) => `${b.count}x ${b.tier}`).join(", ") || "Premiação";
         return `
-          <tr>
-            <td><strong>#${item.draw.c}</strong></td>
-            <td>${item.draw.d}</td>
-            <td><span class="badge ${item.hits >= cfg.drawCount ? "win" : "hit"}">${item.hits} acertos</span></td>
-            <td>${item.matched.map(pad2).join(", ")}</td>
-            <td>${breakdown}</td>
-            <td><strong>${brlFmt.format(item.prizeCalc.totalValue)}</strong></td>
+          <tr class="${sp ? "draw-row-special" : ""}">
+            <td data-label="Concurso"><strong>#${item.draw.c}</strong>${sp ? `<span class="special-draw-tag">${escapeHtml(sp.label)}</span>` : ""}</td>
+            <td data-label="Data">${item.draw.d}</td>
+            <td data-label="Acertos"><span class="badge ${item.hits >= cfg.drawCount ? "win" : "hit"}">${item.hits} acertos</span></td>
+            <td data-label="Dezenas">${item.matched.map(pad2).join(", ")}</td>
+            <td data-label="Prêmios">${breakdown}</td>
+            <td data-label="Valor Total"><strong>${brlFmt.format(item.prizeCalc.totalValue)}</strong></td>
           </tr>
         `;
       })
@@ -463,10 +552,10 @@
         <div class="kpi-item">
           <p class="kpi-title">Total de Prêmios Recebidos</p>
           <p class="kpi-num" style="color:var(--success-text);">${brlFmt.format(totalGrossWon)}</p>
-          <p class="kpi-sub">${winningDraws.length} sorteios premiados</p>
+          <p class="kpi-sub">${winningDraws.length} sorteios premiados (${state.specialScope && meta ? meta.shortName : "histórico"})</p>
         </div>
         <div class="kpi-item">
-          <p class="kpi-title">Custo Considerado (${state.costMode === "all" ? "Histórico Total" : "1 Concurso"})</p>
+          <p class="kpi-title">Custo Considerado (${state.costMode === "all" ? "Período Ativo" : "1 Concurso"})</p>
           <p class="kpi-num" style="color:var(--danger-text);">${brlFmt.format(activeCost)}</p>
           <p class="kpi-sub">${state.costMode === "all" ? `${intFmt.format(totalDraws)} concursos x ${brlFmt.format(betCostSingle)}` : "1 aposta avulsa"}</p>
         </div>
@@ -477,7 +566,7 @@
         </div>
       </div>
       <div style="margin-top:16px;">
-        <p style="margin:0 0 8px;font-weight:700;">Concursos Premiados (${intFmt.format(winningDraws.length)} no histórico):</p>
+        <p style="margin:0 0 8px;font-weight:700;">Concursos Premiados (${intFmt.format(winningDraws.length)} no recorte):</p>
         ${winningDraws.length > 0 ? `
           <div class="table-wrap">
             <table class="draws-table">
@@ -494,14 +583,15 @@
               <tbody>${rowsHTML}</tbody>
             </table>
           </div>
-        ` : `<p class="section-desc" style="margin:0;">Nenhum sorteio atingiu o patamar mínimo de premiação desta modalidade.</p>`}
+        ` : `<p class="section-desc" style="margin:0;">Nenhum sorteio atingiu o patamar mínimo de premiação neste recorte.</p>`}
       </div>
     `;
   }
 
   function computeStatistics() {
     const cfg = getCurrentLottery();
-    const totalDraws = state.draws.length;
+    const analysisDraws = getAnalysisDraws();
+    const totalDraws = analysisDraws.length;
     const maxNum = cfg.maxNum;
     const freq = Array(maxNum + 1).fill(0);
     const lastSeenIndex = Array(maxNum + 1).fill(-1);
@@ -513,7 +603,7 @@
     let totalSumAllDraws = 0;
 
     for (let idx = 0; idx < totalDraws; idx++) {
-      const d = state.draws[idx];
+      const d = analysisDraws[idx];
       if (d.a) accumulatedCount++;
       let evens = 0;
       let sum = 0;
@@ -544,6 +634,8 @@
 
     return {
       totalDraws,
+      firstDraw: totalDraws ? analysisDraws[0] : null,
+      latestDraw: totalDraws ? analysisDraws[totalDraws - 1] : null,
       items,
       byMost,
       byLeast,
@@ -558,20 +650,30 @@
   function renderMetricsAndCharts() {
     const cfg = getCurrentLottery();
     const stats = computeStatistics();
-    if (!stats.totalDraws) return;
+    const kpiStrip = document.getElementById("kpi-strip");
+    if (!stats.totalDraws) {
+      if (kpiStrip) {
+        kpiStrip.innerHTML = `<div class="status-banner">Nenhum sorteio encontrado para o filtro de análise atual.</div>`;
+      }
+      const freqMatrix = document.getElementById("freq-matrix");
+      if (freqMatrix) freqMatrix.innerHTML = "";
+      updateDrawsOrderLabels();
+      updateSpecialUI();
+      return;
+    }
 
-    const latest = state.draws[state.draws.length - 1];
+    const latest = stats.latestDraw || state.draws[state.draws.length - 1];
     const most = stats.byMost[0];
     const least = stats.byLeast[0];
     const mostDelayed = stats.byDelay[0];
+    const meta = Specials ? Specials.getSpecialMeta(cfg.id) : null;
 
-    const kpiStrip = document.getElementById("kpi-strip");
     if (kpiStrip) {
       kpiStrip.innerHTML = `
         <div class="kpi-item">
-          <p class="kpi-title">Total de Concursos (${cfg.name})</p>
+          <p class="kpi-title">Total de Concursos (${state.specialScope && meta ? meta.shortName : cfg.name})</p>
           <p class="kpi-num">${intFmt.format(stats.totalDraws)} sorteios</p>
-          <p class="kpi-sub">Último: #${latest.c} em ${latest.d} (${Math.round((stats.accumulatedCount / stats.totalDraws) * 100)}% acumularam)</p>
+          <p class="kpi-sub">Último no recorte: #${latest.c} em ${latest.d} (${Math.round((stats.accumulatedCount / stats.totalDraws) * 100)}% acumularam)</p>
         </div>
         <div class="kpi-item">
           <p class="kpi-title">Dezena Mais Sorteada</p>
@@ -598,6 +700,7 @@
     renderExtrapolation(stats);
     renderSpendingSimulator();
     updateDrawsOrderLabels();
+    updateSpecialUI();
   }
 
   function renderFrequencyMatrix(stats) {
@@ -780,7 +883,7 @@
     const topProj = sortedByAdd.slice(0, cfg.drawCount).map((x) => x.num).sort((a, b) => a - b);
     state.topProjectedSix = topProj;
 
-    const latestConcurso = state.draws[state.draws.length - 1].c;
+    const latestConcurso = (stats.latestDraw && stats.latestDraw.c) || (state.draws.length ? state.draws[state.draws.length - 1].c : 0);
     const targetConcurso = latestConcurso + H;
     const kpiEl = document.getElementById("extrap-kpi-strip");
     if (kpiEl) {
@@ -930,6 +1033,7 @@
     const q = state.filterSearch.trim().toLowerCase();
     const numFilter = state.filterNumber ? Number(state.filterNumber) : null;
     const status = state.filterStatus;
+    const specialFilter = state.filterSpecial;
 
     const filtered = state.draws.filter((d) => {
       if (q) {
@@ -938,6 +1042,8 @@
         if (!matchConcurso && !matchDate) return false;
       }
       if (numFilter && !d.n.includes(numFilter)) return false;
+      if (specialFilter === "special" && Specials && !Specials.isSpecialDraw(state.lottery, d)) return false;
+      if (specialFilter === "regular" && Specials && Specials.isSpecialDraw(state.lottery, d)) return false;
       if (status === "winners" && d.a) return false;
       if (status === "accumulated" && !d.a) return false;
       return true;
@@ -988,6 +1094,7 @@
 
     tbody.innerHTML = slice
       .map((d) => {
+        const sp = Specials ? Specials.getSpecialDrawInfo(cfg.id, d) : null;
         const ballsHTML = d.n
           .map((n) => `<span class="ball ${state.selectedNumbers.has(n) ? "hit" : ""}">${pad2(n)}</span>`)
           .join("");
@@ -995,11 +1102,25 @@
         const mainTierKey = cfg.tiers[0].key;
         const mainPz = (d.p && d.p[mainTierKey]) || { g: 0, v: 0 };
         const mainWon = mainPz.g > 0;
+        const mainTotal = Specials ? Specials.computeTotalMainPrize(cfg.id, d) : mainPz.v;
 
-        const mainPrizeHTML = `
-          <span class="badge ${mainWon ? "win" : "acum"}">${mainWon ? `${mainPz.g} ${mainPz.g === 1 ? "ganhador" : "ganhadores"}` : "Acumulou"}</span>
-          <span class="prize-val">${brlFmt.format(mainPz.v)}</span>
-        `;
+        let mainPrizeHTML = "";
+        if (mainWon) {
+          mainPrizeHTML = `
+            <span class="badge win">${intFmt.format(mainPz.g)} ${mainPz.g === 1 ? "ganhador" : "ganhadores"}</span>
+            <span class="prize-val">${brlFmt.format(mainPz.v)}</span>
+          `;
+        } else if (sp && !d.a) {
+          mainPrizeHTML = `
+            <span class="badge hit">Sem acertador na 1ª faixa (rateado abaixo)</span>
+            <span class="prize-val">${brlFmt.format(mainTotal)}</span>
+          `;
+        } else {
+          mainPrizeHTML = `
+            <span class="badge acum">Acumulou</span>
+            <span class="prize-val">${brlFmt.format(mainPz.v)}</span>
+          `;
+        }
 
         const subPrizesHTML = cfg.tiers.slice(1, 3).map((t) => {
           const pz = (d.p && d.p[t.key]) || { g: 0, v: 0 };
@@ -1007,13 +1128,13 @@
         }).join("");
 
         return `
-          <tr>
-            <td><strong>#${d.c}</strong></td>
-            <td>${d.d}</td>
-            <td><div class="balls-row">${ballsHTML}</div></td>
-            <td>${mainPrizeHTML}</td>
-            <td>${subPrizesHTML}</td>
-            <td><button type="button" class="btn btn-sm btn-open-draw" data-concurso="${d.c}">Detalhes</button></td>
+          <tr class="${sp ? "draw-row-special" : ""}">
+            <td data-label="Concurso"><strong>#${d.c}</strong>${sp ? `<span class="special-draw-tag">${escapeHtml(sp.label)}</span>` : ""}</td>
+            <td data-label="Data">${d.d}</td>
+            <td data-label="Dezenas"><div class="balls-row">${ballsHTML}</div></td>
+            <td data-label="Prêmio Principal">${mainPrizeHTML}</td>
+            <td data-label="Demais Faixas">${subPrizesHTML}</td>
+            <td data-label="Ações"><button type="button" class="btn btn-sm btn-open-draw" data-concurso="${d.c}">Detalhes</button></td>
           </tr>
         `;
       })
@@ -1037,8 +1158,11 @@
     const modal = document.getElementById("contest-modal");
     const title = document.getElementById("modal-title");
     const body = document.getElementById("modal-body");
+    const sp = Specials ? Specials.getSpecialDrawInfo(cfg.id, d) : null;
 
-    title.textContent = `${cfg.name} - Concurso #${d.c} (${d.d})`;
+    title.textContent = sp
+      ? `${sp.label} - Concurso #${d.c} (${d.d})`
+      : `${cfg.name} - Concurso #${d.c} (${d.d})`;
     const ballsHTML = d.n.map((n) => `<span class="ball ${state.selectedNumbers.has(n) ? "hit" : ""}">${pad2(n)}</span>`).join(" ");
 
     const prizesHTML = cfg.tiers.map((t) => {
@@ -1051,7 +1175,12 @@
       `;
     }).join("");
 
+    const specialBannerHTML = sp
+      ? `<div class="highlight-box" style="margin-bottom:14px;"><strong>${escapeHtml(sp.label)} (${sp.edition}ª edição):</strong> ${escapeHtml(sp.ruleNote)}</div>`
+      : "";
+
     body.innerHTML = `
+      ${specialBannerHTML}
       <div style="margin-bottom:14px;">
         <p style="margin:0 0 8px;"><strong>Dezenas sorteadas:</strong></p>
         <div class="balls-row">${ballsHTML}</div>
@@ -1091,8 +1220,19 @@
     const ascOpt = document.getElementById("opt-sort-asc");
     if (descOpt) descOpt.textContent = `Mais recentes primeiro (#${latest.c} ao #1)`;
     if (ascOpt) ascOpt.textContent = `Mais antigos primeiro (#1 ao #${latest.c})`;
+
     const statsDesc = document.getElementById("stats-range-desc");
     if (statsDesc && first && latest) {
+      const meta = Specials ? Specials.getSpecialMeta(cfg.id) : null;
+      if (state.specialScope && meta && Specials) {
+        const spDraws = Specials.getSpecialDraws(cfg.id, state.draws);
+        const spFirst = spDraws[0];
+        const spLast = spDraws[spDraws.length - 1];
+        if (spFirst && spLast) {
+          statsDesc.textContent = `Analisando exclusivamente os ${intFmt.format(spDraws.length)} concursos da ${meta.name} (${spFirst.d} a ${spLast.d}).`;
+          return;
+        }
+      }
       statsDesc.textContent = `Contagem oficial da ${cfg.name} desde o Concurso #1 (${first.d}) até o Concurso #${latest.c} (${latest.d}).`;
     }
   }
@@ -1320,10 +1460,21 @@
       });
   }
 
-  function selectLottery(lotteryId) {
+  function selectLottery(lotteryId, options = {}) {
     if (!LOTTERY_CONFIGS[lotteryId]) return;
     state.lottery = lotteryId;
     document.documentElement.setAttribute("data-lottery", lotteryId);
+
+    if (options.activateSpecial) {
+      state.specialScope = true;
+      state.filterSpecial = "special";
+    } else if (!options.keepSpecialScope) {
+      state.specialScope = false;
+      state.filterSpecial = "all";
+    }
+
+    const filterSpecialEl = document.getElementById("filter-special");
+    if (filterSpecialEl) filterSpecialEl.value = state.filterSpecial;
 
     document.querySelectorAll(".lottery-btn").forEach((btn) => {
       const active = btn.dataset.lottery === lotteryId;
@@ -1334,6 +1485,7 @@
     const cfg = LOTTERY_CONFIGS[lotteryId];
     state.betSize = cfg.defaultSize;
     state.selectedNumbers = new Set(cfg.defaultPicks);
+    state.page = 1;
 
     const markEl = document.getElementById("brand-mark");
     const titleEl = document.getElementById("brand-title");
@@ -1345,7 +1497,7 @@
     const simTitle = document.getElementById("title-simulador");
     const simDesc = document.getElementById("desc-simulador");
     if (simTitle) simTitle.textContent = `Simulador de Apostas da ${cfg.name}`;
-    if (simDesc) simDesc.textContent = `Marque de ${cfg.allowedSizes[0]} a ${cfg.allowedSizes[cfg.allowedSizes.length - 1]} dezenas no volante para conferir seu desempenho contra todos os concursos históricos da ${cfg.name}.`;
+    if (simDesc) simDesc.textContent = `Marque de ${cfg.allowedSizes[0]} a ${cfg.allowedSizes[cfg.allowedSizes.length - 1]} dezenas no volante para conferir seu desempenho contra os concursos históricos da ${cfg.name}.`;
 
     buildSizePills();
     buildVolanteButtons();
@@ -1355,7 +1507,49 @@
     syncVolanteUI();
 
     loadLotteryData(lotteryId);
+    updateSpecialUI();
     updateExportButtonUI();
+  }
+
+  function activateSpecialMode(lotteryId, scrollTargetId) {
+    if (lotteryId && lotteryId !== state.lottery) {
+      selectLottery(lotteryId, { activateSpecial: true });
+    } else {
+      state.specialScope = true;
+      state.filterSpecial = "special";
+      state.page = 1;
+      const filterSpecialEl = document.getElementById("filter-special");
+      if (filterSpecialEl) filterSpecialEl.value = "special";
+      updateSpecialUI();
+      renderMetricsAndCharts();
+      renderSimulation();
+      renderDrawsTable();
+    }
+    if (scrollTargetId) {
+      const target = document.getElementById(scrollTargetId);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }
+
+  function setAnalysisSpecialScope(enabled) {
+    state.specialScope = Boolean(enabled);
+    updateSpecialUI();
+    renderMetricsAndCharts();
+    renderSimulation();
+  }
+
+  function resetSpecialScope() {
+    state.specialScope = false;
+    state.filterSpecial = "all";
+    state.page = 1;
+    const filterSpecialEl = document.getElementById("filter-special");
+    if (filterSpecialEl) filterSpecialEl.value = "all";
+    updateSpecialUI();
+    renderMetricsAndCharts();
+    renderSimulation();
+    renderDrawsTable();
   }
 
   function bindEvents() {
@@ -1372,6 +1566,32 @@
         selectLottery(btn.dataset.lottery);
       });
     });
+
+    document.querySelectorAll(".special-chip[data-special-lottery]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activateSpecialMode(btn.dataset.specialLottery, "historico");
+      });
+    });
+
+    const clearSpecialBtn = document.getElementById("btn-clear-special-scope");
+    if (clearSpecialBtn) {
+      clearSpecialBtn.addEventListener("click", resetSpecialScope);
+    }
+
+    const scopeAllBtn = document.getElementById("btn-scope-all");
+    if (scopeAllBtn) {
+      scopeAllBtn.addEventListener("click", () => setAnalysisSpecialScope(false));
+    }
+
+    const scopeSpecialBtn = document.getElementById("btn-scope-special");
+    if (scopeSpecialBtn) {
+      scopeSpecialBtn.addEventListener("click", () => setAnalysisSpecialScope(true));
+    }
+
+    const statsSpecialToggle = document.getElementById("btn-stats-special-toggle");
+    if (statsSpecialToggle) {
+      statsSpecialToggle.addEventListener("click", () => setAnalysisSpecialScope(!state.specialScope));
+    }
 
     document.getElementById("cost-mode-select").addEventListener("change", (e) => {
       state.costMode = e.target.value;
@@ -1471,6 +1691,16 @@
       renderDrawsTable();
     });
 
+    const filterSpecialEl = document.getElementById("filter-special");
+    if (filterSpecialEl) {
+      filterSpecialEl.addEventListener("change", (e) => {
+        state.filterSpecial = e.target.value;
+        state.page = 1;
+        renderDrawsTable();
+        updateSpecialUI();
+      });
+    }
+
     document.getElementById("filter-status").addEventListener("change", (e) => {
       state.filterStatus = e.target.value;
       state.page = 1;
@@ -1486,14 +1716,17 @@
     document.getElementById("btn-reset-filters").addEventListener("click", () => {
       state.filterSearch = "";
       state.filterNumber = "";
+      state.filterSpecial = "all";
       state.filterStatus = "all";
       state.sortOrder = "desc";
       state.page = 1;
       document.getElementById("filter-search").value = "";
       document.getElementById("filter-number").value = "";
+      if (filterSpecialEl) filterSpecialEl.value = "all";
       document.getElementById("filter-status").value = "all";
       document.getElementById("sort-order").value = "desc";
       renderDrawsTable();
+      updateSpecialUI();
     });
 
     document.getElementById("prev-page").addEventListener("click", () => {
@@ -1524,15 +1757,23 @@
       if (e.target.id === "contest-modal") closeModal();
     });
 
-    // Eventos do Sistema de Exportação Paga (Stripe)
+    // Eventos do Sistema de Exportação Multi-Produto (Stripe)
     const btnOpenExport = document.getElementById("btn-open-export");
     if (btnOpenExport) {
       btnOpenExport.addEventListener("click", () => {
-        if (isExportPaid()) {
+        if (Store && Store.hasLotteryAccess(state.lottery)) {
           openExportDownloadModal();
         } else {
-          openExportPayModal();
+          openExportPayModal(state.lottery);
         }
+      });
+    }
+
+    const btnOpenUnlockedDownloads = document.getElementById("btn-open-unlocked-downloads");
+    if (btnOpenUnlockedDownloads) {
+      btnOpenUnlockedDownloads.addEventListener("click", () => {
+        closeExportPayModal();
+        openExportDownloadModal();
       });
     }
 
@@ -1560,41 +1801,68 @@
       });
     }
 
-    const btnStripeCheckout = document.getElementById("btn-stripe-checkout");
-    if (btnStripeCheckout) {
-      btnStripeCheckout.addEventListener("click", handleStripeCheckout);
+    document.querySelectorAll("#export-pay-modal [data-product-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (!Store) return;
+        const pid = btn.dataset.productId;
+        if (!pid) return;
+        const errBox = document.getElementById("checkout-error-banner");
+        if (errBox) errBox.hidden = true;
+        Store.startCheckout(pid, {
+          buttonEl: btn,
+          onError: (msg) => showCheckoutError(msg)
+        });
+      });
+    });
+
+    document.querySelectorAll("#export-download-modal [data-product-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (!Store) return;
+        const pid = btn.dataset.productId;
+        if (!pid) return;
+        const statusBox = document.getElementById("export-status-banner");
+        if (statusBox) statusBox.hidden = true;
+        Store.startCheckout(pid, {
+          buttonEl: btn,
+          onError: (msg) => {
+            if (statusBox) {
+              statusBox.hidden = false;
+              statusBox.textContent = msg;
+            }
+          }
+        });
+      });
+    });
+
+    const exportLotterySelect = document.getElementById("export-lottery-select");
+    if (exportLotterySelect) {
+      exportLotterySelect.addEventListener("change", syncDownloadModalAvailability);
     }
+
+    document.querySelectorAll('input[name="export-scope"]').forEach((radio) => {
+      radio.addEventListener("change", syncDownloadModalAvailability);
+    });
 
     const btnCheckPaid = document.getElementById("btn-check-paid");
     if (btnCheckPaid) {
       btnCheckPaid.addEventListener("click", async () => {
+        if (!Store) return;
         const inputSession = window.prompt(
-          "Se você já concluiu o pagamento de R$ 15,00 no Stripe, informe o identificador da sessão (inicia com cs_...):"
+          "Se você já concluiu o pagamento no Stripe, informe o identificador da sessão (inicia com cs_...):"
         );
         if (!inputSession) return;
-        const cleanId = inputSession.trim();
-        if (!/^cs_(live|test)_[a-zA-Z0-9_-]{20,120}$/.test(cleanId)) {
-          alert("Identificador de sessão com formato inválido. Ele deve começar com cs_live_ ou cs_test_.");
-          return;
-        }
         btnCheckPaid.disabled = true;
         btnCheckPaid.textContent = "Verificando...";
-        try {
-          const res = await fetch(`/api/verify-session?session_id=${encodeURIComponent(cleanId)}`);
-          const data = await res.json();
-          if (res.ok && data && data.paid) {
-            markExportPaid(cleanId);
-            closeExportPayModal();
-            openExportDownloadModal();
-            showPaymentToast("Pagamento verificado com sucesso! Arquivos desbloqueados.");
-          } else {
-            alert("Sessão não confirmada como paga. Verifique se a transação foi finalizada no Stripe.");
-          }
-        } catch (e) {
-          alert("Erro temporário ao consultar o servidor de validação.");
-        } finally {
-          btnCheckPaid.disabled = false;
-          btnCheckPaid.textContent = "Já paguei / Validar";
+        const res = await Store.verifySession(inputSession);
+        btnCheckPaid.disabled = false;
+        btnCheckPaid.textContent = "Validar sessão Stripe";
+        if (res.ok) {
+          updateExportButtonUI();
+          closeExportPayModal();
+          openExportDownloadModal();
+          showPaymentToast("Pagamento verificado com sucesso!", "Seus arquivos desbloqueados já estão disponíveis para download.");
+        } else {
+          showCheckoutError(res.error || "Sessão não confirmada como paga.");
         }
       });
     }
@@ -1612,10 +1880,12 @@
     const btnBoth = document.getElementById("btn-download-both");
     if (btnBoth) {
       btnBoth.addEventListener("click", () => {
-        exportToXLSX();
-        setTimeout(() => {
-          exportToPDF();
-        }, 1000);
+        const ok = exportToXLSX();
+        if (ok) {
+          setTimeout(() => {
+            exportToPDF();
+          }, 700);
+        }
       });
     }
 
@@ -1640,31 +1910,16 @@
   }
 
   /* =========================================================
-     EXPORTAÇÃO PAGA E INTEGRAÇÃO STRIPE (R$ 15,00)
+     EXPORTAÇÃO MULTI-PRODUTO E INTEGRAÇÃO STRIPE (VIA AtlasStore)
      ========================================================= */
-  const STRIPE_CONFIG = {
-    publicKey: "pk_live_51UZBcCLbOL7pa0nJ9KZUc0S3yOubmdMqUXKPITZioDaIJZspSTytfWfkANsqEG59zA4v4xrHwofLRzPHN3XNXVhc00xahGUgKA",
-    paymentLink: "https://buy.stripe.com/bJe6oI5Sd2JbgDLewzeQM00",
-    price: 15.0,
-    storageKey: "mega_results_export_paid"
-  };
-
-  function isExportPaid() {
-    try {
-      return localStorage.getItem(STRIPE_CONFIG.storageKey) === "true";
-    } catch (e) {
-      return false;
+  function showCheckoutError(msg) {
+    const errBox = document.getElementById("checkout-error-banner");
+    if (errBox) {
+      errBox.textContent = msg;
+      errBox.hidden = false;
+    } else {
+      showPaymentToast("Atenção no pagamento", msg);
     }
-  }
-
-  function markExportPaid(sessionId) {
-    try {
-      localStorage.setItem(STRIPE_CONFIG.storageKey, "true");
-      if (sessionId) {
-        localStorage.setItem(STRIPE_CONFIG.storageKey + "_session", sessionId);
-      }
-    } catch (e) {}
-    updateExportButtonUI();
   }
 
   function updateExportButtonUI() {
@@ -1673,67 +1928,80 @@
     const badge = document.getElementById("export-badge-pill");
     if (!btn || !label || !badge) return;
 
-    if (isExportPaid()) {
+    const cfg = getCurrentLottery();
+    const unlocked = Store && Store.hasLotteryAccess(cfg.id);
+
+    if (unlocked) {
       btn.classList.add("is-unlocked");
-      btn.title = "Exportação liberada: clique para baixar os resultados em Excel (.xlsx) ou PDF";
+      btn.title = `Exportação da ${cfg.name} liberada: clique para baixar XLSX ou PDF`;
       label.textContent = "Exportar Resultados";
       badge.textContent = "✓ Liberado (XLSX / PDF)";
     } else {
       btn.classList.remove("is-unlocked");
-      btn.title = "Exportar resultados completos em Excel (.xlsx) e PDF por R$ 15";
+      btn.title = `Exportar ${cfg.name} por R$ 10,00 ou Combo 4 Loterias por R$ 24,90`;
       label.textContent = "Exportar Resultados";
-      badge.textContent = "R$ 15 (XLSX / PDF)";
+      badge.textContent = "R$ 10 (Combo R$ 24,90)";
     }
   }
 
-  function showPaymentToast(message) {
+  function showPaymentToast(title, message) {
     const toast = document.getElementById("payment-toast");
     if (!toast) return;
-    if (message) {
-      const p = toast.querySelector("p");
-      if (p) p.textContent = message;
-    }
+    const titleEl = document.getElementById("payment-toast-title");
+    const bodyEl = document.getElementById("payment-toast-body");
+    if (titleEl && title) titleEl.textContent = title;
+    if (bodyEl && message) bodyEl.textContent = message;
     toast.hidden = false;
     setTimeout(() => {
       toast.hidden = true;
-    }, 7000);
+    }, 8000);
   }
 
-  async function checkStripeReturn() {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const sessionId = (params.get("session_id") || "").trim();
-
-      if (sessionId) {
-        if (!/^cs_(live|test)_[a-zA-Z0-9_-]{20,120}$/.test(sessionId)) {
-          return;
-        }
-        showPaymentToast("Validando pagamento com o Stripe...");
-        try {
-          const res = await fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`);
-          const data = await res.json();
-          if (res.ok && data && data.paid) {
-            markExportPaid(sessionId);
-            showPaymentToast("Seu pagamento de R$ 15,00 foi confirmado! O download dos arquivos está desbloqueado.");
-            const cleanUrl = window.location.pathname + window.location.hash;
-            window.history.replaceState({}, document.title, cleanUrl);
-            openExportDownloadModal();
-            return;
-          } else {
-            alert("O pagamento desta sessão ainda não foi concluído ou não pôde ser confirmado.");
-          }
-        } catch (e) {
-          console.warn("Erro ao validar sessão Stripe:", e);
-        }
-      }
-    } catch (e) {
-      console.warn("Erro ao verificar retorno Stripe:", e);
-    }
-  }
-
-  function openExportPayModal() {
+  function openExportPayModal(targetLotteryId) {
     const modal = document.getElementById("export-pay-modal");
-    if (modal) modal.hidden = false;
+    if (!modal || !Store) return;
+
+    const targetId = LOTTERY_CONFIGS[targetLotteryId] ? targetLotteryId : state.lottery;
+    const targetCfg = LOTTERY_CONFIGS[targetId];
+    const meta = Specials ? Specials.getSpecialMeta(targetId) : null;
+    const singleProduct = Store.getProductByLottery(targetId);
+
+    const titleEl = document.getElementById("pay-modal-title");
+    const singleTitle = document.getElementById("pay-single-title");
+    const singleDesc = document.getElementById("pay-single-desc");
+    const buySingleBtn = document.getElementById("btn-buy-single");
+    const errBox = document.getElementById("checkout-error-banner");
+
+    if (errBox) errBox.hidden = true;
+    if (titleEl) titleEl.textContent = `Exportar ${targetCfg.name} em Excel (.xlsx) e PDF`;
+    if (singleTitle) singleTitle.textContent = singleProduct.name;
+    if (singleDesc) {
+      singleDesc.textContent = meta
+        ? `Todo o histórico da ${targetCfg.name}, filtros da tabela e todas as edições da ${meta.name} em XLSX e PDF.`
+        : singleProduct.description;
+    }
+    if (buySingleBtn) {
+      buySingleBtn.dataset.productId = singleProduct.id;
+      buySingleBtn.textContent = `Comprar apenas ${targetCfg.name} (R$ 10,00)`;
+    }
+
+    const partialBar = document.getElementById("partial-unlocked-bar");
+    const partialText = document.getElementById("partial-unlocked-text");
+    if (partialBar && partialText) {
+      const unlockedLotteries = Store.getUnlockedLotteries().map((id) => LOTTERY_CONFIGS[id].name);
+      const extras = [];
+      if (Store.hasEntitlement("kit_bolao_virada")) extras.push("Kit Bolão Virada 2026");
+      if (Store.hasEntitlement("dossie_especiais")) extras.push("Dossiê Especiais");
+      const allOwned = [...unlockedLotteries, ...extras];
+      if (allOwned.length > 0) {
+        partialText.textContent = `Já liberado nesta sessão: ${allOwned.join(", ")}.`;
+        partialBar.hidden = false;
+      } else {
+        partialBar.hidden = true;
+      }
+    }
+
+    modal.hidden = false;
   }
 
   function closeExportPayModal() {
@@ -1741,19 +2009,240 @@
     if (modal) modal.hidden = true;
   }
 
+  function resolveSelectedExportLottery() {
+    const selectEl = document.getElementById("export-lottery-select");
+    const val = selectEl ? selectEl.value : "current";
+    return val === "current" ? state.lottery : val;
+  }
+
+  function renderExtraProductsInDownloadModal() {
+    const container = document.getElementById("extra-products-downloads");
+    if (!container || !Store) return;
+
+    const hasBolao = Store.hasEntitlement("kit_bolao_virada");
+    const hasDossie = Store.hasEntitlement("dossie_especiais");
+
+    const parts = [];
+    parts.push('<div class="extra-downloads-header"><strong>Produtos Especiais de Fim de Ano</strong><a href="mega-da-virada.html#produtos" class="btn-link-action">Ver detalhes na página da Mega da Virada</a></div>');
+
+    if (hasBolao || hasDossie) {
+      parts.push('<div class="extra-downloads-grid">');
+      if (hasBolao) {
+        parts.push(`
+          <div class="extra-dl-card unlocked">
+            <strong>Kit Bolão Mega da Virada 2026</strong>
+            <span>Planilha com fórmulas de rateio, conferidor #3100 e Guia Executivo</span>
+            <div class="extra-dl-btns">
+              <button type="button" id="btn-dl-bolao-xlsx" class="btn btn-sm btn-primary">Baixar XLSX</button>
+              <button type="button" id="btn-dl-bolao-pdf" class="btn btn-sm">Baixar Guia PDF</button>
+            </div>
+          </div>
+        `);
+      }
+      if (hasDossie) {
+        parts.push(`
+          <div class="extra-dl-card unlocked">
+            <strong>Dossiê Concursos Especiais</strong>
+            <span>Virada, Independência, São João e Páscoa consolidados</span>
+            <div class="extra-dl-btns">
+              <button type="button" id="btn-dl-dossie-xlsx" class="btn btn-sm btn-primary">Baixar XLSX</button>
+              <button type="button" id="btn-dl-dossie-pdf" class="btn btn-sm">Baixar PDF</button>
+            </div>
+          </div>
+        `);
+      }
+      parts.push("</div>");
+    }
+
+    if (!hasBolao || !hasDossie) {
+      parts.push('<div class="extra-upsell-row">');
+      if (!hasBolao) {
+        parts.push('<button type="button" class="btn btn-sm extra-buy-btn" data-product-id="kit_bolao_virada">Adicionar Kit Bolão Virada 2026 (R$ 14,90)</button>');
+      }
+      if (!hasDossie) {
+        parts.push('<button type="button" class="btn btn-sm extra-buy-btn" data-product-id="dossie_especiais">Adicionar Dossiê Especiais (R$ 19,90)</button>');
+      }
+      if (!hasBolao && !hasDossie && !Store.hasAllLotteries()) {
+        parts.push('<button type="button" class="btn btn-sm btn-primary extra-buy-btn" data-product-id="super_combo">Pacote Completo Atlas + Virada (R$ 34,90)</button>');
+      }
+      parts.push("</div>");
+    }
+
+    container.innerHTML = parts.join("");
+
+    const dlBolaoX = document.getElementById("btn-dl-bolao-xlsx");
+    if (dlBolaoX) {
+      dlBolaoX.addEventListener("click", () => {
+        const ms = getDrawsForLotteryKey("megasena");
+        Store.exportKitBolaoViradaXLSX(ms ? ms.draws : []);
+      });
+    }
+    const dlBolaoP = document.getElementById("btn-dl-bolao-pdf");
+    if (dlBolaoP) {
+      dlBolaoP.addEventListener("click", () => {
+        const ms = getDrawsForLotteryKey("megasena");
+        Store.exportKitBolaoViradaPDF(ms ? ms.draws : []);
+      });
+    }
+    const dlDossieX = document.getElementById("btn-dl-dossie-xlsx");
+    if (dlDossieX) {
+      dlDossieX.addEventListener("click", () => {
+        Store.exportDossieEspeciaisXLSX(getAllLotteriesDataMap());
+      });
+    }
+    const dlDossieP = document.getElementById("btn-dl-dossie-pdf");
+    if (dlDossieP) {
+      dlDossieP.addEventListener("click", () => {
+        Store.exportDossieEspeciaisPDF(getAllLotteriesDataMap());
+      });
+    }
+
+    container.querySelectorAll(".extra-buy-btn[data-product-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        Store.startCheckout(btn.dataset.productId, {
+          buttonEl: btn,
+          onError: (msg) => {
+            const box = document.getElementById("export-status-banner");
+            if (box) {
+              box.hidden = false;
+              box.textContent = msg;
+            }
+          }
+        });
+      });
+    });
+  }
+
+  function syncDownloadModalAvailability() {
+    if (!Store) return;
+    const selectEl = document.getElementById("export-lottery-select");
+    const rawVal = selectEl ? selectEl.value : "current";
+    const resolved = rawVal === "current" ? state.lottery : rawVal;
+
+    const filteredRadio = document.querySelector('input[name="export-scope"][value="filtered"]');
+    if (filteredRadio) {
+      if (resolved === "all") {
+        if (filteredRadio.checked) {
+          const allRadio = document.querySelector('input[name="export-scope"][value="all"]');
+          if (allRadio) allRadio.checked = true;
+        }
+        filteredRadio.disabled = true;
+      } else {
+        filteredRadio.disabled = false;
+      }
+    }
+
+    const targetId = resolved === "all" ? "all" : resolved;
+    const targetCfg = LOTTERY_CONFIGS[targetId];
+    const specialMeta = targetId !== "all" && Specials ? Specials.getSpecialMeta(targetId) : null;
+    const targetDraws = targetId !== "all" ? (getDrawsForLotteryKey(targetId) || { draws: [] }).draws : [];
+    const specialCount =
+      targetId === "all" && Specials
+        ? Store.ALL_LOTTERIES.reduce((acc, k) => {
+            const d = getDrawsForLotteryKey(k);
+            return acc + (d ? Specials.getSpecialDraws(k, d.draws).length : 0);
+          }, 0)
+        : Specials
+        ? Specials.getSpecialDraws(targetId, targetDraws).length
+        : 0;
+
+    const scopeSpecialDesc = document.getElementById("scope-special-desc");
+    if (scopeSpecialDesc) {
+      scopeSpecialDesc.innerHTML =
+        targetId === "all"
+          ? `<strong>Somente Concursos Especiais:</strong> Apenas as ${intFmt.format(specialCount)} edições especiais das 4 loterias`
+          : `<strong>Somente Concursos Especiais:</strong> Apenas os ${intFmt.format(specialCount)} sorteios de ${specialMeta ? specialMeta.name : targetCfg.name}`;
+    }
+
+    const hasAccess =
+      targetId === "all" ? Store.hasAllLotteries() : Store.hasLotteryAccess(targetId);
+
+    const notice = document.getElementById("locked-export-notice");
+    const noticeText = document.getElementById("locked-export-text");
+    const unlockBtn = document.getElementById("btn-unlock-selected-export");
+    const unlockComboBtn = document.getElementById("btn-unlock-combo-export");
+    const statusBox = document.getElementById("export-status-banner");
+    const dlButtons = [
+      document.getElementById("btn-download-xlsx"),
+      document.getElementById("btn-download-pdf"),
+      document.getElementById("btn-download-both")
+    ];
+
+    dlButtons.forEach((b) => {
+      if (b) b.disabled = !hasAccess;
+    });
+
+    if (notice && noticeText && unlockBtn) {
+      if (hasAccess) {
+        notice.hidden = true;
+      } else {
+        notice.hidden = false;
+        const showDlError = (msg) => {
+          if (statusBox) {
+            statusBox.hidden = false;
+            statusBox.textContent = msg;
+          }
+        };
+        if (targetId === "all") {
+          noticeText.textContent =
+            "A exportação consolidada das 4 loterias requer todas as modalidades liberadas ou o Combo 4 Loterias.";
+          unlockBtn.textContent = "Desbloquear Combo 4 Loterias (R$ 24,90)";
+          unlockBtn.dataset.productId = "combo_all";
+          if (unlockComboBtn) unlockComboBtn.hidden = true;
+          unlockBtn.onclick = () => Store.startCheckout("combo_all", { buttonEl: unlockBtn, onError: showDlError });
+        } else {
+          const prod = Store.getProductByLottery(targetId);
+          noticeText.textContent = `A modalidade ${targetCfg.name} ainda está bloqueada. Cada loteria tem exportação separada por R$ 10,00 ou você pode levar todas no Combo com desconto.`;
+          unlockBtn.textContent = `Comprar ${targetCfg.name} (R$ 10,00)`;
+          unlockBtn.dataset.productId = prod.id;
+          if (unlockComboBtn) unlockComboBtn.hidden = false;
+          unlockBtn.onclick = () => Store.startCheckout(prod.id, { buttonEl: unlockBtn, onError: showDlError });
+        }
+      }
+    }
+  }
+
   function openExportDownloadModal() {
     const modal = document.getElementById("export-download-modal");
-    if (!modal) return;
+    if (!modal || !Store) return;
+
+    const curCfg = getCurrentLottery();
+    const selectEl = document.getElementById("export-lottery-select");
+    if (selectEl) {
+      const curOpt = selectEl.querySelector('option[value="current"]');
+      if (curOpt) {
+        const curStatus = Store.hasLotteryAccess(curCfg.id) ? "Liberada" : "Bloqueada";
+        curOpt.textContent = `Loteria Atual na Tela (${curCfg.name} - ${curStatus})`;
+      }
+      Store.ALL_LOTTERIES.forEach((id) => {
+        const opt = document.getElementById(`opt-exp-${id}`);
+        const cfg = LOTTERY_CONFIGS[id];
+        if (opt && cfg) {
+          const dataObj = getDrawsForLotteryKey(id);
+          const count = dataObj && dataObj.draws ? dataObj.draws.length : 0;
+          const tag = Store.hasLotteryAccess(id) ? "✓ Liberada" : "Bloqueada - R$ 10,00";
+          opt.textContent = `${cfg.name} (${intFmt.format(count)} concursos) - ${tag}`;
+        }
+      });
+      const allOpt = document.getElementById("opt-exp-all");
+      if (allOpt) {
+        allOpt.textContent = Store.hasAllLotteries()
+          ? "Todas as 4 Loterias (XLSX Multi-Abas / PDF) - ✓ Liberado"
+          : "Todas as 4 Loterias (XLSX Multi-Abas / PDF) - Combo R$ 24,90";
+      }
+    }
 
     const filtered = getFilteredDraws();
     const scopeDesc = document.getElementById("scope-filtered-desc");
     if (scopeDesc) {
-      scopeDesc.innerHTML = `<strong>Concursos Filtrados:</strong> Apenas os ${intFmt.format(filtered.length)} concursos filtrados na tabela agora`;
+      scopeDesc.innerHTML = `<strong>Concursos Filtrados:</strong> Apenas os ${intFmt.format(filtered.length)} concursos filtrados na tabela agora (${curCfg.name})`;
     }
 
     const statusBox = document.getElementById("export-status-banner");
     if (statusBox) statusBox.hidden = true;
 
+    syncDownloadModalAvailability();
+    renderExtraProductsInDownloadModal();
     modal.hidden = false;
   }
 
@@ -1762,370 +2251,157 @@
     if (modal) modal.hidden = true;
   }
 
-  async function handleStripeCheckout() {
-    const btn = document.getElementById("btn-stripe-checkout");
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = `
-        <svg class="btn-checkout-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;">
-          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-          <path d="M12 2a10 10 0 0 1 10 10"/>
-        </svg>
-        <span>Redirecionando para o Stripe...</span>
-      `;
-    }
-
-    try {
-      const resp = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origin: window.location.origin })
-      });
-
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data && data.url) {
-          window.location.href = data.url;
-          return;
-        }
-      }
-    } catch (e) {
-      // Falha de rede ou executando em ambiente puramente estático
-    }
-
-    // Redireciona para o link permanente oficial da Stripe
-    window.location.href = STRIPE_CONFIG.paymentLink;
-  }
-
   function getDrawsForLotteryKey(lotteryKey) {
-    if (lotteryKey === "current") {
+    if (lotteryKey === "current" || lotteryKey === state.lottery) {
       return { cfg: getCurrentLottery(), draws: state.draws };
     }
     const cfg = LOTTERY_CONFIGS[lotteryKey];
     if (!cfg) return null;
-    const globalVar = cfg.dataVar;
-    const raw = window[globalVar] || [];
+    const raw = window[cfg.dataVar] || [];
     return { cfg, draws: raw };
   }
 
-  function buildLotterySheetData(cfg, drawsList) {
-    const dezHeaders = Array.from({ length: cfg.drawCount }, (_, i) => `Dezena ${i + 1}`);
-
-    const tierHeaders = [];
-    cfg.tiers.forEach((t) => {
-      tierHeaders.push(`Ganhadores ${t.name}`);
-      tierHeaders.push(`Rateio ${t.name} (R$)`);
+  function getAllLotteriesDataMap() {
+    const out = {};
+    Store.ALL_LOTTERIES.forEach((k) => {
+      const entry = getDrawsForLotteryKey(k);
+      if (entry) out[k] = entry;
     });
-
-    const headers = [
-      "Concurso",
-      "Data",
-      ...dezHeaders,
-      "Dezenas Combinadas",
-      "Acumulou?",
-      ...tierHeaders,
-      "Soma Dezenas",
-      "Qtd Pares",
-      "Qtd Ímpares"
-    ];
-
-    const rows = drawsList.map((d) => {
-      const nums = (d.n || []).slice().sort((a, b) => a - b);
-      const combined = nums.map(pad2).join(" - ");
-      const sum = nums.reduce((acc, v) => acc + v, 0);
-      const evenCount = nums.filter((n) => n % 2 === 0).length;
-      const oddCount = nums.length - evenCount;
-      const acumulouStr = d.a ? "Sim" : "Não";
-
-      const tierCols = [];
-      cfg.tiers.forEach((t) => {
-        const pInfo = (d.p && d.p[t.key]) || { g: 0, v: 0 };
-        const gVal = Number(pInfo.g) || 0;
-        const vVal = Number(pInfo.v) || 0;
-
-        // Ganhadores formatados como número
-        tierCols.push({
-          t: "n",
-          v: gVal,
-          z: "#,##0",
-          w: intFmt.format(gVal)
-        });
-
-        // Rateio/Prêmio formatado como Moeda BRL (R$)
-        tierCols.push({
-          t: "n",
-          v: vVal,
-          z: '"R$" #,##0.00',
-          w: brlFmt.format(vVal)
-        });
-      });
-
-      return [
-        d.c,
-        d.d,
-        ...nums,
-        combined,
-        acumulouStr,
-        ...tierCols,
-        sum,
-        evenCount,
-        oddCount
-      ];
-    });
-
-    return { headers, rows };
+    return out;
   }
 
-  function createFormattedWorksheet(headers, rows) {
-    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-    // Ajustar largura automática das colunas para visualização ideal no Excel
-    ws["!cols"] = headers.map((h, colIdx) => {
-      let maxLen = String(h).length;
-      const sample = rows.slice(0, 100);
-      sample.forEach((r) => {
-        const cell = r[colIdx];
-        if (cell !== undefined && cell !== null) {
-          const valStr = typeof cell === "object" && cell.w
-            ? cell.w
-            : String(cell.v !== undefined ? cell.v : cell);
-          if (valStr.length > maxLen) maxLen = valStr.length;
-        }
-      });
-      return { wch: Math.min(Math.max(maxLen + 3, 11), 32) };
-    });
-    return ws;
+  function resolveDrawsForExport(lotteryId, scope) {
+    const base = getDrawsForLotteryKey(lotteryId);
+    if (!base) return null;
+    if (scope === "filtered" && lotteryId === state.lottery) {
+      return { cfg: base.cfg, draws: getFilteredDraws(), tag: "_Filtrados", subtitle: "Concursos Filtrados" };
+    }
+    if (scope === "special" && Specials) {
+      const meta = Specials.getSpecialMeta(lotteryId);
+      return {
+        cfg: base.cfg,
+        draws: Specials.getSpecialDraws(lotteryId, base.draws),
+        tag: "_Especiais",
+        subtitle: meta ? meta.name : "Concursos Especiais"
+      };
+    }
+    return { cfg: base.cfg, draws: base.draws, tag: "_Completo", subtitle: "" };
   }
 
   function exportToXLSX() {
-    if (!window.XLSX) {
-      alert("A biblioteca de geração de Excel (.xlsx) ainda está sendo carregada. Por favor, aguarde alguns instantes.");
-      return;
-    }
-
-    const selectEl = document.getElementById("export-lottery-select");
-    const lotteryVal = selectEl ? selectEl.value : "current";
+    if (!Store) return false;
+    const targetId = resolveSelectedExportLottery();
     const scopeRadio = document.querySelector('input[name="export-scope"]:checked');
     const scope = scopeRadio ? scopeRadio.value : "all";
-
     const statusBox = document.getElementById("export-status-banner");
+
     if (statusBox) {
       statusBox.hidden = false;
       statusBox.textContent = "Gerando planilha Excel (.xlsx)...";
     }
 
     try {
-      const wb = XLSX.utils.book_new();
-
-      if (lotteryVal === "all") {
-        const lotteries = ["megasena", "lotofacil", "quina", "lotomania"];
-        lotteries.forEach((k) => {
-          const lData = getDrawsForLotteryKey(k);
-          if (lData && lData.draws && lData.draws.length) {
-            const { headers, rows } = buildLotterySheetData(lData.cfg, lData.draws);
-            const ws = createFormattedWorksheet(headers, rows);
-            XLSX.utils.book_append_sheet(wb, ws, lData.cfg.name);
-          }
+      if (targetId === "all") {
+        Store.exportAllLotteriesXLSX(LOTTERY_CONFIGS, (k) => {
+          const entry = getDrawsForLotteryKey(k);
+          if (!entry) return [];
+          return scope === "special" && Specials
+            ? Specials.getSpecialDraws(k, entry.draws)
+            : entry.draws;
         });
-        const dateStr = new Date().toISOString().slice(0, 10);
-        XLSX.writeFile(wb, `Loterias_Caixa_Consolidado_Todas_${dateStr}.xlsx`);
       } else {
-        const lData = (lotteryVal === "current")
-          ? { cfg: getCurrentLottery(), draws: (scope === "filtered" ? getFilteredDraws() : state.draws) }
-          : getDrawsForLotteryKey(lotteryVal);
-
-        if (!lData || !lData.draws || !lData.draws.length) {
-          alert("Nenhum sorteio encontrado para exportar.");
-          return;
-        }
-
-        const { headers, rows } = buildLotterySheetData(lData.cfg, lData.draws);
-        const ws = createFormattedWorksheet(headers, rows);
-        XLSX.utils.book_append_sheet(wb, ws, lData.cfg.name);
-
-        const dateStr = new Date().toISOString().slice(0, 10);
-        const scopeTag = (scope === "filtered") ? "_Filtrados" : "_Completo";
-        XLSX.writeFile(wb, `Loterias_Caixa_${lData.cfg.name}${scopeTag}_${dateStr}.xlsx`);
+        const resolved = resolveDrawsForExport(targetId, scope);
+        if (!resolved) throw new Error("Modalidade inválida.");
+        Store.exportLotteryXLSX(resolved.cfg, resolved.draws, resolved.tag);
       }
-
       if (statusBox) {
-        statusBox.textContent = "✓ Planilha Excel gerada e baixada com sucesso!";
+        statusBox.textContent = "Planilha Excel gerada e baixada com sucesso!";
         setTimeout(() => { statusBox.hidden = true; }, 4000);
       }
+      return true;
     } catch (err) {
       console.error("Erro ao gerar XLSX:", err);
-      if (statusBox) statusBox.textContent = "Erro ao gerar arquivo Excel: " + err.message;
+      if (statusBox) statusBox.textContent = "Erro ao gerar Excel: " + err.message;
+      return false;
     }
-  }
-
-  function renderLotteryPDFSection(doc, cfg, drawsList, startOnNewPage) {
-    if (startOnNewPage) {
-      doc.addPage();
-    }
-
-    const headerColors = {
-      megasena: [15, 92, 58],
-      lotofacil: [126, 34, 206],
-      quina: [194, 65, 12],
-      lotomania: [234, 88, 12]
-    };
-    const color = headerColors[cfg.id] || [15, 92, 58];
-
-    // Cabeçalho institucional
-    doc.setFillColor(...color);
-    doc.rect(0, 0, 210, 24, "F");
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text(`Atlas Estatístico - ${cfg.name}`, 14, 11);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.text("Relatório Oficial Consolidado de Resultados Históricos", 14, 17);
-
-    const emitDate = new Date().toLocaleDateString("pt-BR");
-    doc.text(`Data de Emissão: ${emitDate}`, 196, 17, { align: "right" });
-
-    // Metadados da consulta
-    doc.setTextColor(20, 38, 28);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9.5);
-    doc.text("Resumo dos Concursos:", 14, 30);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    const totalCount = drawsList.length;
-    const oldestDraw = drawsList[drawsList.length - 1];
-    const newestDraw = drawsList[0];
-    const rangeText = `Exibindo ${intFmt.format(totalCount)} concursos (do Concurso #${oldestDraw.c} em ${oldestDraw.d} ao #${newestDraw.c} em ${newestDraw.d})`;
-    doc.text(rangeText, 14, 35);
-
-    const headRow = ["Concurso", "Data", "Dezenas Sorteadas", "Acumulou?", cfg.tablePrizeCols.main, "Faixa 2"];
-    const tableRows = drawsList.map((d) => {
-      const numsStr = (d.n || []).map(pad2).join(" ");
-      const acumStr = d.a ? "Sim" : "Não";
-      const mainTier = cfg.tiers[0];
-      const subTier = cfg.tiers[1];
-      const mainP = (d.p && d.p[mainTier.key]) || { g: 0, v: 0 };
-      const subP = (subTier && d.p && d.p[subTier.key]) || { g: 0, v: 0 };
-
-      const mainText = `${intFmt.format(mainP.g)} gan. (${brlFmt.format(mainP.v)})`;
-      const subText = subTier ? `${intFmt.format(subP.g)} gan. (${brlFmt.format(subP.v)})` : "-";
-
-      return [
-        `#${d.c}`,
-        d.d,
-        numsStr,
-        acumStr,
-        mainText,
-        subText
-      ];
-    });
-
-    doc.autoTable({
-      head: [headRow],
-      body: tableRows,
-      startY: 38,
-      theme: "striped",
-      headStyles: {
-        fillColor: color,
-        textColor: 255,
-        fontSize: 8,
-        fontStyle: "bold"
-      },
-      styles: {
-        fontSize: 7.5,
-        cellPadding: 1.6,
-        textColor: [20, 38, 28]
-      },
-      alternateRowStyles: {
-        fillColor: [247, 245, 240]
-      },
-      columnStyles: {
-        0: { cellWidth: 18, fontStyle: "bold" },
-        1: { cellWidth: 20 },
-        2: { cellWidth: 42, fontStyle: "bold" },
-        3: { cellWidth: 18, halign: "center" },
-        4: { cellWidth: 50 },
-        5: { cellWidth: 42 }
-      },
-      margin: { top: 28, bottom: 14, left: 10, right: 10 },
-      didDrawPage: function (data) {
-        const pageCount = doc.internal.getNumberOfPages();
-        doc.setFontSize(7.5);
-        doc.setTextColor(100, 115, 105);
-        doc.text(`Página ${data.pageNumber} de ${pageCount} • Atlas Oficial das Loterias Caixa (${cfg.name})`, 105, 290, { align: "center" });
-      }
-    });
   }
 
   function exportToPDF() {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      alert("A biblioteca de geração de PDF ainda está sendo carregada. Por favor, aguarde alguns instantes.");
-      return;
-    }
-
-    const selectEl = document.getElementById("export-lottery-select");
-    const lotteryVal = selectEl ? selectEl.value : "current";
+    if (!Store) return false;
+    const targetId = resolveSelectedExportLottery();
     const scopeRadio = document.querySelector('input[name="export-scope"]:checked');
     const scope = scopeRadio ? scopeRadio.value : "all";
-
     const statusBox = document.getElementById("export-status-banner");
+
     if (statusBox) {
       statusBox.hidden = false;
       statusBox.textContent = "Gerando documento PDF formatado...";
     }
 
     try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const dateStr = new Date().toISOString().slice(0, 10);
-
-      if (lotteryVal === "all") {
-        const lotteries = ["megasena", "lotofacil", "quina", "lotomania"];
-        lotteries.forEach((k, idx) => {
-          const lData = getDrawsForLotteryKey(k);
-          if (lData && lData.draws && lData.draws.length) {
-            const drawsList = lData.draws.slice().sort((a, b) => b.c - a.c);
-            renderLotteryPDFSection(doc, lData.cfg, drawsList, idx > 0);
-          }
+      if (targetId === "all") {
+        Store.exportAllLotteriesPDF(LOTTERY_CONFIGS, (k) => {
+          const entry = getDrawsForLotteryKey(k);
+          if (!entry) return [];
+          return scope === "special" && Specials
+            ? Specials.getSpecialDraws(k, entry.draws)
+            : entry.draws;
         });
-        doc.save(`Loterias_Caixa_Consolidado_Todas_${dateStr}.pdf`);
       } else {
-        const targetLottery = (lotteryVal === "current") ? state.lottery : lotteryVal;
-        const lData = (lotteryVal === "current")
-          ? { cfg: getCurrentLottery(), draws: (scope === "filtered" ? getFilteredDraws() : state.draws) }
-          : getDrawsForLotteryKey(targetLottery);
-
-        if (!lData || !lData.draws || !lData.draws.length) {
-          alert("Nenhum sorteio encontrado para exportar em PDF.");
-          return;
-        }
-
-        const drawsList = lData.draws.slice().sort((a, b) => b.c - a.c);
-        renderLotteryPDFSection(doc, lData.cfg, drawsList, false);
-
-        const scopeTag = (scope === "filtered") ? "_Filtrados" : "_Completo";
-        doc.save(`Loterias_Caixa_${lData.cfg.name}${scopeTag}_${dateStr}.pdf`);
+        const resolved = resolveDrawsForExport(targetId, scope);
+        if (!resolved) throw new Error("Modalidade inválida.");
+        Store.exportLotteryPDF(resolved.cfg, resolved.draws, resolved.tag, resolved.subtitle);
       }
-
       if (statusBox) {
-        statusBox.textContent = "✓ Documento PDF gerado e baixado com sucesso!";
+        statusBox.textContent = "Documento PDF gerado e baixado com sucesso!";
         setTimeout(() => { statusBox.hidden = true; }, 4000);
       }
+      return true;
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
       if (statusBox) statusBox.textContent = "Erro ao gerar PDF: " + err.message;
+      return false;
     }
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     initTheme();
+    const params = new URLSearchParams(window.location.search);
+    const paramLottery = (params.get("lottery") || "").toLowerCase();
+    const paramSpecial = params.get("special") === "1" || params.get("special") === "true";
     const hash = (location.hash || "").replace("#", "").toLowerCase();
-    const startLottery = LOTTERY_CONFIGS[hash] ? hash : "megasena";
+    const startLottery = LOTTERY_CONFIGS[paramLottery]
+      ? paramLottery
+      : LOTTERY_CONFIGS[hash]
+      ? hash
+      : "megasena";
+
     bindEvents();
-    selectLottery(startLottery);
+    selectLottery(startLottery, { activateSpecial: paramSpecial });
     updateExportButtonUI();
-    checkStripeReturn();
+
+    if (Store) {
+      Store.checkStripeReturn({
+        onValidating: () => {
+          showPaymentToast("Validando pagamento...", "Consultando confirmação no Stripe.");
+        },
+        onSuccess: (data) => {
+          updateExportButtonUI();
+          const label = (data && data.productName) || "Exportação de Resultados";
+          const amountStr = data && data.amountCents ? Store.formatBRLFromCents(data.amountCents) : "";
+          showPaymentToast(
+            amountStr ? `Pagamento de ${amountStr} confirmado!` : "Pagamento confirmado!",
+            `${label} liberado para download.`
+          );
+          openExportDownloadModal();
+        },
+        onCanceled: () => {
+          showPaymentToast("Checkout cancelado", "Nenhuma cobrança foi realizada. Você pode escolher outro plano quando quiser.");
+        },
+        onError: (msg) => {
+          showPaymentToast("Pagamento não confirmado", msg);
+        }
+      });
+    }
   });
 })();

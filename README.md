@@ -33,29 +33,34 @@ Aplicação web sem dependências externas para consulta de todos os resultados 
    - Três métodos de projeção: **Expectativa Empírica Direta** ($p_i = f_i / N$), **Simulação de Monte Carlo Ponderada** (amostragem sem reposição de $H$ sorteios futuros) e **Regressão à Média + Pressão de Ciclo**.
    - Gráfico SVG multi-escala comparando a trajetória das dezenas líderes, média teórica (10%) e lanterna em `+50`, `+500`, `+1.000` e `+5.000` jogos, além de projeções de aparições adicionais, pressão de ciclo, paridade e linhas do volante.
 
-4. **Histórico Completo de Concursos e Exportação Paga (XLSX / PDF)**
+4. **Filtro de Concursos Especiais e Landing Page da Mega da Virada (`/mega-da-virada`)**
+   - Atalhos rápidos e filtro no histórico, simulador e métricas para os concursos especiais anuais: **Mega da Virada** (Mega-Sena), **Lotofácil da Independência**, **Quina de São João** e **Lotomania de Páscoa**.
+   - Página dedicada em [`mega-da-virada.html`](mega-da-virada.html) (`/mega-da-virada`) com a história desde 2008/2009, gráfico de evolução dos prêmios, tabela completa de ganhadores (2009 a 2025), análise estatística de apostas simples vs. bolões, calculadora interativa de cotas, dezenas que mais saíram e vitrine comercial.
+
+5. **Histórico Completo de Concursos e Exportação Multi-Produto (XLSX / PDF)**
    - Busca por número do concurso ou data (`dd/mm/aaaa`).
-   - Filtro por dezena específica sorteada (`01` a `60`) e por status do prêmio principal (Todos, Com ganhadores na Sena, Acumulados).
-   - Modal de detalhes com o rateio completo de cada concurso (Sena, Quina e Quadra) e atalho para carregar as dezenas daquele sorteio no simulador.
+   - Filtro por dezena específica sorteada, por tipo de concurso (Todos, Somente Concursos Especiais, Somente Regulares) e por status do prêmio principal (Todos, Com ganhadores, Acumulados).
+   - Modal de detalhes com o rateio completo de cada concurso e identificação das edições especiais.
    - Botão **Atualizar da Caixa** para buscar novos sorteios via API pública sem precisar recarregar a página.
-   - **Exportação Paga de Resultados (R$ 15,00 via Stripe):**
-     - Botão de exportação integrado no cabeçalho da tabela de resultados.
+   - **Exportação Paga por Loteria, Combos e Produtos Extras (via Stripe):**
+     - **Exportação Individual por Loteria (R$ 10,00 cada):** Mega-Sena + Mega da Virada, Lotofácil + Independência, Quina + São João ou Lotomania + Páscoa em `.xlsx` e `.pdf`.
+     - **Combo 4 Loterias Completo (R$ 24,90):** desbloqueia todas as 4 modalidades (economia de 38%) com exportação consolidada multi-abas.
+     - **Kit Bolão Mega da Virada 2026 (R$ 14,90):** planilha Excel de 4 abas com fórmulas automáticas de rateio de cotas, conferidor automático para o Concurso `#3100`, histórico da Virada e frequência das 60 dezenas + Guia Executivo em PDF.
+     - **Dossiê Concursos Especiais (R$ 19,90):** Excel de 5 abas e PDF consolidado comparando Mega da Virada, Lotofácil da Independência, Quina de São João e Lotomania de Páscoa.
+     - **Pacote Completo Atlas + Virada (R$ 34,90):** reúne todas as 4 planilhas históricas + Kit Bolão Mega da Virada 2026 + Dossiê Concursos Especiais.
      - Checkout seguro Stripe com suporte a **Pix instantâneo** e **Cartão de Crédito**.
-     - Download em **Planilha Excel (.xlsx)** formatada (colunas individuais, combinadas, rateios, acumulados, soma e paridade).
-     - Download em **Relatório Diagramado (.pdf)** em alta resolução com cabeçalho oficial e paginação.
-     - Suporte a exportação de concursos filtrados ou base completa de todas as 4 loterias (Mega-Sena, Lotofácil, Quina e Lotomania).
 
 ## Estrutura de Arquivos
 
-- `index.html`: Estrutura semântica da aplicação, modais de pagamento e download, e controles acessíveis por teclado.
-- `styles.css`: Estilos responsivos com suporte a tema Claro e Escuro (contraste WCAG AA validado).
-- `app.js`: Motor de simulação combinatória, integração Stripe e geradores XLSX/PDF.
-- `server.py`: Servidor HTTP leve em Python com endpoints para sessões dinâmicas do Stripe Checkout.
-- `vendor/`: Bibliotecas locais de alta performance para geração de planilhas (`xlsx.full.min.js`) e documentos (`jspdf.umd.min.js`, `jspdf.plugin.autotable.min.js`).
-- `data/megasena.js` / `data/megasena.json`: Base da Mega-Sena (3.077 concursos).
-- `data/lotofacil.js` / `data/lotofacil.json`: Base da Lotofácil (3.816 concursos).
-- `data/quina.js` / `data/quina.json`: Base da Quina (7.154 concursos).
-- `data/lotomania.js` / `data/lotomania.json`: Base da Lotomania (2.993 concursos).
+- `index.html`: Estrutura semântica da aplicação principal, filtro de concursos especiais e modais multi-produto.
+- `mega-da-virada.html`: Landing page analítica e comercial dedicada à Mega da Virada (`/mega-da-virada`).
+- `styles.css` / `virada.css`: Estilos responsivos com suporte a tema Claro e Escuro (contraste WCAG AA).
+- `special-draws.js`: Catálogo e detector compartilhado de concursos especiais (Mega da Virada, Independência, São João e Páscoa).
+- `store.js`: Catálogo de produtos, gestão de permissões, checkout/verificação Stripe e geradores XLSX/PDF (incluindo Kit Bolão e Dossiê Especiais).
+- `app.js` / `virada.js`: Motores de simulação, gráficos e interatividade das páginas.
+- `server.py`: Servidor HTTP leve em Python com endpoints para sessões dinâmicas multi-produto do Stripe Checkout e rota `/mega-da-virada`.
+- `vendor/`: Bibliotecas locais para geração de planilhas (`xlsx.full.min.js`) e documentos (`jspdf.umd.min.js`, `jspdf.plugin.autotable.min.js`).
+- `data/*.js` / `data/*.json`: Bases históricas oficiais da Mega-Sena, Lotofácil, Quina e Lotomania.
 
 ## Como Rodar o Projeto
 
@@ -94,9 +99,8 @@ O projeto já está 100% configurado para o **Netlify** com suporte a **Netlify 
    - **Functions directory:** `netlify/functions`
    - **Build command:** *(deixar vazio - zero build)*
 3. No painel do Netlify (**Site configuration > Environment variables**), adicione:
-   - `STRIPE_SECRET_KEY`: sua chave restrita/secreta do Stripe
-   - `STRIPE_PRICE_ID`: seu Price ID do Stripe (R$ 15,00)
-   - `STRIPE_PAYMENT_LINK`: seu link de pagamento Stripe
+   - `STRIPE_SECRET_KEY`: sua chave restrita/secreta do Stripe (já habilita automaticamente todos os produtos e valores via `price_data` dinâmico na API Stripe).
+   - *(Opcional)* Variáveis `STRIPE_PRICE_ID_*` ou `STRIPE_LINK_*` caso deseje associar Price IDs ou Links pré-cadastrados (veja `.env.example`).
    *(Nota: não adicione a variável PORT no Netlify, pois o Netlify não necessita de porta).*
 4. Clique em **Deploy**. As rotas `/api/create-checkout-session` e `/api/verify-session` funcionarão como Serverless Functions automaticamente.
 

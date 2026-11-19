@@ -1,0 +1,653 @@
+/* Estilos dedicados da Landing Page Mega da Virada (/mega-da-virada) */
+
+:root {
+  --font-editorial: Georgia, "Iowan Old Style", "Times New Roman", serif;
+}
+
+.virada-container {
+  gap: 24px;
+}
+
+.virada-display-title {
+  margin: 0 0 12px 0;
+  font-family: var(--font-editorial);
+  font-size: clamp(1.65rem, 3.2vw, 2.5rem);
+  line-height: 1.16;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.editorial-heading {
+  font-family: var(--font-editorial);
+  letter-spacing: -0.015em;
+}
+
+/* Hero Assimétrico */
+.virada-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  padding: 18px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 10px;
+}
+
+@media (min-width: 960px) {
+  .virada-hero {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+    padding: 28px;
+    gap: 28px;
+    align-items: start;
+  }
+}
+
+.virada-hero-lead {
+  margin: 0 0 18px 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 64ch;
+}
+
+.virada-event-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.event-fact-item {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-alt);
+}
+
+.event-fact-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.event-fact-value {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* Contador Regressivo */
+.countdown-box {
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  border: 1.5px solid var(--virada-gold-border);
+  background: var(--virada-gold-soft);
+  color: var(--virada-gold);
+}
+
+.countdown-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.countdown-cell {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--virada-gold-border);
+  border-radius: 6px;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.countdown-num {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.countdown-unit {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.virada-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.virada-hero-ctas .btn {
+  flex: 1 1 220px;
+}
+
+/* Painel Lateral do Hero */
+.virada-dossier-panel {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-alt);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dossier-panel-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.dossier-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 520px) {
+  .dossier-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.dossier-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.dossier-stat-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.dossier-stat-val {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.dossier-stat-sub {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.dossier-note {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* Seção História: Prosa + Linha do Tempo */
+.history-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 860px) {
+  .history-split {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+.editorial-prose {
+  max-width: 68ch;
+}
+
+.editorial-prose h3 {
+  margin: 18px 0 6px 0;
+  font-size: 1.08rem;
+  color: var(--text);
+}
+
+.editorial-prose h3:first-child {
+  margin-top: 0;
+}
+
+.editorial-prose p {
+  margin: 0 0 12px 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.timeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timeline-item {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-alt);
+}
+
+.timeline-year {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--virada-gold-soft);
+  color: var(--virada-gold);
+  border: 1px solid var(--virada-gold-border);
+  margin-bottom: 4px;
+}
+
+.timeline-item strong {
+  display: block;
+  font-size: 0.92rem;
+  margin-bottom: 3px;
+  color: var(--text);
+}
+
+.timeline-item p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* Gráfico SVG da Mega da Virada */
+.virada-chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+/* Faixa de Conversão Contextual */
+.inline-offer-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1.5px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.inline-offer-bar strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.inline-offer-bar span {
+  display: block;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+/* Seção Tipos de Aposta + Calculadora de Bolão */
+.bet-types-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+@media (min-width: 920px) {
+  .bet-types-layout {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+.bet-analysis-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bet-analysis-block {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+}
+
+.bet-analysis-block h3 {
+  margin: 0 0 6px 0;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.bet-analysis-block p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.bolao-calc-card {
+  padding: 18px;
+  border: 2px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bolao-calc-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.calc-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 520px) {
+  .calc-inputs-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.calc-results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calc-res-item {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.calc-res-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.calc-res-val {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.calc-honest-note {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* Números da Virada */
+.never-drawn-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.virada-numbers-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 820px) {
+  .virada-numbers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Loja de Planilhas e Produtos */
+.store-group-title {
+  margin: 0 0 10px 0;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.lottery-products-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+  .lottery-products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1060px) {
+  .lottery-products-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+}
+
+.product-card.is-owned {
+  border-color: var(--accent);
+  background: var(--success-bg);
+}
+
+.product-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.product-format-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+}
+
+.product-title {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--text);
+}
+
+.product-desc {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  flex-grow: 1;
+}
+
+.product-price-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-mono);
+}
+
+.product-price-main {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.product-price-compare {
+  font-size: 0.8rem;
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.product-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.product-actions .btn {
+  width: 100%;
+}
+
+.combo-banner-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+  margin-bottom: 24px;
+}
+
+@media (min-width: 760px) {
+  .combo-banner-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.combo-banner-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 240px;
+}
+
+.extras-products-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 760px) {
+  .extras-products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.super-combo-card {
+  margin-top: 16px;
+  padding: 18px;
+  border: 2px solid var(--virada-gold-border);
+  border-radius: 8px;
+  background: var(--virada-row-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 760px) {
+  .super-combo-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.cross-specials-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  .cross-specials-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.cross-special-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+  text-decoration: none;
+  color: var(--text);
+}
+
+.cross-special-card:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.cross-special-card strong {
+  font-size: 0.98rem;
+}
+
+.cross-special-card span {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.cross-special-cta {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+}

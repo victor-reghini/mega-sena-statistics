@@ -25,6 +25,17 @@
   status = 404
   force = true
 
+# Landing page dedicada da Mega da Virada
+[[redirects]]
+  from = "/mega-da-virada"
+  to = "/mega-da-virada.html"
+  status = 200
+
+[[redirects]]
+  from = "/mega-da-virada/"
+  to = "/mega-da-virada.html"
+  status = 200
+
 # Redirecionamento das rotas da API para Netlify Functions
 [[redirects]]
   from = "/api/create-checkout-session"
