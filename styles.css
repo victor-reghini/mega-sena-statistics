@@ -83,31 +83,102 @@
   --focus-ring: #FB923C;
 }
 
-/* Seletor de Loterias */
+[data-lottery="maismilionaria"] {
+  --accent: #0E4D8B;
+  --accent-soft: #E0F2FE;
+  --focus-ring: #0E4D8B;
+}
+[data-theme="dark"][data-lottery="maismilionaria"] {
+  --accent: #38BDF8;
+  --accent-soft: #0C4A6E;
+  --focus-ring: #38BDF8;
+}
+
+[data-lottery="timemania"] {
+  --accent: #047857;
+  --accent-soft: #ECFDF5;
+  --focus-ring: #047857;
+}
+[data-theme="dark"][data-lottery="timemania"] {
+  --accent: #34D399;
+  --accent-soft: #064E3B;
+  --focus-ring: #34D399;
+}
+
+[data-lottery="duplasena"] {
+  --accent: #9F1239;
+  --accent-soft: #FFE4E6;
+  --focus-ring: #9F1239;
+}
+[data-theme="dark"][data-lottery="duplasena"] {
+  --accent: #FB7185;
+  --accent-soft: #881337;
+  --focus-ring: #FB7185;
+}
+
+[data-lottery="diadesorte"] {
+  --accent: #B45309;
+  --accent-soft: #FEF3C7;
+  --focus-ring: #B45309;
+}
+[data-theme="dark"][data-lottery="diadesorte"] {
+  --accent: #FBBF24;
+  --accent-soft: #78350F;
+  --focus-ring: #FBBF24;
+}
+
+[data-lottery="supersete"] {
+  --accent: #3F6212;
+  --accent-soft: #ECFCCB;
+  --focus-ring: #3F6212;
+}
+[data-theme="dark"][data-lottery="supersete"] {
+  --accent: #A3E635;
+  --accent-soft: #365314;
+  --focus-ring: #A3E635;
+}
+
+/* Seletor de Loterias (Responsivo sem scroll horizontal no mobile) */
 .lottery-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 8px 0 16px;
-  margin-bottom: 8px;
-  scrollbar-width: thin;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px 0 8px;
+  margin-bottom: 4px;
+}
+
+@media (min-width: 640px) {
+  .lottery-bar {
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (min-width: 1120px) {
+  .lottery-bar {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 8px;
+  }
 }
 
 .lottery-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 20px;
-  border-radius: 9999px;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 8px;
+  border-radius: 8px;
   border: 1.5px solid var(--border);
   background: var(--surface);
-  color: var(--text-muted);
-  font-size: 0.9375rem;
-  font-weight: 600;
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lottery-btn:hover {
@@ -124,8 +195,8 @@
 }
 
 .lottery-dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
@@ -135,6 +206,11 @@
 .lottery-dot.lotofacil { background: #A855F7; }
 .lottery-dot.quina { background: #3B82F6; }
 .lottery-dot.lotomania { background: #F97316; }
+.lottery-dot.maismilionaria { background: #0284C7; }
+.lottery-dot.timemania { background: #059669; }
+.lottery-dot.duplasena { background: #E11D48; }
+.lottery-dot.diadesorte { background: #D97706; }
+.lottery-dot.supersete { background: #65A30D; }
 
 .lottery-btn.active .lottery-dot {
   background: var(--accent-fg);
@@ -143,12 +219,170 @@
 [data-lottery="lotofacil"] .volante-grid {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   max-width: 380px;
-  margin: 0 auto;
+  margin: 0 auto 14px;
 }
 
-[data-lottery="lotomania"] .volante-grid {
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  max-width: 580px;
+[data-lottery="diadesorte"] .volante-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  max-width: 440px;
+  margin: 0 auto 14px;
+}
+
+[data-lottery="maismilionaria"] .volante-grid,
+[data-lottery="duplasena"] .volante-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  [data-lottery="maismilionaria"] .volante-grid,
+  [data-lottery="duplasena"] .volante-grid {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+}
+
+[data-lottery="lotomania"] .volante-grid,
+[data-lottery="timemania"] .volante-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@media (min-width: 480px) {
+  [data-lottery="lotomania"] .volante-grid,
+  [data-lottery="timemania"] .volante-grid {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    max-width: 580px;
+  }
+}
+
+[data-lottery="supersete"] .volante-grid {
+  display: block;
+}
+
+.volante-supersete-cols {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+}
+
+@media (min-width: 520px) {
+  .volante-supersete-cols {
+    gap: 8px;
+  }
+}
+
+.supersete-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 3px;
+  min-width: 0;
+}
+
+.supersete-col-header {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--text-muted);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.volante-extra-controls {
+  margin-bottom: 14px;
+  padding: 12px;
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+}
+
+.volante-extra-controls[hidden] {
+  display: none;
+}
+
+.trevos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@media (min-width: 480px) {
+  .trevos-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.trevo-btn {
+  min-height: 44px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.trevo-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+
+.ball-trevo {
+  border-style: dashed;
+  border-width: 2px;
+  background: var(--accent-soft);
+}
+
+.ball-extra-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border-strong);
+  color: var(--text);
+}
+
+.ball-extra-badge.hit {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+
+.draw-pair-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.draw-pair-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.draw-pair-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  min-width: 24px;
 }
 
 *, *::before, *::after {
@@ -2312,6 +2546,16 @@ body {
   border-radius: 6px;
   padding: 6px 12px;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.pf-price-compare {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: line-through;
+  margin-right: 4px;
 }
 
 .pf-stepper {
@@ -2516,6 +2760,25 @@ body {
 .rcpt-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
+}
+
+.product-price-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-mono);
+}
+
+.product-price-main {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.product-price-compare {
+  font-size: 0.8rem;
+  text-decoration: line-through;
+  color: var(--text-muted);
 }
 
 

@@ -3,17 +3,70 @@ import crypto from "node:crypto";
 import tls from "node:tls";
 
 const DEFAULT_SENDER_EMAIL = "reghinidev@gmail.com";
-const ALL_LOTTERIES = ["megasena", "lotofacil", "quina", "lotomania"];
+const ALL_LOTTERIES = [
+  "megasena",
+  "lotofacil",
+  "quina",
+  "lotomania",
+  "maismilionaria",
+  "timemania",
+  "duplasena",
+  "diadesorte",
+  "supersete"
+];
 
-function jsonResponse(payload, status = 200) {
+function getCorsOrigin(req) {
+  const origin = (req && req.headers && req.headers.get("origin")) || "";
+  if (!origin) return "https://lotery-statistics.netlify.app";
+  if (origin === "https://lotery-statistics.netlify.app") return origin;
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin;
+  return "https://lotery-statistics.netlify.app";
+}
+
+function jsonResponse(payload, status = 200, req = null) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": getCorsOrigin(req),
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
       "Cache-Control": "no-store"
     }
   });
+}
+
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function validateAttachmentMagicBytes(b64, filename) {
+  try {
+    const headB64 = b64.slice(0, 48);
+    const buf = Buffer.from(headB64, "base64");
+    if (buf.length < 4) return false;
+    const lowerName = String(filename || "").toLowerCase();
+    if (lowerName.endsWith(".xlsx") || lowerName.endsWith(".zip")) {
+      // Assinatura PK\x03\x04
+      return buf[0] === 0x50 && buf[1] === 0x4B && buf[2] === 0x03 && buf[3] === 0x04;
+    }
+    if (lowerName.endsWith(".pdf")) {
+      // Assinatura %PDF
+      return buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46;
+    }
+    if (lowerName.endsWith(".html") || lowerName.endsWith(".txt")) {
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
 }
 
 function verifyExportToken(tokenStr, secretKey) {
@@ -60,15 +113,23 @@ function chunkBase64(b64) {
 }
 
 function buildReceiptHtml({ receiptNumber, sessionId, productName, amountFormatted, paidAtFormatted, verifiedEmail, senderEmail, attachmentNames }) {
+  const safeReceiptNumber = escapeHtml(receiptNumber);
+  const safeSessionId = escapeHtml(sessionId);
+  const safeProductName = escapeHtml(productName);
+  const safeAmountFormatted = escapeHtml(amountFormatted);
+  const safePaidAtFormatted = escapeHtml(paidAtFormatted);
+  const safeVerifiedEmail = escapeHtml(verifiedEmail);
+  const safeSenderEmail = escapeHtml(senderEmail);
+
   const filesListHtml = attachmentNames
-    .map((name) => `<li style="margin:4px 0;font-family:monospace;font-size:13px;">${name}</li>`)
+    .map((name) => `<li style="margin:4px 0;font-family:monospace;font-size:13px;">${escapeHtml(name)}</li>`)
     .join("");
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Recibo ${receiptNumber} - Atlas das Loterias Caixa</title>
+<title>Recibo ${safeReceiptNumber} - Atlas das Loterias Caixa</title>
 </head>
 <body style="font-family:system-ui,-apple-system,sans-serif;background:#F7F5F0;color:#14261C;padding:24px;margin:0;">
   <div style="max-width:620px;margin:0 auto;background:#FFFFFF;border:1.5px solid #94A69B;border-radius:8px;padding:24px;">
@@ -81,34 +142,34 @@ function buildReceiptHtml({ receiptNumber, sessionId, productName, amountFormatt
     </div>
 
     <p style="margin:0 0 16px;font-size:14px;line-height:1.5;">
-      Olá! Confirmamos o seu pagamento via Stripe. Os arquivos adquiridos e este recibo oficial foram enviados para o seu e-mail validado (<strong>${verifiedEmail}</strong>).
+      Olá! Confirmamos o seu pagamento via Stripe. Os arquivos adquiridos e este recibo oficial foram enviados para o seu e-mail validado (<strong>${safeVerifiedEmail}</strong>).
     </p>
 
     <div style="background:#F7F5F0;border:1px solid #C8D4CC;border-radius:6px;padding:16px;margin-bottom:18px;">
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <tr>
           <td style="padding:6px 0;color:#3D5245;"><strong>Número do Recibo:</strong></td>
-          <td style="padding:6px 0;text-align:right;font-family:monospace;font-weight:700;">${receiptNumber}</td>
+          <td style="padding:6px 0;text-align:right;font-family:monospace;font-weight:700;">${safeReceiptNumber}</td>
         </tr>
         <tr>
           <td style="padding:6px 0;color:#3D5245;"><strong>Data / Hora da Confirmação:</strong></td>
-          <td style="padding:6px 0;text-align:right;">${paidAtFormatted}</td>
+          <td style="padding:6px 0;text-align:right;">${safePaidAtFormatted}</td>
         </tr>
         <tr>
           <td style="padding:6px 0;color:#3D5245;"><strong>Produto Adquirido:</strong></td>
-          <td style="padding:6px 0;text-align:right;font-weight:700;">${productName}</td>
+          <td style="padding:6px 0;text-align:right;font-weight:700;">${safeProductName}</td>
         </tr>
         <tr>
           <td style="padding:6px 0;color:#3D5245;"><strong>Valor Total Pago:</strong></td>
-          <td style="padding:6px 0;text-align:right;font-weight:700;color:#0F5C3A;font-size:15px;">${amountFormatted}</td>
+          <td style="padding:6px 0;text-align:right;font-weight:700;color:#0F5C3A;font-size:15px;">${safeAmountFormatted}</td>
         </tr>
         <tr>
           <td style="padding:6px 0;color:#3D5245;"><strong>E-mail Cadastrado e Validado:</strong></td>
-          <td style="padding:6px 0;text-align:right;">${verifiedEmail}</td>
+          <td style="padding:6px 0;text-align:right;">${safeVerifiedEmail}</td>
         </tr>
         <tr>
           <td style="padding:6px 0;color:#3D5245;"><strong>ID da Transação Stripe:</strong></td>
-          <td style="padding:6px 0;text-align:right;font-family:monospace;font-size:12px;">${sessionId}</td>
+          <td style="padding:6px 0;text-align:right;font-family:monospace;font-size:12px;">${safeSessionId}</td>
         </tr>
         <tr>
           <td style="padding:6px 0;color:#3D5245;"><strong>Status:</strong></td>
@@ -125,7 +186,7 @@ function buildReceiptHtml({ receiptNumber, sessionId, productName, amountFormatt
     </div>
 
     <div style="border-top:1px solid #C8D4CC;padding-top:12px;font-size:12px;color:#3D5245;">
-      <p style="margin:0;">Remetente e suporte oficial: <strong>${senderEmail}</strong></p>
+      <p style="margin:0;">Remetente e suporte oficial: <strong>${safeSenderEmail}</strong></p>
       <p style="margin:4px 0 0;">Guarde este recibo para seu controle. Caso precise de reenvio ou suporte, basta responder a este e-mail.</p>
     </div>
   </div>
@@ -242,7 +303,7 @@ export default async (req) => {
     return new Response(null, {
       status: 204,
       headers: {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": getCorsOrigin(req),
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type"
       }
@@ -250,12 +311,12 @@ export default async (req) => {
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ ok: false, error: "Método não permitido." }, 405);
+    return jsonResponse({ ok: false, error: "Método não permitido." }, 405, req);
   }
 
   const stripeKey = (process.env.STRIPE_SECRET_KEY || "").trim();
   if (!stripeKey) {
-    return jsonResponse({ ok: false, error: "Serviço de verificação não configurado." }, 503);
+    return jsonResponse({ ok: false, error: "Serviço de verificação não configurado." }, 503, req);
   }
 
   let body = {};
@@ -274,13 +335,20 @@ export default async (req) => {
     return jsonResponse({
       ok: false,
       error: "Acesso negado: pagamento não confirmado para envio desta planilha."
-    }, 403);
+    }, 403, req);
   }
 
   const verifiedTokenEmail = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
+  if (verifiedTokenEmail && requestedEmail && requestedEmail !== verifiedTokenEmail) {
+    return jsonResponse({
+      ok: false,
+      error: `O e-mail de destino informado (${requestedEmail}) não corresponde ao e-mail validado no momento da compra (${verifiedTokenEmail}).`
+    }, 403, req);
+  }
+
   const recipientEmail = verifiedTokenEmail || requestedEmail;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-    return jsonResponse({ ok: false, error: "Informe um endereço de e-mail válido para receber os arquivos e o recibo." }, 400);
+    return jsonResponse({ ok: false, error: "Informe um endereço de e-mail válido para receber os arquivos e o recibo." }, 400, req);
   }
 
   // Normaliza lista de anexos (suporta array attachments[] ou campos únicos filename + fileBase64)
@@ -291,16 +359,20 @@ export default async (req) => {
     : [];
 
   if (rawAttachments.length === 0) {
-    return jsonResponse({ ok: false, error: "Nenhum arquivo anexado para envio." }, 400);
+    return jsonResponse({ ok: false, error: "Nenhum arquivo anexado para envio." }, 400, req);
   }
 
   const validAttachments = [];
   for (const att of rawAttachments) {
     if (!att || typeof att.fileBase64 !== "string" || att.fileBase64.length < 64 || att.fileBase64.length > 15 * 1024 * 1024) {
-      return jsonResponse({ ok: false, error: "Arquivo de planilha ou relatório inválido." }, 400);
+      return jsonResponse({ ok: false, error: "Arquivo de planilha ou relatório inválido." }, 400, req);
+    }
+    const cleanFilename = String(att.filename || "Arquivo_Atlas.xlsx").trim();
+    if (!validateAttachmentMagicBytes(att.fileBase64, cleanFilename)) {
+      return jsonResponse({ ok: false, error: `Arquivo ${cleanFilename} possui formato inválido ou não corresponde à extensão esperada.` }, 400, req);
     }
     validAttachments.push({
-      filename: String(att.filename || "Arquivo_Atlas.xlsx").trim(),
+      filename: cleanFilename,
       fileBase64: att.fileBase64.trim(),
       mimeType: String(att.mimeType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").trim()
     });

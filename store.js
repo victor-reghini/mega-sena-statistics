@@ -7,7 +7,17 @@
 
   const SIGNED_TOKEN_STORAGE_KEY = "atlas_signed_export_token_v3";
   const LEGACY_KEYS_TO_PURGE = ["mega_results_export_paid", "mega_results_export_paid_session", "atlas_unlocked_entitlements_v2"];
-  const ALL_LOTTERIES = ["megasena", "lotofacil", "quina", "lotomania"];
+  const ALL_LOTTERIES = [
+    "megasena",
+    "lotofacil",
+    "quina",
+    "lotomania",
+    "maismilionaria",
+    "timemania",
+    "duplasena",
+    "diadesorte",
+    "supersete"
+  ];
   const OFFICIAL_EMAIL = "reghinidev@gmail.com";
 
   const PRODUCTS = Object.freeze({
@@ -17,7 +27,7 @@
       shortName: "Mega-Sena + Virada",
       description: "Todo o histórico da Mega-Sena e todas as edições da Mega da Virada em Excel (.xlsx) e PDF.",
       amountCents: 1000,
-      compareAtCents: null,
+      compareAtCents: 2000,
       unlocks: Object.freeze(["megasena"]),
       formatLabel: "XLSX + PDF"
     }),
@@ -27,7 +37,7 @@
       shortName: "Lotofácil + Independência",
       description: "Todo o histórico da Lotofácil e Lotofácil da Independência em Excel (.xlsx) e PDF.",
       amountCents: 1000,
-      compareAtCents: null,
+      compareAtCents: 2000,
       unlocks: Object.freeze(["lotofacil"]),
       formatLabel: "XLSX + PDF"
     }),
@@ -37,7 +47,7 @@
       shortName: "Quina + São João",
       description: "Todo o histórico da Quina e Quina de São João em Excel (.xlsx) e PDF.",
       amountCents: 1000,
-      compareAtCents: null,
+      compareAtCents: 2000,
       unlocks: Object.freeze(["quina"]),
       formatLabel: "XLSX + PDF"
     }),
@@ -47,18 +57,68 @@
       shortName: "Lotomania + Páscoa",
       description: "Todo o histórico da Lotomania e Lotomania de Páscoa em Excel (.xlsx) e PDF.",
       amountCents: 1000,
-      compareAtCents: null,
+      compareAtCents: 2000,
       unlocks: Object.freeze(["lotomania"]),
+      formatLabel: "XLSX + PDF"
+    }),
+    export_maismilionaria: Object.freeze({
+      id: "export_maismilionaria",
+      name: "Planilha +Milionária Completa",
+      shortName: "+Milionária",
+      description: "Todo o histórico da +Milionária (6 dezenas + 2 trevos e 10 faixas de premiação) em Excel (.xlsx) e PDF.",
+      amountCents: 1000,
+      compareAtCents: 2000,
+      unlocks: Object.freeze(["maismilionaria"]),
+      formatLabel: "XLSX + PDF"
+    }),
+    export_timemania: Object.freeze({
+      id: "export_timemania",
+      name: "Planilha Timemania Completa",
+      shortName: "Timemania",
+      description: "Todo o histórico da Timemania (7 dezenas + Time do Coração) em Excel (.xlsx) e PDF.",
+      amountCents: 1000,
+      compareAtCents: 2000,
+      unlocks: Object.freeze(["timemania"]),
+      formatLabel: "XLSX + PDF"
+    }),
+    export_duplasena: Object.freeze({
+      id: "export_duplasena",
+      name: "Planilha Dupla Sena + Dupla de Páscoa",
+      shortName: "Dupla Sena + Páscoa",
+      description: "Todo o histórico da Dupla Sena (1º e 2º sorteios) e edições da Dupla de Páscoa em Excel (.xlsx) e PDF.",
+      amountCents: 1000,
+      compareAtCents: 2000,
+      unlocks: Object.freeze(["duplasena"]),
+      formatLabel: "XLSX + PDF"
+    }),
+    export_diadesorte: Object.freeze({
+      id: "export_diadesorte",
+      name: "Planilha Dia de Sorte Completa",
+      shortName: "Dia de Sorte",
+      description: "Todo o histórico do Dia de Sorte (7 dezenas + Mês da Sorte) em Excel (.xlsx) e PDF.",
+      amountCents: 1000,
+      compareAtCents: 2000,
+      unlocks: Object.freeze(["diadesorte"]),
+      formatLabel: "XLSX + PDF"
+    }),
+    export_supersete: Object.freeze({
+      id: "export_supersete",
+      name: "Planilha Super Sete Completa",
+      shortName: "Super Sete",
+      description: "Todo o histórico do Super Sete (7 colunas numeradas de 0 a 9) em Excel (.xlsx) e PDF.",
+      amountCents: 1000,
+      compareAtCents: 2000,
+      unlocks: Object.freeze(["supersete"]),
       formatLabel: "XLSX + PDF"
     }),
     combo_all: Object.freeze({
       id: "combo_all",
-      name: "Combo 4 Loterias Completo",
-      shortName: "Combo 4 Loterias",
-      description: "Desbloqueia Mega-Sena, Lotofácil, Quina, Lotomania e todos os concursos especiais (38% de desconto).",
+      name: "Combo 9 Loterias Completo",
+      shortName: "Combo 9 Loterias",
+      description: "Desbloqueia todas as 9 loterias oficiais da Caixa e todos os concursos especiais (72% de desconto).",
       amountCents: 2490,
-      compareAtCents: 4000,
-      unlocks: Object.freeze(["megasena", "lotofacil", "quina", "lotomania"]),
+      compareAtCents: 9000,
+      unlocks: Object.freeze([...ALL_LOTTERIES]),
       formatLabel: "XLSX Multi-Abas + PDFs"
     }),
     kit_bolao_virada: Object.freeze({
@@ -67,7 +127,7 @@
       shortName: "Kit Bolão Virada 2026",
       description: "Planilha Excel com rateio de cotas, conferidor automático do concurso #3100, histórico e guia em PDF.",
       amountCents: 1490,
-      compareAtCents: null,
+      compareAtCents: 2990,
       unlocks: Object.freeze(["kit_bolao_virada"]),
       formatLabel: "XLSX com Fórmulas + Guia PDF"
     }),
@@ -75,20 +135,20 @@
       id: "dossie_especiais",
       name: "Dossiê Concursos Especiais",
       shortName: "Dossiê Especiais",
-      description: "Relatório em Excel (5 abas) e PDF reunindo Virada, Independência, Quina de São João e Páscoa.",
+      description: "Relatório em Excel (6 abas) e PDF reunindo Virada, Independência, Quina de São João, Dupla de Páscoa e Lotomania de Páscoa.",
       amountCents: 1990,
-      compareAtCents: null,
+      compareAtCents: 3990,
       unlocks: Object.freeze(["dossie_especiais"]),
-      formatLabel: "XLSX 5 Abas + PDF"
+      formatLabel: "XLSX 6 Abas + PDF"
     }),
     super_combo: Object.freeze({
       id: "super_combo",
       name: "Pacote Completo Atlas + Virada",
       shortName: "Pacote Completo",
-      description: "As 4 planilhas oficiais + Kit Bolão Mega da Virada 2026 + Dossiê Concursos Especiais com desconto máximo.",
+      description: "As 9 planilhas oficiais + Kit Bolão Mega da Virada 2026 + Dossiê Concursos Especiais com desconto máximo.",
       amountCents: 3490,
-      compareAtCents: 7480,
-      unlocks: Object.freeze(["megasena", "lotofacil", "quina", "lotomania", "kit_bolao_virada", "dossie_especiais"]),
+      compareAtCents: 12480,
+      unlocks: Object.freeze([...ALL_LOTTERIES, "kit_bolao_virada", "dossie_especiais"]),
       formatLabel: "XLSX + PDF Completos"
     })
   });
@@ -105,7 +165,9 @@
 
   // Blindagem das funções de escrita de arquivos contra execução direta pelo console DevTools
   let privateXlsxWriteFile = null;
+  let privateXlsxWrite = null;
   let privatePdfSave = null;
+  let privatePdfOutput = null;
 
   function installConsoleDownloadGuards() {
     try {
@@ -116,6 +178,15 @@
             throw new Error("Bloqueio de segurança: exportação direta via console desativada. Conclua o pagamento no Stripe.");
           }
           return privateXlsxWriteFile.apply(root.XLSX, arguments);
+        };
+      }
+      if (root.XLSX && typeof root.XLSX.write === "function" && !privateXlsxWrite) {
+        privateXlsxWrite = root.XLSX.write.bind(root.XLSX);
+        root.XLSX.write = function () {
+          if (!activeWritePermit) {
+            throw new Error("Bloqueio de segurança: geração direta de planilha via console desativada. Conclua o pagamento no Stripe.");
+          }
+          return privateXlsxWrite.apply(root.XLSX, arguments);
         };
       }
       if (
@@ -133,10 +204,29 @@
           return privatePdfSave.apply(this, arguments);
         };
       }
+      if (
+        root.jspdf &&
+        root.jspdf.jsPDF &&
+        root.jspdf.jsPDF.prototype &&
+        typeof root.jspdf.jsPDF.prototype.output === "function" &&
+        !privatePdfOutput
+      ) {
+        privatePdfOutput = root.jspdf.jsPDF.prototype.output;
+        root.jspdf.jsPDF.prototype.output = function () {
+          if (!activeWritePermit) {
+            throw new Error("Bloqueio de segurança: extração direta de PDF via console desativada. Conclua o pagamento no Stripe.");
+          }
+          return privatePdfOutput.apply(this, arguments);
+        };
+      }
     } catch (e) {}
   }
 
   installConsoleDownloadGuards();
+  if (root.addEventListener) {
+    root.addEventListener("DOMContentLoaded", installConsoleDownloadGuards);
+    root.addEventListener("load", installConsoleDownloadGuards);
+  }
 
   function getStorage() {
     try {
@@ -381,6 +471,85 @@
       ],
       tablePrizeCols: { main: "20 Acertos", sub: "19 a 15 e 0 Acertos" },
       dataVar: "LOTOMANIA_DRAWS"
+    },
+    maismilionaria: {
+      id: "maismilionaria",
+      name: "+Milionária",
+      drawCount: 6,
+      tiers: [
+        { key: "6+2", name: "6 + 2 Trevos", minHits: 6 },
+        { key: "6+1", name: "6 + 1/0 Trevo", minHits: 6 },
+        { key: "5+2", name: "5 + 2 Trevos", minHits: 5 },
+        { key: "5+1", name: "5 + 1/0 Trevo", minHits: 5 },
+        { key: "4+2", name: "4 + 2 Trevos", minHits: 4 },
+        { key: "4+1", name: "4 + 1/0 Trevo", minHits: 4 },
+        { key: "3+2", name: "3 + 2 Trevos", minHits: 3 },
+        { key: "3+1", name: "3 + 1 Trevo", minHits: 3 },
+        { key: "2+2", name: "2 + 2 Trevos", minHits: 2 },
+        { key: "2+1", name: "2 + 1 Trevo", minHits: 2 }
+      ],
+      tablePrizeCols: { main: "6 Acertos + 2 Trevos", sub: "Demais Faixas" },
+      dataVar: "MAISMILIONARIA_DRAWS"
+    },
+    timemania: {
+      id: "timemania",
+      name: "Timemania",
+      drawCount: 7,
+      tiers: [
+        { key: "7", name: "7 Acertos", minHits: 7 },
+        { key: "6", name: "6 Acertos", minHits: 6 },
+        { key: "5", name: "5 Acertos", minHits: 5 },
+        { key: "4", name: "4 Acertos", minHits: 4 },
+        { key: "3", name: "3 Acertos", minHits: 3 },
+        { key: "time", name: "Time do Coração", minHits: 0 }
+      ],
+      tablePrizeCols: { main: "7 Acertos", sub: "6 a 3 e Time do Coração" },
+      dataVar: "TIMEMANIA_DRAWS"
+    },
+    duplasena: {
+      id: "duplasena",
+      name: "Dupla Sena",
+      drawCount: 6,
+      tiers: [
+        { key: "6", name: "Sena (1º)", minHits: 6 },
+        { key: "5", name: "Quina (1º)", minHits: 5 },
+        { key: "4", name: "Quadra (1º)", minHits: 4 },
+        { key: "3", name: "Terno (1º)", minHits: 3 },
+        { key: "2_6", name: "Sena (2º)", minHits: 6 },
+        { key: "2_5", name: "Quina (2º)", minHits: 5 },
+        { key: "2_4", name: "Quadra (2º)", minHits: 4 },
+        { key: "2_3", name: "Terno (2º)", minHits: 3 }
+      ],
+      tablePrizeCols: { main: "Sena 1º Sorteio", sub: "2º Sorteio e Demais Faixas" },
+      dataVar: "DUPLASENA_DRAWS"
+    },
+    diadesorte: {
+      id: "diadesorte",
+      name: "Dia de Sorte",
+      drawCount: 7,
+      tiers: [
+        { key: "7", name: "7 Acertos", minHits: 7 },
+        { key: "6", name: "6 Acertos", minHits: 6 },
+        { key: "5", name: "5 Acertos", minHits: 5 },
+        { key: "4", name: "4 Acertos", minHits: 4 },
+        { key: "mes", name: "Mês da Sorte", minHits: 0 }
+      ],
+      tablePrizeCols: { main: "7 Acertos", sub: "6, 5, 4 e Mês da Sorte" },
+      dataVar: "DIADESORTE_DRAWS"
+    },
+    supersete: {
+      id: "supersete",
+      name: "Super Sete",
+      drawCount: 7,
+      tiers: [
+        { key: "7", name: "7 Colunas", minHits: 7 },
+        { key: "6", name: "6 Colunas", minHits: 6 },
+        { key: "5", name: "5 Colunas", minHits: 5 },
+        { key: "4", name: "4 Colunas", minHits: 4 },
+        { key: "3", name: "3 Colunas", minHits: 3 }
+      ],
+      tablePrizeCols: { main: "7 Colunas", sub: "6, 5, 4 e 3 Colunas" },
+      dataVar: "SUPERSETE_DRAWS"
     }
   };
 
@@ -708,7 +877,22 @@
   }
 
   function buildLotterySheetData(cfg, drawsList) {
-    const dezHeaders = Array.from({ length: cfg.drawCount }, (_, i) => `Dezena ${i + 1}`);
+    const isSuperSete = cfg.id === "supersete";
+    const dezHeaders = Array.from(
+      { length: cfg.drawCount },
+      (_, i) => (isSuperSete ? `Coluna ${i + 1}` : `Dezena ${i + 1}`)
+    );
+    const extraHeaders = [];
+    if (cfg.id === "maismilionaria") {
+      extraHeaders.push("Trevo 1", "Trevo 2", "Trevos Combinados");
+    } else if (cfg.id === "timemania") {
+      extraHeaders.push("Time do Coração");
+    } else if (cfg.id === "duplasena") {
+      extraHeaders.push("2º Sorteio Combinado");
+    } else if (cfg.id === "diadesorte") {
+      extraHeaders.push("Mês da Sorte");
+    }
+
     const tierHeaders = [];
     cfg.tiers.forEach((t) => {
       tierHeaders.push(`Ganhadores ${t.name}`);
@@ -720,17 +904,41 @@
       "Data",
       "Concurso Especial",
       ...dezHeaders,
-      "Dezenas Combinadas",
+      isSuperSete ? "Colunas Combinadas" : "Dezenas Combinadas",
+      ...extraHeaders,
       "Acumulou?",
       ...tierHeaders,
-      "Soma Dezenas",
+      isSuperSete ? "Soma Dígitos" : "Soma Dezenas",
       "Qtd Pares",
       "Qtd Ímpares"
     ];
 
     const rows = drawsList.map((d) => {
-      const nums = (d.n || []).slice().sort((a, b) => a - b);
-      const combined = nums.map(pad2).join(" - ");
+      let nums;
+      let combined;
+      if (isSuperSete) {
+        nums = Array.isArray(d.cols) && d.cols.length === 7
+          ? d.cols.slice()
+          : (d.n || []).map((v) => (Number(v) - 1) % 10);
+        combined = nums.map((dig, idx) => `C${idx + 1}:${dig}`).join(" - ");
+      } else {
+        nums = (d.n || []).slice().sort((a, b) => a - b);
+        combined = nums.map(pad2).join(" - ");
+      }
+
+      const extraCols = [];
+      if (cfg.id === "maismilionaria") {
+        const tr = Array.isArray(d.tr) ? d.tr.slice().sort((a, b) => a - b) : [];
+        extraCols.push(tr[0] || "", tr[1] || "", tr.length ? tr.map((t) => `T${t}`).join(" - ") : "-");
+      } else if (cfg.id === "timemania") {
+        extraCols.push(d.tm || "-");
+      } else if (cfg.id === "duplasena") {
+        const n2 = Array.isArray(d.n2) ? d.n2.slice().sort((a, b) => a - b) : [];
+        extraCols.push(n2.length ? n2.map(pad2).join(" - ") : "-");
+      } else if (cfg.id === "diadesorte") {
+        extraCols.push(d.ms || "-");
+      }
+
       const sum = nums.reduce((acc, v) => acc + v, 0);
       const evenCount = nums.filter((n) => n % 2 === 0).length;
       const oddCount = nums.length - evenCount;
@@ -752,6 +960,7 @@
         specialLabel,
         ...nums,
         combined,
+        ...extraCols,
         acumulouStr,
         ...tierCols,
         sum,
@@ -823,7 +1032,12 @@
       megasena: [15, 92, 58],
       lotofacil: [126, 34, 206],
       quina: [29, 78, 216],
-      lotomania: [234, 88, 12]
+      lotomania: [234, 88, 12],
+      maismilionaria: [30, 58, 138],
+      timemania: [21, 128, 61],
+      duplasena: [190, 18, 60],
+      diadesorte: [180, 83, 9],
+      supersete: [77, 124, 15]
     };
     const color = headerColors[cfg.id] || [15, 92, 58];
 
@@ -865,7 +1079,21 @@
     const tableRows = drawsList.map((d) => {
       const spInfo = Specials ? Specials.getSpecialDrawInfo(cfg.id, d) : null;
       const concursoLabel = spInfo ? `#${d.c}\n(${spInfo.shortName} ${spInfo.year})` : `#${d.c}`;
-      const numsStr = (d.n || []).map(pad2).join(" ");
+      let numsStr = (d.n || []).map(pad2).join(" ");
+      if (cfg.id === "supersete") {
+        const cols = Array.isArray(d.cols) && d.cols.length === 7
+          ? d.cols
+          : (d.n || []).map((v) => (Number(v) - 1) % 10);
+        numsStr = cols.map((dig, idx) => `C${idx + 1}:${dig}`).join(" ");
+      } else if (cfg.id === "maismilionaria" && Array.isArray(d.tr) && d.tr.length) {
+        numsStr += `\nTrevos: ${d.tr.map((t) => `T${t}`).join(" ")}`;
+      } else if (cfg.id === "timemania" && d.tm) {
+        numsStr += `\nTime: ${d.tm}`;
+      } else if (cfg.id === "duplasena" && Array.isArray(d.n2) && d.n2.length) {
+        numsStr = `1º: ${numsStr}\n2º: ${d.n2.map(pad2).join(" ")}`;
+      } else if (cfg.id === "diadesorte" && d.ms) {
+        numsStr += `\nMês: ${d.ms}`;
+      }
       const acumStr = d.a ? "Sim" : "Não";
       const mainTier = cfg.tiers[0];
       const subTier = cfg.tiers[1];
@@ -1307,7 +1535,13 @@
   function buildSpecialSummaryRow(lotteryId, label, drawsList) {
     const specialDraws = Specials ? Specials.getSpecialDraws(lotteryId, drawsList) : [];
     const mainKey =
-      lotteryId === "megasena" ? "6" : lotteryId === "lotofacil" ? "15" : lotteryId === "quina" ? "5" : "20";
+      lotteryId === "megasena" || lotteryId === "duplasena"
+        ? "6"
+        : lotteryId === "lotofacil"
+        ? "15"
+        : lotteryId === "quina"
+        ? "5"
+        : "20";
     let totalWinners = 0;
     let maxPrize = 0;
     let maxPrizeYear = "-";
@@ -1352,6 +1586,7 @@
       { id: "megasena", sheet: "Mega_da_Virada", label: "Mega da Virada" },
       { id: "lotofacil", sheet: "Lotofacil_Independencia", label: "Lotofácil da Independência" },
       { id: "quina", sheet: "Quina_Sao_Joao", label: "Quina de São João" },
+      { id: "duplasena", sheet: "Dupla_de_Pascoa", label: "Dupla de Páscoa" },
       { id: "lotomania", sheet: "Lotomania_Pascoa", label: "Lotomania de Páscoa" }
     ];
 
@@ -1422,12 +1657,13 @@
     doc.text("Dossiê Histórico dos Concursos Especiais da Caixa", 14, 11);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Mega da Virada, Lotofácil da Independência, Quina de São João e Lotomania de Páscoa", 14, 18);
+    doc.text("Mega da Virada, Lotofácil da Independência, Quina de São João, Dupla de Páscoa e Lotomania de Páscoa", 14, 18);
 
     const specs = [
       { id: "megasena", label: "Mega da Virada" },
       { id: "lotofacil", label: "Lotofácil da Independência" },
       { id: "quina", label: "Quina de São João" },
+      { id: "duplasena", label: "Dupla de Páscoa" },
       { id: "lotomania", label: "Lotomania de Páscoa" }
     ];
 
@@ -1474,19 +1710,35 @@
 
   function extractPdfBase64(doc) {
     if (!doc) return null;
+    activeWritePermit = true;
     try {
-      if (typeof doc.output === "function") {
+      if (privatePdfOutput) {
+        const dataUri = privatePdfOutput.call(doc, "datauristring");
+        if (typeof dataUri === "string" && dataUri.includes(",")) {
+          return dataUri.split(",")[1];
+        }
+      } else if (typeof doc.output === "function") {
         const dataUri = doc.output("datauristring");
         if (typeof dataUri === "string" && dataUri.includes(",")) {
           return dataUri.split(",")[1];
         }
       }
-    } catch (e) {}
+    } catch (e) {} finally {
+      activeWritePermit = false;
+    }
     return null;
   }
 
   function writeCompressedXlsxBase64(XLSX, wb) {
-    return XLSX.write(wb, { type: "base64", bookType: "xlsx", compression: true });
+    activeWritePermit = true;
+    try {
+      if (privateXlsxWrite) {
+        return privateXlsxWrite(wb, { type: "base64", bookType: "xlsx", compression: true });
+      }
+      return XLSX.write(wb, { type: "base64", bookType: "xlsx", compression: true });
+    } finally {
+      activeWritePermit = false;
+    }
   }
 
   function buildAttachmentsForTarget(target, options = {}) {
@@ -1690,7 +1942,10 @@
             <strong id="pf-product-name" class="pf-product-title">Produto Selecionado</strong>
             <span id="pf-product-desc" class="pf-product-sub"></span>
           </div>
-          <div class="pf-product-price-pill" id="pf-product-price">R$ 10,00</div>
+          <div class="pf-product-price-pill" id="pf-product-price">
+            <span id="pf-product-price-compare" class="pf-price-compare" hidden></span>
+            <span id="pf-product-price-main">R$ 10,00</span>
+          </div>
         </div>
 
         <ol class="pf-stepper" aria-label="Etapas da compra">
@@ -1815,9 +2070,24 @@
     const urlReadonly = root.document.getElementById("pf-checkout-url-readonly");
     const copyUrlBtn = root.document.getElementById("pf-btn-copy-url");
 
+    const priceCompareEl = root.document.getElementById("pf-product-price-compare");
+    const priceMainEl = root.document.getElementById("pf-product-price-main");
+
     if (nameEl) nameEl.textContent = product.name;
     if (descEl) descEl.textContent = product.description;
-    if (priceEl) priceEl.textContent = formatBRLFromCents(product.amountCents);
+    if (priceMainEl) {
+      priceMainEl.textContent = formatBRLFromCents(product.amountCents);
+    } else if (priceEl) {
+      priceEl.textContent = formatBRLFromCents(product.amountCents);
+    }
+    if (priceCompareEl) {
+      if (product.compareAtCents && product.compareAtCents > product.amountCents) {
+        priceCompareEl.textContent = `De ${formatBRLFromCents(product.compareAtCents)} por `;
+        priceCompareEl.hidden = false;
+      } else {
+        priceCompareEl.hidden = true;
+      }
+    }
     if (errEl) errEl.hidden = true;
 
     let currentChallengeToken = "";

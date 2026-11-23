@@ -129,8 +129,205 @@
       tablePrizeCols: { main: "20 Acertos", sub: "19 a 15 e 0 Acertos" },
       dataVar: "LOTOMANIA_DRAWS",
       dataFile: "data/lotomania.json"
+    },
+    maismilionaria: {
+      id: "maismilionaria",
+      name: "+Milionária",
+      mark: "+M",
+      title: "Atlas da +Milionária",
+      subtitle: "408 sorteios, estatísticas das 50 dezenas + 6 trevos e simulador",
+      maxNum: 50,
+      drawCount: 6,
+      defaultSize: 6,
+      allowedSizes: [6, 7, 8, 9, 10],
+      hasTrevos: true,
+      defaultTrevos: [1, 2],
+      startYear: 2022,
+      basePrice: 6.0,
+      defaultPicks: [4, 12, 21, 33, 41, 48],
+      betTable: {
+        6: { combos: 1, cost: 6.0 },
+        7: { combos: 7, cost: 42.0 },
+        8: { combos: 28, cost: 168.0 },
+        9: { combos: 84, cost: 504.0 },
+        10: { combos: 210, cost: 1260.0 }
+      },
+      minHitsForPrize: 2,
+      tiers: [
+        { key: "6+2", name: "6 Acertos + 2 Trevos", minHits: 6, trevos: [2] },
+        { key: "6+1", name: "6 Acertos + 1/0 Trevo", minHits: 6, trevos: [1, 0] },
+        { key: "5+2", name: "5 Acertos + 2 Trevos", minHits: 5, trevos: [2] },
+        { key: "5+1", name: "5 Acertos + 1/0 Trevo", minHits: 5, trevos: [1, 0] },
+        { key: "4+2", name: "4 Acertos + 2 Trevos", minHits: 4, trevos: [2] },
+        { key: "4+1", name: "4 Acertos + 1/0 Trevo", minHits: 4, trevos: [1, 0] },
+        { key: "3+2", name: "3 Acertos + 2 Trevos", minHits: 3, trevos: [2] },
+        { key: "3+1", name: "3 Acertos + 1 Trevo", minHits: 3, trevos: [1] },
+        { key: "2+2", name: "2 Acertos + 2 Trevos", minHits: 2, trevos: [2] },
+        { key: "2+1", name: "2 Acertos + 1 Trevo", minHits: 2, trevos: [1] }
+      ],
+      tablePrizeCols: { main: "6 + 2 Trevos (Faixa 1)", sub: "6+1/0, 5+2 e demais faixas" },
+      dataVar: "MAISMILIONARIA_DRAWS",
+      dataFile: "data/maismilionaria.json"
+    },
+    timemania: {
+      id: "timemania",
+      name: "Timemania",
+      mark: "80",
+      title: "Atlas da Timemania",
+      subtitle: "2.455 sorteios, métricas das 80 dezenas, Time do Coração e simulador",
+      maxNum: 80,
+      drawCount: 7,
+      defaultSize: 10,
+      allowedSizes: [10],
+      hasTimeCoracao: true,
+      defaultTimeCoracao: "FLAMENGO /RJ",
+      startYear: 2008,
+      basePrice: 3.5,
+      defaultPicks: [4, 11, 19, 25, 34, 43, 52, 61, 70, 78],
+      betTable: {
+        10: { combos: 1, cost: 3.5 }
+      },
+      minHitsForPrize: 3,
+      tiers: [
+        { key: "7", name: "7 Acertos", minHits: 7 },
+        { key: "6", name: "6 Acertos", minHits: 6 },
+        { key: "5", name: "5 Acertos", minHits: 5 },
+        { key: "4", name: "4 Acertos", minHits: 4 },
+        { key: "3", name: "3 Acertos", minHits: 3 },
+        { key: "time", name: "Time do Coração", minHits: -1 }
+      ],
+      tablePrizeCols: { main: "7 Acertos", sub: "6 a 3 Acertos e Time do Coração" },
+      dataVar: "TIMEMANIA_DRAWS",
+      dataFile: "data/timemania.json"
+    },
+    duplasena: {
+      id: "duplasena",
+      name: "Dupla Sena",
+      mark: "2x",
+      title: "Atlas da Dupla Sena",
+      subtitle: "3.034 sorteios (1º e 2º sorteios), Dupla de Páscoa e simulador duplo",
+      maxNum: 50,
+      drawCount: 6,
+      defaultSize: 6,
+      allowedSizes: [6, 7, 8, 9, 10],
+      hasSecondDraw: true,
+      startYear: 2001,
+      basePrice: 2.5,
+      defaultPicks: [3, 11, 18, 27, 36, 45],
+      betTable: {
+        6: { combos: 1, cost: 2.5 },
+        7: { combos: 7, cost: 17.5 },
+        8: { combos: 28, cost: 70.0 },
+        9: { combos: 84, cost: 210.0 },
+        10: { combos: 210, cost: 525.0 }
+      },
+      minHitsForPrize: 3,
+      tiers: [
+        { key: "6", name: "1º Sorteio - Sena (6)", minHits: 6, drawIndex: 1 },
+        { key: "5", name: "1º Sorteio - Quina (5)", minHits: 5, drawIndex: 1 },
+        { key: "4", name: "1º Sorteio - Quadra (4)", minHits: 4, drawIndex: 1 },
+        { key: "3", name: "1º Sorteio - Terno (3)", minHits: 3, drawIndex: 1 },
+        { key: "2_6", name: "2º Sorteio - Sena (6)", minHits: 6, drawIndex: 2 },
+        { key: "2_5", name: "2º Sorteio - Quina (5)", minHits: 5, drawIndex: 2 },
+        { key: "2_4", name: "2º Sorteio - Quadra (4)", minHits: 4, drawIndex: 2 },
+        { key: "2_3", name: "2º Sorteio - Terno (3)", minHits: 3, drawIndex: 2 }
+      ],
+      tablePrizeCols: { main: "1º Sorteio (Sena)", sub: "2º Sorteio e Demais Faixas" },
+      dataVar: "DUPLASENA_DRAWS",
+      dataFile: "data/duplasena.json"
+    },
+    diadesorte: {
+      id: "diadesorte",
+      name: "Dia de Sorte",
+      mark: "31",
+      title: "Atlas do Dia de Sorte",
+      subtitle: "1.353 sorteios, estatísticas dos 31 dias + Mês da Sorte e simulador",
+      maxNum: 31,
+      drawCount: 7,
+      defaultSize: 7,
+      allowedSizes: [7, 8, 9, 10, 11, 12],
+      hasMesSorte: true,
+      defaultMesSorte: "Maio",
+      startYear: 2018,
+      basePrice: 2.5,
+      defaultPicks: [2, 7, 11, 15, 20, 25, 30],
+      betTable: {
+        7: { combos: 1, cost: 2.5 },
+        8: { combos: 8, cost: 20.0 },
+        9: { combos: 36, cost: 90.0 },
+        10: { combos: 120, cost: 300.0 },
+        11: { combos: 330, cost: 825.0 },
+        12: { combos: 792, cost: 1980.0 }
+      },
+      minHitsForPrize: 4,
+      tiers: [
+        { key: "7", name: "7 Acertos", minHits: 7 },
+        { key: "6", name: "6 Acertos", minHits: 6 },
+        { key: "5", name: "5 Acertos", minHits: 5 },
+        { key: "4", name: "4 Acertos", minHits: 4 },
+        { key: "mes", name: "Mês da Sorte", minHits: -1 }
+      ],
+      tablePrizeCols: { main: "7 Acertos", sub: "6, 5, 4 Acertos e Mês da Sorte" },
+      dataVar: "DIADESORTE_DRAWS",
+      dataFile: "data/diadesorte.json"
+    },
+    supersete: {
+      id: "supersete",
+      name: "Super Sete",
+      mark: "C7",
+      title: "Atlas do Super Sete",
+      subtitle: "924 sorteios, estatísticas das 7 colunas (0 a 9) e simulador posicional",
+      maxNum: 70,
+      drawCount: 7,
+      defaultSize: 7,
+      allowedSizes: [7, 8, 9, 10, 11, 12, 13, 14],
+      isColumnLottery: true,
+      startYear: 2020,
+      basePrice: 2.5,
+      defaultPicks: [3, 18, 29, 39, 46, 55, 67],
+      betTable: {
+        7: { combos: 1, cost: 2.5 },
+        8: { combos: 2, cost: 5.0 },
+        9: { combos: 4, cost: 10.0 },
+        10: { combos: 8, cost: 20.0 },
+        11: { combos: 16, cost: 40.0 },
+        12: { combos: 32, cost: 80.0 },
+        13: { combos: 64, cost: 160.0 },
+        14: { combos: 128, cost: 320.0 }
+      },
+      minHitsForPrize: 3,
+      tiers: [
+        { key: "7", name: "7 Colunas", minHits: 7 },
+        { key: "6", name: "6 Colunas", minHits: 6 },
+        { key: "5", name: "5 Colunas", minHits: 5 },
+        { key: "4", name: "4 Colunas", minHits: 4 },
+        { key: "3", name: "3 Colunas", minHits: 3 }
+      ],
+      tablePrizeCols: { main: "7 Colunas", sub: "6, 5, 4 e 3 Colunas" },
+      dataVar: "SUPERSETE_DRAWS",
+      dataFile: "data/supersete.json"
     }
   };
+
+  const MESES_SORTE = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  ];
+
+  const DEFAULT_TIMES_CORACAO = [
+    "ABC /RN", "AMÉRICA /MG", "AMÉRICA /RJ", "AMÉRICA /RN", "ATHLETICO /PR", "ATLÉTICO /GO", "ATLÉTICO /MG",
+    "AVAÍ /SC", "BAHIA /BA", "BANGU /RJ", "BOTAFOGO /PB", "BOTAFOGO /RJ", "BOTAFOGO /SP", "BRAGANTINO /SP",
+    "BRASILIENSE /DF", "CEARÁ /CE", "CORINTHIANS /SP", "CORITIBA /PR", "CRB /AL", "CRICIÚMA /SC",
+    "CRUZEIRO /MG", "CSA /AL", "CUIABÁ /MT", "FIGUEIRENSE /SC", "FLAMENGO /RJ", "FLUMINENSE /RJ",
+    "FORTALEZA /CE", "GAMA /DF", "GOIÁS /GO", "GRÊMIO /RS", "GUARANI /SP", "INTER DE LIMEIRA /SP",
+    "INTERNACIONAL /RS", "ITUANO /SP", "JOINVILLE /SC", "JUVENTUDE /RS", "JUVENTUS /SP", "LONDRINA /PR",
+    "MARÍLIA /SP", "MIRASSOL /SP", "MOTO CLUB /MA", "NÁUTICO /PE", "NOVORIZONTINO /SP", "OESTE /SP",
+    "OPERÁRIO /PR", "PALMAS /TO", "PALMEIRAS /SP", "PARANÁ /PR", "PAYSANDU /PA", "PONTE PRETA /SP",
+    "PORTUGUESA /SP", "REMO /PA", "RIVER /PI", "SAMPAIO CORRÊA /MA", "SANTA CRUZ /PE", "SANTO ANDRÉ /SP",
+    "SANTOS /SP", "SÃO CAETANO /SP", "SÃO PAULO /SP", "SÃO RAIMUNDO /AM", "SERGIPE /SE", "SPORT /PE",
+    "TREZE /PB", "TUNA LUSO /PA", "UBERLÂNDIA /MG", "UNIÃO BARBARENSE /SP", "UNIÃO SÃO JOÃO /SP",
+    "VASCO DA GAMA /RJ", "VILA NOVA /GO", "VILLA NOVA /MG", "VITÓRIA /BA", "XV DE PIRACICABA /SP", "YPIRANGA /AP"
+  ];
 
   const state = {
     lottery: "megasena",
@@ -139,6 +336,9 @@
     error: null,
     betSize: 6,
     selectedNumbers: new Set([1, 10, 13, 20, 37, 38]),
+    selectedTrevos: new Set([1, 2]),
+    selectedTimeCoracao: "FLAMENGO /RJ",
+    selectedMesSorte: "Maio",
     costMode: "single",
     freqSort: "num",
     extrapHorizon: 500,
@@ -165,6 +365,16 @@
 
   function pad2(n) {
     return String(n).padStart(2, "0");
+  }
+
+  function formatNumLabel(n, cfg) {
+    const c = cfg || getCurrentLottery();
+    if (c && c.isColumnLottery) {
+      const col = Math.floor((n - 1) / 10) + 1;
+      const dig = (n - 1) % 10;
+      return `C${col}:${dig}`;
+    }
+    return pad2(n);
   }
 
   function escapeHtml(str) {
@@ -210,26 +420,32 @@
     const scopeLabel = document.getElementById("simulator-scope-label");
     const scopeMeta = document.getElementById("simulator-scope-meta");
     if (scopeLabel) {
-      scopeLabel.textContent = state.specialScope
+      scopeLabel.textContent = state.specialScope && meta
         ? `Base ativa no simulador e métricas: Somente ${specialName}`
         : `Base ativa no simulador e métricas: Todos os concursos da ${cfg.name}`;
     }
     if (scopeMeta) {
-      scopeMeta.textContent = state.specialScope
-        ? `${intFmt.format(specialCount)} edições especiais (${meta ? meta.ruleNote : ""})`
-        : `${intFmt.format(state.draws.length)} concursos no total (${intFmt.format(specialCount)} edições de ${specialName})`;
+      if (!meta) {
+        scopeMeta.textContent = `${intFmt.format(state.draws.length)} concursos oficiais na base histórica`;
+      } else {
+        scopeMeta.textContent = state.specialScope
+          ? `${intFmt.format(specialCount)} edições especiais (${meta.ruleNote})`
+          : `${intFmt.format(state.draws.length)} concursos no total (${intFmt.format(specialCount)} edições de ${specialName})`;
+      }
     }
 
     const btnAll = document.getElementById("btn-scope-all");
     const btnSpec = document.getElementById("btn-scope-special");
     if (btnAll) btnAll.setAttribute("aria-pressed", state.specialScope ? "false" : "true");
     if (btnSpec) {
+      btnSpec.hidden = !meta;
       btnSpec.textContent = `Somente ${meta ? meta.shortName : "Especiais"} (${specialCount})`;
       btnSpec.setAttribute("aria-pressed", state.specialScope ? "true" : "false");
     }
 
     const statsToggle = document.getElementById("btn-stats-special-toggle");
     if (statsToggle) {
+      statsToggle.hidden = !meta;
       statsToggle.setAttribute("aria-pressed", state.specialScope ? "true" : "false");
       statsToggle.classList.toggle("btn-primary", state.specialScope);
       statsToggle.textContent = state.specialScope
@@ -239,13 +455,16 @@
 
     const optSpecialOnly = document.getElementById("opt-filter-special-only");
     if (optSpecialOnly) {
-      optSpecialOnly.textContent = `Somente ${specialName} (${specialCount})`;
+      optSpecialOnly.disabled = !meta;
+      optSpecialOnly.textContent = meta
+        ? `Somente ${specialName} (${specialCount})`
+        : "Sem concurso especial nesta modalidade";
     }
 
     const costAllOpt = document.querySelector('#cost-mode-select option[value="all"]');
     if (costAllOpt) {
       const count = getAnalysisDraws().length;
-      costAllOpt.textContent = state.specialScope
+      costAllOpt.textContent = state.specialScope && meta
         ? `Custo Acumulado nos ${intFmt.format(count)} Concursos (${specialName})`
         : `Custo Acumulado nos ${intFmt.format(count)} Concursos (Teimosinha Histórica)`;
     }
@@ -261,7 +480,7 @@
     return Math.round(res);
   }
 
-  function calcMultiplePrizes(k, h, drawPrizes) {
+  function calcMultiplePrizes(k, h, drawPrizes, extraInfo = {}) {
     const cfg = getCurrentLottery();
     const res = { totalValue: 0, breakdown: [], senaCount: 0, quinaCount: 0, quadraCount: 0 };
     if (!cfg) return res;
@@ -282,10 +501,67 @@
 
     const missed = k - h;
     const drawn = cfg.drawCount;
+    const combosTotal = (cfg.betTable[k] && cfg.betTable[k].combos) || 1;
+
+    if (cfg.id === "maismilionaria") {
+      const trevoHits = Number(extraInfo.trevoHits || 0);
+      cfg.tiers.forEach((tier) => {
+        const m = tier.minHits;
+        if (tier.trevos && tier.trevos.includes(trevoHits) && h >= m && (drawn - m) <= missed && (drawn - m) >= 0) {
+          const count = comb(h, m) * comb(missed, drawn - m);
+          if (count > 0) {
+            const val = (drawPrizes && drawPrizes[tier.key] && drawPrizes[tier.key].v) || 0;
+            const subtotal = count * val;
+            res.totalValue += subtotal;
+            res.breakdown.push({ tier: tier.name, count, value: subtotal });
+          }
+        }
+      });
+      return res;
+    }
+
+    if (cfg.id === "duplasena") {
+      const h2 = Number(extraInfo.h2 || 0);
+      const missed2 = k - h2;
+      cfg.tiers.forEach((tier) => {
+        const m = tier.minHits;
+        const activeH = tier.drawIndex === 2 ? h2 : h;
+        const activeMissed = tier.drawIndex === 2 ? missed2 : missed;
+        if (activeH >= m && (drawn - m) <= activeMissed && (drawn - m) >= 0) {
+          const count = comb(activeH, m) * comb(activeMissed, drawn - m);
+          if (count > 0) {
+            const val = (drawPrizes && drawPrizes[tier.key] && drawPrizes[tier.key].v) || 0;
+            const subtotal = count * val;
+            res.totalValue += subtotal;
+            res.breakdown.push({ tier: tier.name, count, value: subtotal });
+          }
+        }
+      });
+      return res;
+    }
 
     cfg.tiers.forEach((tier) => {
+      if (tier.key === "time") {
+        if (extraInfo.timeHit) {
+          const val = (drawPrizes && drawPrizes.time && drawPrizes.time.v) || 0;
+          const subtotal = combosTotal * val;
+          res.totalValue += subtotal;
+          res.breakdown.push({ tier: tier.name, count: combosTotal, value: subtotal });
+        }
+        return;
+      }
+      if (tier.key === "mes") {
+        if (extraInfo.mesHit) {
+          const val = (drawPrizes && drawPrizes.mes && drawPrizes.mes.v) || 0;
+          const subtotal = combosTotal * val;
+          res.totalValue += subtotal;
+          res.breakdown.push({ tier: tier.name, count: combosTotal, value: subtotal });
+        }
+        return;
+      }
+
       const m = tier.minHits;
-      if (h >= m && (drawn - m) <= missed && (drawn - m) >= 0) {
+      if (m >= 0 && h >= m && (drawn - m) <= missed && (drawn - m) >= 0) {
         const count = comb(h, m) * comb(missed, drawn - m);
         if (count > 0) {
           const val = (drawPrizes && drawPrizes[tier.key] && drawPrizes[tier.key].v) || 0;
@@ -339,24 +615,176 @@
     });
   }
 
+  function getAvailableTimesCoracao() {
+    const set = new Set(DEFAULT_TIMES_CORACAO);
+    if (Array.isArray(state.draws)) {
+      state.draws.forEach((d) => {
+        if (d && d.tm) set.add(String(d.tm).trim());
+      });
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }
+
+  function buildExtraVolanteControls() {
+    const cfg = getCurrentLottery();
+    const extraEl = document.getElementById("volante-extra-controls");
+    if (!extraEl) return;
+
+    if (cfg.hasTrevos) {
+      extraEl.hidden = false;
+      const trevosArr = [1, 2, 3, 4, 5, 6];
+      extraEl.innerHTML = `
+        <span class="field-label">Trevos da Sorte (selecione 2 trevos de 1 a 6):</span>
+        <div class="trevos-grid" role="group" aria-label="Trevos numerados de 1 a 6">
+          ${trevosArr
+            .map(
+              (t) => `
+            <button type="button" class="trevo-btn" data-trevo="${t}" aria-pressed="${state.selectedTrevos.has(t) ? "true" : "false"}">
+              <span>Trevo ${t}</span>
+            </button>
+          `
+            )
+            .join("")}
+        </div>
+      `;
+      extraEl.querySelectorAll(".trevo-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const t = Number(btn.dataset.trevo);
+          toggleTrevo(t);
+        });
+      });
+      return;
+    }
+
+    if (cfg.hasTimeCoracao) {
+      extraEl.hidden = false;
+      const times = getAvailableTimesCoracao();
+      if (!times.includes(state.selectedTimeCoracao)) {
+        state.selectedTimeCoracao = times[0] || "FLAMENGO /RJ";
+      }
+      extraEl.innerHTML = `
+        <div class="field-group">
+          <label class="field-label" for="select-time-coracao">Escolha o seu Time do Coração (80 clubes):</label>
+          <select id="select-time-coracao" class="select-input">
+            ${times
+              .map(
+                (tm) =>
+                  `<option value="${escapeHtml(tm)}" ${tm === state.selectedTimeCoracao ? "selected" : ""}>${escapeHtml(tm)}</option>`
+              )
+              .join("")}
+          </select>
+        </div>
+      `;
+      const sel = document.getElementById("select-time-coracao");
+      if (sel) {
+        sel.addEventListener("change", (e) => {
+          state.selectedTimeCoracao = e.target.value;
+          syncVolanteUI();
+          renderSimulation();
+          renderDrawsTable();
+        });
+      }
+      return;
+    }
+
+    if (cfg.hasMesSorte) {
+      extraEl.hidden = false;
+      if (!MESES_SORTE.includes(state.selectedMesSorte)) {
+        state.selectedMesSorte = "Maio";
+      }
+      extraEl.innerHTML = `
+        <div class="field-group">
+          <label class="field-label" for="select-mes-sorte">Escolha o seu Mês da Sorte:</label>
+          <select id="select-mes-sorte" class="select-input">
+            ${MESES_SORTE.map(
+              (m) => `<option value="${escapeHtml(m)}" ${m === state.selectedMesSorte ? "selected" : ""}>${escapeHtml(m)}</option>`
+            ).join("")}
+          </select>
+        </div>
+      `;
+      const sel = document.getElementById("select-mes-sorte");
+      if (sel) {
+        sel.addEventListener("change", (e) => {
+          state.selectedMesSorte = e.target.value;
+          syncVolanteUI();
+          renderSimulation();
+          renderDrawsTable();
+        });
+      }
+      return;
+    }
+
+    extraEl.hidden = true;
+    extraEl.innerHTML = "";
+  }
+
+  function toggleTrevo(t) {
+    const msgEl = document.getElementById("simulator-alert");
+    if (msgEl) msgEl.hidden = true;
+    if (state.selectedTrevos.has(t)) {
+      if (state.selectedTrevos.size <= 1) return;
+      state.selectedTrevos.delete(t);
+    } else {
+      if (state.selectedTrevos.size >= 2) {
+        const first = Array.from(state.selectedTrevos)[0];
+        state.selectedTrevos.delete(first);
+      }
+      state.selectedTrevos.add(t);
+    }
+    syncVolanteUI();
+    renderSimulation();
+    renderDrawsTable();
+  }
+
   function buildVolanteButtons() {
     const cfg = getCurrentLottery();
     const container = document.getElementById("volante-grid");
     if (!container) return;
     container.innerHTML = "";
-    container.setAttribute("aria-label", `Volante de ${cfg.maxNum} dezenas da ${cfg.name}`);
-    for (let n = 1; n <= cfg.maxNum; n++) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "dezena-btn";
-      btn.dataset.num = String(n);
-      btn.textContent = pad2(n);
-      const isSelected = state.selectedNumbers.has(n);
-      btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
-      btn.setAttribute("aria-label", "Dezena " + pad2(n));
-      btn.addEventListener("click", () => toggleDezena(n));
-      container.appendChild(btn);
+    container.setAttribute("aria-label", `Volante da ${cfg.name}`);
+
+    if (cfg.isColumnLottery) {
+      const colsWrap = document.createElement("div");
+      colsWrap.className = "volante-supersete-cols";
+      for (let col = 0; col < 7; col++) {
+        const colDiv = document.createElement("div");
+        colDiv.className = "supersete-col";
+        const hdr = document.createElement("div");
+        hdr.className = "supersete-col-header";
+        hdr.textContent = `C${col + 1}`;
+        colDiv.appendChild(hdr);
+        for (let dig = 0; dig <= 9; dig++) {
+          const cellId = col * 10 + dig + 1;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "dezena-btn";
+          btn.dataset.num = String(cellId);
+          btn.textContent = String(dig);
+          const isSelected = state.selectedNumbers.has(cellId);
+          btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
+          btn.setAttribute("aria-label", `Coluna ${col + 1} dígito ${dig}`);
+          btn.addEventListener("click", () => toggleDezena(cellId));
+          colDiv.appendChild(btn);
+        }
+        colsWrap.appendChild(colDiv);
+      }
+      container.appendChild(colsWrap);
+    } else {
+      for (let n = 1; n <= cfg.maxNum; n++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dezena-btn";
+        btn.dataset.num = String(n);
+        btn.textContent = pad2(n);
+        const isSelected = state.selectedNumbers.has(n);
+        btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        btn.setAttribute("aria-label", "Dezena " + pad2(n));
+        btn.addEventListener("click", () => toggleDezena(n));
+        container.appendChild(btn);
+      }
     }
+
+    buildExtraVolanteControls();
   }
 
   function syncVolanteUI() {
@@ -367,6 +795,12 @@
       btn.setAttribute("aria-pressed", state.selectedNumbers.has(n) ? "true" : "false");
     });
 
+    const trevoBtns = document.querySelectorAll("#volante-extra-controls .trevo-btn");
+    trevoBtns.forEach((btn) => {
+      const t = Number(btn.dataset.trevo);
+      btn.setAttribute("aria-pressed", state.selectedTrevos.has(t) ? "true" : "false");
+    });
+
     const sizePills = document.querySelectorAll(".size-pill");
     sizePills.forEach((pill) => {
       const sz = Number(pill.dataset.size);
@@ -375,10 +809,20 @@
 
     const info = cfg.betTable[state.betSize] || { combos: 1, cost: cfg.basePrice };
     const picked = Array.from(state.selectedNumbers).sort((a, b) => a - b);
+    let extraSummary = "";
+    if (cfg.hasTrevos) {
+      const trs = Array.from(state.selectedTrevos).sort((a, b) => a - b);
+      extraSummary = ` | <strong>Trevos:</strong> ${trs.map((t) => "T" + t).join(", ")}`;
+    } else if (cfg.hasTimeCoracao) {
+      extraSummary = ` | <strong>Time:</strong> ${escapeHtml(state.selectedTimeCoracao)}`;
+    } else if (cfg.hasMesSorte) {
+      extraSummary = ` | <strong>Mês:</strong> ${escapeHtml(state.selectedMesSorte)}`;
+    }
+
     const summaryEl = document.getElementById("ticket-summary");
     if (summaryEl) {
       summaryEl.innerHTML = `
-        <span><strong>Selecionadas (${picked.length}/${state.betSize}):</strong> ${picked.length ? picked.map(pad2).join(", ") : "nenhuma"}</span>
+        <span><strong>Selecionadas (${picked.length}/${state.betSize}):</strong> ${picked.length ? picked.map((n) => formatNumLabel(n, cfg)).join(", ") : "nenhuma"}${extraSummary}</span>
         <span><strong>Equivalência:</strong> ${info.combos} ${info.combos === 1 ? "aposta simples" : "apostas simples"} | <strong>Valor da aposta (${state.betSize} dezenas):</strong> ${brlFmt.format(info.cost)}</span>
       `;
     }
@@ -418,15 +862,48 @@
 
   function fillRandomBet() {
     const cfg = getCurrentLottery();
-    const pool = [];
-    for (let i = 1; i <= cfg.maxNum; i++) pool.push(i);
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = pool[i];
-      pool[i] = pool[j];
-      pool[j] = tmp;
+    if (cfg.isColumnLottery) {
+      const chosen = new Set();
+      for (let col = 0; col < 7; col++) {
+        const dig = Math.floor(Math.random() * 10);
+        chosen.add(col * 10 + dig + 1);
+      }
+      while (chosen.size < state.betSize) {
+        const col = Math.floor(Math.random() * 7);
+        const dig = Math.floor(Math.random() * 10);
+        chosen.add(col * 10 + dig + 1);
+      }
+      state.selectedNumbers = chosen;
+    } else {
+      const pool = [];
+      for (let i = 1; i <= cfg.maxNum; i++) pool.push(i);
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = pool[i];
+        pool[i] = pool[j];
+        pool[j] = tmp;
+      }
+      state.selectedNumbers = new Set(pool.slice(0, state.betSize));
     }
-    state.selectedNumbers = new Set(pool.slice(0, state.betSize));
+
+    if (cfg.hasTrevos) {
+      const tPool = [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5);
+      state.selectedTrevos = new Set(tPool.slice(0, 2));
+    }
+    if (cfg.hasTimeCoracao) {
+      const times = getAvailableTimesCoracao();
+      if (times.length) {
+        state.selectedTimeCoracao = times[Math.floor(Math.random() * times.length)];
+        const sel = document.getElementById("select-time-coracao");
+        if (sel) sel.value = state.selectedTimeCoracao;
+      }
+    }
+    if (cfg.hasMesSorte) {
+      state.selectedMesSorte = MESES_SORTE[Math.floor(Math.random() * MESES_SORTE.length)];
+      const sel = document.getElementById("select-mes-sorte");
+      if (sel) sel.value = state.selectedMesSorte;
+    }
+
     document.getElementById("simulator-alert").hidden = true;
     syncVolanteUI();
     renderSimulation();
@@ -485,17 +962,38 @@
 
     for (let i = 0; i < totalDraws; i++) {
       const d = analysisDraws[i];
-      const matched = d.n.filter((num) => state.selectedNumbers.has(num));
-      const h = matched.length;
+      const matched1 = d.n.filter((num) => state.selectedNumbers.has(num));
+      const h1 = matched1.length;
+
+      let h = h1;
+      let matched = matched1;
+      const extraInfo = {};
+
+      if (cfg.hasTrevos) {
+        const matchedTrevos = (d.tr || []).filter((t) => state.selectedTrevos.has(t));
+        extraInfo.trevoHits = matchedTrevos.length;
+      } else if (cfg.hasTimeCoracao) {
+        extraInfo.timeHit = Boolean(d.tm && state.selectedTimeCoracao && d.tm.toUpperCase() === state.selectedTimeCoracao.toUpperCase());
+      } else if (cfg.hasMesSorte) {
+        extraInfo.mesHit = Boolean(d.ms && state.selectedMesSorte && d.ms.toLowerCase() === state.selectedMesSorte.toLowerCase());
+      } else if (cfg.hasSecondDraw) {
+        const matched2 = (d.n2 || []).filter((num) => state.selectedNumbers.has(num));
+        extraInfo.h2 = matched2.length;
+        if (matched2.length > h1) {
+          h = matched2.length;
+          matched = matched2;
+        }
+      }
+
       hitsByCount[h] = (hitsByCount[h] || 0) + 1;
       if (h > maxHits) maxHits = h;
 
-      const prizeCalc = calcMultiplePrizes(k, h, d.p);
+      const prizeCalc = calcMultiplePrizes(k, h1, d.p, extraInfo);
       if (prizeCalc.totalValue > 0 || h >= cfg.minHitsForPrize) {
         totalGrossWon += prizeCalc.totalValue;
         winningDraws.push({ draw: d, hits: h, matched, prizeCalc });
       }
-      if (h >= Math.max(1, cfg.minHitsForPrize - 1)) {
+      if (h >= Math.max(1, cfg.minHitsForPrize - 1) || prizeCalc.totalValue > 0) {
         allEvaluated.push({ draw: d, hits: h, matched, prizeCalc });
       }
     }
@@ -516,7 +1014,7 @@
 
       topHeadlineHTML = `
         <div class="highlight-box ${netBalance >= 0 ? "positive" : "negative"}" role="region" aria-label="Destaque de maior acerto">
-          <strong>Maior acerto encontrado (${maxHits} dezenas):</strong> No <strong>concurso #${top.draw.c}${escapeHtml(topLabel)}</strong> (${top.draw.d}) você teria acertado <strong>${top.hits} dezenas</strong> (${top.matched.map(pad2).join(", ")}), recebendo <strong>${brlFmt.format(top.prizeCalc.totalValue)}</strong> (${breakdownText}).
+          <strong>Maior acerto encontrado (${maxHits} dezenas):</strong> No <strong>concurso #${top.draw.c}${escapeHtml(topLabel)}</strong> (${top.draw.d}) você teria acertado <strong>${top.hits} dezenas</strong> (${top.matched.map((n) => formatNumLabel(n, cfg)).join(", ")}), recebendo <strong>${brlFmt.format(top.prizeCalc.totalValue)}</strong> (${breakdownText}).
           ${bestDraws.length > 1 ? `<div style="margin-top:6px;font-size:0.875rem;">Você atingiu ${maxHits} acertos em <strong>${bestDraws.length} concursos</strong> no total.</div>` : ""}
         </div>
       `;
@@ -536,9 +1034,9 @@
         return `
           <tr class="${sp ? "draw-row-special" : ""}">
             <td data-label="Concurso"><strong>#${item.draw.c}</strong>${sp ? `<span class="special-draw-tag">${escapeHtml(sp.label)}</span>` : ""}</td>
-            <td data-label="Data">${item.draw.d}</td>
+            <td data-label="Data">${escapeHtml(item.draw.d)}</td>
             <td data-label="Acertos"><span class="badge ${item.hits >= cfg.drawCount ? "win" : "hit"}">${item.hits} acertos</span></td>
-            <td data-label="Dezenas">${item.matched.map(pad2).join(", ")}</td>
+            <td data-label="Dezenas">${item.matched.map((n) => formatNumLabel(n, cfg)).join(", ") || "-"}</td>
             <td data-label="Prêmios">${breakdown}</td>
             <td data-label="Valor Total"><strong>${brlFmt.format(item.prizeCalc.totalValue)}</strong></td>
           </tr>
@@ -677,17 +1175,17 @@
         </div>
         <div class="kpi-item">
           <p class="kpi-title">Dezena Mais Sorteada</p>
-          <p class="kpi-num">Dezena ${pad2(most.num)} (${most.count}x)</p>
+          <p class="kpi-num">Dezena ${formatNumLabel(most.num, cfg)} (${most.count}x)</p>
           <p class="kpi-sub">Presente em ${((most.count / stats.totalDraws) * 100).toFixed(1)}% dos concursos</p>
         </div>
         <div class="kpi-item">
           <p class="kpi-title">Dezena Menos Sorteada</p>
-          <p class="kpi-num">Dezena ${pad2(least.num)} (${least.count}x)</p>
+          <p class="kpi-num">Dezena ${formatNumLabel(least.num, cfg)} (${least.count}x)</p>
           <p class="kpi-sub">Diferença de ${most.count - least.count} sorteios para a líder</p>
         </div>
         <div class="kpi-item">
           <p class="kpi-title">Maior Atraso Atual</p>
-          <p class="kpi-num">Dezena ${pad2(mostDelayed.num)} (${mostDelayed.delay} jogos)</p>
+          <p class="kpi-num">Dezena ${formatNumLabel(mostDelayed.num, cfg)} (${mostDelayed.delay} jogos)</p>
           <p class="kpi-sub">Soma média por sorteio: ${stats.avgSum} pontos</p>
         </div>
       `;
@@ -704,6 +1202,7 @@
   }
 
   function renderFrequencyMatrix(stats) {
+    const cfg = getCurrentLottery();
     const container = document.getElementById("freq-matrix");
     if (!container) return;
     let list = stats.items.slice();
@@ -715,8 +1214,8 @@
     container.innerHTML = list
       .map(
         (item) => `
-        <div class="freq-cell ${top10Nums.has(item.num) ? "hot" : ""}" title="Dezena ${pad2(item.num)}: ${item.count} sorteios, atraso de ${item.delay} concursos">
-          <span class="freq-num">${pad2(item.num)}</span>
+        <div class="freq-cell ${top10Nums.has(item.num) ? "hot" : ""}" title="Dezena ${formatNumLabel(item.num, cfg)}: ${item.count} sorteios, atraso de ${item.delay} concursos">
+          <span class="freq-num">${formatNumLabel(item.num, cfg)}</span>
           <span class="freq-count">${item.count}x</span>
           <span class="freq-count">atraso: ${item.delay}</span>
         </div>
@@ -726,6 +1225,7 @@
   }
 
   function renderDelayChart(stats) {
+    const cfg = getCurrentLottery();
     const el = document.getElementById("delay-chart");
     if (!el) return;
     const topDelayed = stats.byDelay.slice(0, 10);
@@ -735,7 +1235,7 @@
         const pct = Math.max(4, Math.round((item.delay / maxDelay) * 100));
         return `
           <div class="bar-row">
-            <span>Dezena <strong>${pad2(item.num)}</strong></span>
+            <span>Dezena <strong>${formatNumLabel(item.num, cfg)}</strong></span>
             <div class="bar-track" aria-hidden="true">
               <div class="bar-fill" style="width:${pct}%"></div>
             </div>
@@ -791,7 +1291,7 @@
     for (let r = 0; r < numRows; r++) {
       const start = r * 10 + 1;
       const end = Math.min(cfg.maxNum, (r + 1) * 10);
-      const label = `${pad2(start)} a ${pad2(end)}`;
+      const label = cfg.isColumnLottery ? `Coluna ${r + 1}` : `${pad2(start)} a ${pad2(end)}`;
       const count = stats.rowCounts[r] || 0;
       const pctWidth = Math.max(4, Math.round((count / maxRow) * 100));
       const share = totalBalls ? ((count / totalBalls) * 100).toFixed(1) : "0";
@@ -897,8 +1397,8 @@
           <p class="kpi-title">Jogo Mais Projetado (+${intFmt.format(H)} jogos)</p>
           ${
             topProj.length <= 6
-              ? `<p class="kpi-num">${topProj.map(pad2).join(" - ")}</p>`
-              : `<div class="balls-row" style="margin:4px 0 2px;">${topProj.map((n) => `<span class="ball hit" style="width:26px;height:26px;font-size:0.75rem;">${pad2(n)}</span>`).join("")}</div>`
+              ? `<p class="kpi-num">${topProj.map((n) => formatNumLabel(n, cfg)).join(" - ")}</p>`
+              : `<div class="balls-row" style="margin:4px 0 2px;">${topProj.map((n) => `<span class="ball hit" style="width:30px;height:30px;font-size:0.72rem;">${formatNumLabel(n, cfg)}</span>`).join("")}</div>`
           }
           <p class="kpi-sub">${topProj.length} dezenas com maior impulso estatístico na ${cfg.name}</p>
         </div>
@@ -912,7 +1412,7 @@
         .map((x) => `
           <div class="extrap-card ${topSet.has(x.num) ? "top" : ""}">
             <div class="extrap-head">
-              <span class="extrap-num">${pad2(x.num)}</span>
+              <span class="extrap-num">${formatNumLabel(x.num, cfg)}</span>
               <span class="badge ${topSet.has(x.num) ? "win" : "hit"}">+${x.addCount.toFixed(1)} bolas</span>
             </div>
             <div style="font-size:0.8125rem;color:var(--text-muted);margin-top:6px;">
@@ -930,6 +1430,81 @@
     { id: "cdb_prefixado", name: "CDB Prefixado (11,5% a.a.)", annualRate: 0.115 },
     { id: "poupanca", name: "Caderneta de Poupança (TR + 6,17%)", annualRate: 0.068 }
   ];
+
+  const LOTTERY_PRICE_ERAS = {
+    megasena: [
+      { startYear: 1996, endYear: 1999, label: "1996 a 1999", price: 1.00 },
+      { startYear: 1999, endYear: 2002, label: "1999 a 2002", price: 1.25 },
+      { startYear: 2002, endYear: 2008, label: "2002 a 2008", price: 1.50 },
+      { startYear: 2008, endYear: 2009, label: "2008 a 2009", price: 1.75 },
+      { startYear: 2009, endYear: 2014, label: "2009 a 2014", price: 2.00 },
+      { startYear: 2014, endYear: 2015, label: "2014 a 2015", price: 2.50 },
+      { startYear: 2015, endYear: 2019, label: "2015 a 2019", price: 3.50 },
+      { startYear: 2019, endYear: 2023, label: "2019 a 2023", price: 4.50 },
+      { startYear: 2023, endYear: 2025, label: "2023 a 2025", price: 5.00 },
+      { startYear: 2025, endYear: 2027, label: "2025 a 2026", price: 6.00 }
+    ],
+    lotofacil: [
+      { startYear: 2003, endYear: 2009, label: "2003 a 2009", price: 1.00 },
+      { startYear: 2009, endYear: 2014, label: "2009 a 2014", price: 1.25 },
+      { startYear: 2014, endYear: 2015, label: "2014 a 2015", price: 1.50 },
+      { startYear: 2015, endYear: 2019, label: "2015 a 2019", price: 2.00 },
+      { startYear: 2019, endYear: 2023, label: "2019 a 2023", price: 2.50 },
+      { startYear: 2023, endYear: 2027, label: "2023 a 2026", price: 3.00 }
+    ],
+    quina: [
+      { startYear: 1994, endYear: 2002, label: "1994 a 2002", price: 0.50 },
+      { startYear: 2002, endYear: 2009, label: "2002 a 2009", price: 0.75 },
+      { startYear: 2009, endYear: 2014, label: "2009 a 2014", price: 1.00 },
+      { startYear: 2014, endYear: 2015, label: "2014 a 2015", price: 1.50 },
+      { startYear: 2015, endYear: 2019, label: "2015 a 2019", price: 2.00 },
+      { startYear: 2019, endYear: 2023, label: "2019 a 2023", price: 2.00 },
+      { startYear: 2023, endYear: 2027, label: "2023 a 2026", price: 2.50 }
+    ],
+    lotomania: [
+      { startYear: 1999, endYear: 2009, label: "1999 a 2009", price: 1.00 },
+      { startYear: 2009, endYear: 2014, label: "2009 a 2014", price: 1.25 },
+      { startYear: 2014, endYear: 2015, label: "2014 a 2015", price: 1.50 },
+      { startYear: 2015, endYear: 2019, label: "2015 a 2019", price: 2.00 },
+      { startYear: 2019, endYear: 2023, label: "2019 a 2023", price: 2.50 },
+      { startYear: 2023, endYear: 2027, label: "2023 a 2026", price: 3.00 }
+    ],
+    maismilionaria: [
+      { startYear: 2022, endYear: 2027, label: "2022 a 2026", price: 6.00 }
+    ],
+    timemania: [
+      { startYear: 2008, endYear: 2015, label: "2008 a 2015", price: 2.00 },
+      { startYear: 2015, endYear: 2019, label: "2015 a 2019", price: 2.00 },
+      { startYear: 2019, endYear: 2023, label: "2019 a 2023", price: 3.00 },
+      { startYear: 2023, endYear: 2027, label: "2023 a 2026", price: 3.50 }
+    ],
+    duplasena: [
+      { startYear: 2001, endYear: 2009, label: "2001 a 2009", price: 1.00 },
+      { startYear: 2009, endYear: 2015, label: "2009 a 2015", price: 1.00 },
+      { startYear: 2015, endYear: 2019, label: "2015 a 2019", price: 2.00 },
+      { startYear: 2019, endYear: 2027, label: "2019 a 2026", price: 2.50 }
+    ],
+    diadesorte: [
+      { startYear: 2018, endYear: 2023, label: "2018 a 2023", price: 2.00 },
+      { startYear: 2023, endYear: 2027, label: "2023 a 2026", price: 2.50 }
+    ],
+    supersete: [
+      { startYear: 2020, endYear: 2027, label: "2020 a 2026", price: 2.50 }
+    ]
+  };
+
+  function getLotteryUnitPrice(lotteryId, year, adjustMode) {
+    const eras = LOTTERY_PRICE_ERAS[lotteryId] || LOTTERY_PRICE_ERAS.megasena;
+    if (adjustMode === "official") {
+      const found = eras.find((e) => year >= e.startYear && year < e.endYear);
+      if (found) return found.price;
+      return eras[eras.length - 1].price;
+    }
+    const base = eras[0].price;
+    const startYr = eras[0].startYear;
+    const steps = Math.max(0, Math.floor((year - startYr) / 3));
+    return Number((base * Math.pow(1.25, steps)).toFixed(2));
+  }
 
   function populateSpendYears() {
     const cfg = getCurrentLottery();
@@ -992,10 +1567,13 @@
       invMonthlyRate[opt.id] = Math.pow(1 + opt.annualRate, 1 / 12) - 1;
     });
 
+    const cdiMonthly = invMonthlyRate["selic_cdi"];
     let totalSpent = 0;
-    const unitPrice = cfg.basePrice;
+    const eraStats = {};
 
-    for (let mIdx = 0; mIdx < totalMonths; mIdx++) {
+    for (let ym = startYM; ym <= endYM; ym++) {
+      const year = Math.floor(ym / 12);
+      const unitPrice = getLotteryUnitPrice(state.lottery, year, state.spendAdjustMode);
       const singleBetCost = unitPrice * combosPerBet;
       const monthSpend = singleBetCost * betsPerMonth;
       totalSpent += monthSpend;
@@ -1003,6 +1581,25 @@
       INVESTMENT_OPTIONS.forEach((opt) => {
         invBalances[opt.id] = (invBalances[opt.id] + monthSpend) * (1 + invMonthlyRate[opt.id]);
       });
+
+      const eras = LOTTERY_PRICE_ERAS[state.lottery] || LOTTERY_PRICE_ERAS.megasena;
+      const matchedEra = eras.find((e) => year >= e.startYear && year < e.endYear) || eras[eras.length - 1];
+      const eraKey = state.spendAdjustMode === "official" ? matchedEra.label : `Ciclo ${year}`;
+      if (!eraStats[eraKey]) {
+        eraStats[eraKey] = {
+          label: eraKey,
+          unitPrice,
+          months: 0,
+          bets: 0,
+          spent: 0,
+          cdiToday: 0
+        };
+      }
+      eraStats[eraKey].months += 1;
+      eraStats[eraKey].bets += betsPerMonth;
+      eraStats[eraKey].spent += monthSpend;
+      const monthsUntilNow = endYM - ym;
+      eraStats[eraKey].cdiToday += monthSpend * Math.pow(1 + cdiMonthly, monthsUntilNow);
     }
 
     const pSingleJackpot = 1 / comb(cfg.maxNum, cfg.drawCount);
@@ -1027,6 +1624,116 @@
         <p class="kpi-sub">1 em ${intFmt.format(Math.round(1 / (probWinOnce || 1e-12)))} no período</p>
       </div>
     `;
+
+    // Gráfico de barras comparativo de investimentos
+    const chartEl = document.getElementById("spend-investments-chart");
+    if (chartEl) {
+      const maxVal = Math.max(totalSpent, ...Object.values(invBalances));
+      const chartItems = [
+        { name: "Total Apostado", val: totalSpent, color: "var(--danger-text)" },
+        ...INVESTMENT_OPTIONS.map((opt) => ({
+          name: opt.name.split(" (")[0],
+          val: invBalances[opt.id],
+          color: "var(--accent)"
+        }))
+      ];
+      chartEl.innerHTML = chartItems.map((it) => {
+        const pct = Math.max(6, Math.round((it.val / (maxVal || 1)) * 100));
+        return `
+          <div class="bar-row" style="grid-template-columns: 140px minmax(0, 1fr) auto;">
+            <span style="font-size:0.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${it.name}</span>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${pct}%;background:${it.color};"></div>
+            </div>
+            <strong style="font-size:0.85rem;color:${it.color};">${brlFmt.format(it.val)}</strong>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Detalhamento por investimento
+    const cardsEl = document.getElementById("spend-investments-cards");
+    if (cardsEl) {
+      cardsEl.innerHTML = INVESTMENT_OPTIONS.map((opt) => {
+        const finalBal = invBalances[opt.id];
+        const profit = finalBal - totalSpent;
+        const mult = (finalBal / (totalSpent || 1)).toFixed(1).replace(".", ",");
+        return `
+          <div class="extrato-row-card">
+            <div class="extrato-row-top">
+              <strong>${opt.name}</strong>
+              <span class="badge-status ${profit >= 0 ? "success" : "danger"}">${profit >= 0 ? "+" + mult + "x o valor gasto" : "Prejuízo"}</span>
+            </div>
+            <div class="extrato-row-bottom">
+              <span>Saldo Acumulado: <strong style="color:var(--success-text);">${brlFmt.format(finalBal)}</strong></span>
+              <span>Lucro Líquido: <strong>+${brlFmt.format(profit)}</strong></span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Detalhamento por época histórica de preços da Caixa
+    const erasEl = document.getElementById("spend-eras-list");
+    if (erasEl) {
+      erasEl.innerHTML = Object.values(eraStats).map((era) => {
+        return `
+          <div class="extrato-row-card">
+            <div class="extrato-row-top">
+              <strong>Época ${era.label}</strong>
+              <span class="badge-status">${brlFmt.format(era.unitPrice)} / bilhete</span>
+            </div>
+            <div class="extrato-row-mid">
+              ${era.months} meses ativos • ${intFmt.format(era.bets)} apostas realizadas
+            </div>
+            <div class="extrato-row-bottom">
+              <span>Gasto no ciclo: <strong style="color:var(--danger-text);">${brlFmt.format(era.spent)}</strong></span>
+              <span>Teria hoje no CDI: <strong style="color:var(--success-text);">${brlFmt.format(era.cdiToday)}</strong></span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+  }
+
+  function renderDrawBallsHTML(cfg, d) {
+    if (cfg.hasSecondDraw && Array.isArray(d.n2) && d.n2.length > 0) {
+      const b1 = d.n
+        .map((n) => `<span class="ball ${state.selectedNumbers.has(n) ? "hit" : ""}">${pad2(n)}</span>`)
+        .join("");
+      const b2 = d.n2
+        .map((n) => `<span class="ball ${state.selectedNumbers.has(n) ? "hit" : ""}">${pad2(n)}</span>`)
+        .join("");
+      return `
+        <div class="draw-pair-block">
+          <div class="draw-pair-row"><span class="draw-pair-label">1º:</span>${b1}</div>
+          <div class="draw-pair-row"><span class="draw-pair-label">2º:</span>${b2}</div>
+        </div>
+      `;
+    }
+
+    const baseBalls = d.n
+      .map((n) => `<span class="ball ${state.selectedNumbers.has(n) ? "hit" : ""}">${formatNumLabel(n, cfg)}</span>`)
+      .join("");
+
+    if (cfg.hasTrevos && Array.isArray(d.tr) && d.tr.length > 0) {
+      const trevosHTML = d.tr
+        .map((t) => `<span class="ball ball-trevo ${state.selectedTrevos.has(t) ? "hit" : ""}" title="Trevo ${t}">T${t}</span>`)
+        .join("");
+      return `<div class="balls-row">${baseBalls}${trevosHTML}</div>`;
+    }
+
+    if (cfg.hasTimeCoracao && d.tm) {
+      const isHit = state.selectedTimeCoracao && d.tm.toUpperCase() === state.selectedTimeCoracao.toUpperCase();
+      return `<div class="balls-row">${baseBalls}<span class="ball-extra-badge ${isHit ? "hit" : ""}">${escapeHtml(d.tm)}</span></div>`;
+    }
+
+    if (cfg.hasMesSorte && d.ms) {
+      const isHit = state.selectedMesSorte && d.ms.toLowerCase() === state.selectedMesSorte.toLowerCase();
+      return `<div class="balls-row">${baseBalls}<span class="ball-extra-badge ${isHit ? "hit" : ""}">${escapeHtml(d.ms)}</span></div>`;
+    }
+
+    return `<div class="balls-row">${baseBalls}</div>`;
   }
 
   function getFilteredDraws() {
@@ -1039,9 +1746,11 @@
       if (q) {
         const matchConcurso = String(d.c).includes(q);
         const matchDate = d.d.toLowerCase().includes(q);
-        if (!matchConcurso && !matchDate) return false;
+        const matchTeam = d.tm ? d.tm.toLowerCase().includes(q) : false;
+        const matchMonth = d.ms ? d.ms.toLowerCase().includes(q) : false;
+        if (!matchConcurso && !matchDate && !matchTeam && !matchMonth) return false;
       }
-      if (numFilter && !d.n.includes(numFilter)) return false;
+      if (numFilter && !d.n.includes(numFilter) && !(Array.isArray(d.n2) && d.n2.includes(numFilter))) return false;
       if (specialFilter === "special" && Specials && !Specials.isSpecialDraw(state.lottery, d)) return false;
       if (specialFilter === "regular" && Specials && Specials.isSpecialDraw(state.lottery, d)) return false;
       if (status === "winners" && d.a) return false;
@@ -1095,9 +1804,7 @@
     tbody.innerHTML = slice
       .map((d) => {
         const sp = Specials ? Specials.getSpecialDrawInfo(cfg.id, d) : null;
-        const ballsHTML = d.n
-          .map((n) => `<span class="ball ${state.selectedNumbers.has(n) ? "hit" : ""}">${pad2(n)}</span>`)
-          .join("");
+        const ballsBlockHTML = renderDrawBallsHTML(cfg, d);
 
         const mainTierKey = cfg.tiers[0].key;
         const mainPz = (d.p && d.p[mainTierKey]) || { g: 0, v: 0 };
@@ -1122,16 +1829,20 @@
           `;
         }
 
-        const subPrizesHTML = cfg.tiers.slice(1, 3).map((t) => {
-          const pz = (d.p && d.p[t.key]) || { g: 0, v: 0 };
-          return `<span style="display:block;font-size:0.8125rem;">${t.name}: <strong>${intFmt.format(pz.g)}</strong> (${brlFmt.format(pz.v)})</span>`;
-        }).join("");
+        const subTiers = cfg.id === "duplasena" ? [cfg.tiers[4], cfg.tiers[1]] : cfg.tiers.slice(1, 3);
+        const subPrizesHTML = subTiers
+          .filter(Boolean)
+          .map((t) => {
+            const pz = (d.p && d.p[t.key]) || { g: 0, v: 0 };
+            return `<span style="display:block;font-size:0.8125rem;">${t.name}: <strong>${intFmt.format(pz.g)}</strong> (${brlFmt.format(pz.v)})</span>`;
+          })
+          .join("");
 
         return `
           <tr class="${sp ? "draw-row-special" : ""}">
             <td data-label="Concurso"><strong>#${d.c}</strong>${sp ? `<span class="special-draw-tag">${escapeHtml(sp.label)}</span>` : ""}</td>
-            <td data-label="Data">${d.d}</td>
-            <td data-label="Dezenas"><div class="balls-row">${ballsHTML}</div></td>
+            <td data-label="Data">${escapeHtml(d.d)}</td>
+            <td data-label="Dezenas">${ballsBlockHTML}</td>
             <td data-label="Prêmio Principal">${mainPrizeHTML}</td>
             <td data-label="Demais Faixas">${subPrizesHTML}</td>
             <td data-label="Ações"><button type="button" class="btn btn-sm btn-open-draw" data-concurso="${d.c}">Detalhes</button></td>
@@ -1163,7 +1874,7 @@
     title.textContent = sp
       ? `${sp.label} - Concurso #${d.c} (${d.d})`
       : `${cfg.name} - Concurso #${d.c} (${d.d})`;
-    const ballsHTML = d.n.map((n) => `<span class="ball ${state.selectedNumbers.has(n) ? "hit" : ""}">${pad2(n)}</span>`).join(" ");
+    const ballsBlockHTML = renderDrawBallsHTML(cfg, d);
 
     const prizesHTML = cfg.tiers.map((t) => {
       const pz = (d.p && d.p[t.key]) || { g: 0, v: 0 };
@@ -1183,7 +1894,7 @@
       ${specialBannerHTML}
       <div style="margin-bottom:14px;">
         <p style="margin:0 0 8px;"><strong>Dezenas sorteadas:</strong></p>
-        <div class="balls-row">${ballsHTML}</div>
+        ${ballsBlockHTML}
       </div>
       <div>
         <p style="margin:0 0 8px;"><strong>Premiação Oficial:</strong></p>
@@ -1202,11 +1913,11 @@
     const cfg = getCurrentLottery();
     const sel = document.getElementById("filter-number");
     if (!sel) return;
-    sel.innerHTML = `<option value="">Todas as dezenas (01 a ${pad2(cfg.maxNum)})</option>`;
+    sel.innerHTML = `<option value="">Todas as dezenas (${formatNumLabel(1, cfg)} a ${formatNumLabel(cfg.maxNum, cfg)})</option>`;
     for (let i = 1; i <= cfg.maxNum; i++) {
       const opt = document.createElement("option");
       opt.value = String(i);
-      opt.textContent = "Dezena " + pad2(i);
+      opt.textContent = "Dezena " + formatNumLabel(i, cfg);
       sel.appendChild(opt);
     }
   }
@@ -1295,6 +2006,25 @@
         const desc = p.descricao || "";
         k = desc.includes("0 acertos") || faixa === 7 ? "0" : String(21 - faixa);
         if (k === "20" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+      } else if (lotteryId === "maismilionaria") {
+        const mmMap = { 1: "6+2", 2: "6+1", 3: "5+2", 4: "5+1", 5: "4+2", 6: "4+1", 7: "3+2", 8: "3+1", 9: "2+2", 10: "2+1" };
+        k = mmMap[faixa] || null;
+        if (k === "6+2" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+      } else if (lotteryId === "timemania") {
+        if (faixa >= 1 && faixa <= 5) k = String(8 - faixa);
+        else if (faixa === 6) k = "time";
+        if (k === "7" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+      } else if (lotteryId === "duplasena") {
+        const dsMap = { 1: "6", 2: "5", 3: "4", 4: "3", 5: "2_6", 6: "2_5", 7: "2_4", 8: "2_3" };
+        k = dsMap[faixa] || null;
+        if (k === "6" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+      } else if (lotteryId === "diadesorte") {
+        if (faixa >= 1 && faixa <= 4) k = String(8 - faixa);
+        else if (faixa === 5) k = "mes";
+        if (k === "7" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
+      } else if (lotteryId === "supersete") {
+        if (faixa >= 1 && faixa <= 5) k = String(8 - faixa);
+        if (k === "7" && val === 0) val = Number(item.valorAcumuladoProximoConcurso || item.valorEstimadoProximoConcurso || 0);
       }
 
       if (k) {
@@ -1307,13 +2037,30 @@
       nums = nums.map((x) => (x === 0 ? 100 : x));
     }
 
-    return {
+    const out = {
       c: Number(item.concurso),
       d: String(item.data || ""),
-      n: nums.sort((a, b) => a - b),
+      n: nums.slice().sort((a, b) => a - b),
       p: premios,
       a: Boolean(item.acumulou)
     };
+
+    if (lotteryId === "maismilionaria") {
+      out.tr = (item.trevos || []).map(Number).filter((x) => x >= 1 && x <= 6).sort((a, b) => a - b);
+    } else if (lotteryId === "timemania") {
+      if (item.timeCoracao) out.tm = String(item.timeCoracao).trim();
+    } else if (lotteryId === "duplasena") {
+      out.n = nums.slice(0, 6).sort((a, b) => a - b);
+      out.n2 = nums.slice(6, 12).sort((a, b) => a - b);
+    } else if (lotteryId === "diadesorte") {
+      if (item.mesSorte) out.ms = String(item.mesSorte).trim();
+    } else if (lotteryId === "supersete") {
+      const cols = nums.slice(0, 7);
+      out.cols = cols;
+      out.n = cols.map((dig, idx) => idx * 10 + dig + 1);
+    }
+
+    return out;
   }
 
   async function syncLatestFromAPI(options = {}) {
@@ -1370,6 +2117,9 @@
         if (missingDraws.length > 0) {
           state.draws = mergeDraws(state.draws, missingDraws);
           saveCachedExtraDraws(cfg.id, state.draws);
+
+          const subEl = document.getElementById("brand-subtitle");
+          if (subEl) subEl.textContent = `${intFmt.format(state.draws.length)} sorteios, métricas, projeções e simulador financeiro`;
 
           renderMetricsAndCharts();
           renderSimulation();
@@ -1484,7 +2234,18 @@
 
     const cfg = LOTTERY_CONFIGS[lotteryId];
     state.betSize = cfg.defaultSize;
+    state.spendBetSize = cfg.defaultSize;
+    state.spendStartYear = Math.max(cfg.startYear || 1996, 2015);
     state.selectedNumbers = new Set(cfg.defaultPicks);
+    if (cfg.hasTrevos) {
+      state.selectedTrevos = new Set(cfg.defaultTrevos || [1, 2]);
+    }
+    if (cfg.hasTimeCoracao) {
+      state.selectedTimeCoracao = cfg.defaultTimeCoracao || "FLAMENGO /RJ";
+    }
+    if (cfg.hasMesSorte) {
+      state.selectedMesSorte = cfg.defaultMesSorte || "Maio";
+    }
     state.page = 1;
 
     const markEl = document.getElementById("brand-mark");
@@ -1492,7 +2253,7 @@
     const subEl = document.getElementById("brand-subtitle");
     if (markEl) markEl.textContent = cfg.mark;
     if (titleEl) titleEl.textContent = cfg.title;
-    if (subEl) subEl.textContent = cfg.subtitle;
+    if (subEl) subEl.textContent = `${intFmt.format(state.draws.length)} sorteios, métricas, projeções e simulador financeiro`;
 
     const simTitle = document.getElementById("title-simulador");
     const simDesc = document.getElementById("desc-simulador");
@@ -1659,25 +2420,57 @@
       });
     }
 
-    document.getElementById("spend-bets-month").addEventListener("input", (e) => {
-      state.spendBetsPerMonth = Number(e.target.value) || 1;
-      renderSpendingSimulator();
-    });
+    const betsMonthEl = document.getElementById("spend-bets-month");
+    if (betsMonthEl) {
+      betsMonthEl.addEventListener("input", (e) => {
+        state.spendBetsPerMonth = Number(e.target.value) || 1;
+        renderSpendingSimulator();
+      });
+    }
 
-    document.getElementById("spend-bet-size").addEventListener("change", (e) => {
-      state.spendBetSize = Number(e.target.value);
-      renderSpendingSimulator();
-    });
+    const betSizeEl = document.getElementById("spend-bet-size");
+    if (betSizeEl) {
+      betSizeEl.addEventListener("change", (e) => {
+        state.spendBetSize = Number(e.target.value);
+        renderSpendingSimulator();
+      });
+    }
 
-    document.getElementById("spend-time-mode").addEventListener("change", (e) => {
-      state.spendTimeMode = e.target.value;
-      renderSpendingSimulator();
-    });
+    const timeModeEl = document.getElementById("spend-time-mode");
+    const grpSinceYear = document.getElementById("group-since-year");
+    const grpDuration = document.getElementById("group-duration-years");
+    if (timeModeEl) {
+      timeModeEl.addEventListener("change", (e) => {
+        state.spendTimeMode = e.target.value;
+        if (grpSinceYear) grpSinceYear.hidden = state.spendTimeMode !== "sinceYear";
+        if (grpDuration) grpDuration.hidden = state.spendTimeMode === "sinceYear";
+        renderSpendingSimulator();
+      });
+    }
 
-    document.getElementById("spend-start-year").addEventListener("change", (e) => {
-      state.spendStartYear = Number(e.target.value);
-      renderSpendingSimulator();
-    });
+    const startYearEl = document.getElementById("spend-start-year");
+    if (startYearEl) {
+      startYearEl.addEventListener("change", (e) => {
+        state.spendStartYear = Number(e.target.value);
+        renderSpendingSimulator();
+      });
+    }
+
+    const yearsCountEl = document.getElementById("spend-years-count");
+    if (yearsCountEl) {
+      yearsCountEl.addEventListener("input", (e) => {
+        state.spendYearsCount = Number(e.target.value) || 1;
+        renderSpendingSimulator();
+      });
+    }
+
+    const adjustModeEl = document.getElementById("spend-adjust-mode");
+    if (adjustModeEl) {
+      adjustModeEl.addEventListener("change", (e) => {
+        state.spendAdjustMode = e.target.value;
+        renderSpendingSimulator();
+      });
+    }
 
     document.getElementById("filter-search").addEventListener("input", (e) => {
       state.filterSearch = e.target.value;
@@ -1949,7 +2742,7 @@
       badge.textContent = "✓ Liberado (XLSX / PDF)";
     } else {
       btn.classList.remove("is-unlocked");
-      btn.title = `Exportar ${cfg.name} por R$ 10,00 ou Combo 4 Loterias por R$ 24,90`;
+      btn.title = `Exportar ${cfg.name} por R$ 10,00 ou Combo 9 Loterias por R$ 24,90`;
       label.textContent = "Exportar Resultados";
       badge.textContent = "R$ 10 (Combo R$ 24,90)";
     }
@@ -2184,7 +2977,7 @@
     if (scopeSpecialDesc) {
       scopeSpecialDesc.innerHTML =
         targetId === "all"
-          ? `<strong>Somente Concursos Especiais:</strong> Apenas as ${intFmt.format(specialCount)} edições especiais das 4 loterias`
+          ? `<strong>Somente Concursos Especiais:</strong> Apenas as ${intFmt.format(specialCount)} edições especiais das loterias`
           : `<strong>Somente Concursos Especiais:</strong> Apenas os ${intFmt.format(specialCount)} sorteios de ${specialMeta ? specialMeta.name : targetCfg.name}`;
     }
 
@@ -2229,14 +3022,14 @@
         };
         if (targetId === "all") {
           noticeText.textContent =
-            "A exportação consolidada das 4 loterias requer todas as modalidades liberadas ou o Combo 4 Loterias.";
-          unlockBtn.textContent = "Desbloquear Combo 4 Loterias (R$ 24,90)";
+            "A exportação consolidada das 9 loterias requer todas as modalidades liberadas ou o Combo 9 Loterias.";
+          unlockBtn.textContent = "Desbloquear Combo 9 Loterias (R$ 24,90)";
           unlockBtn.dataset.productId = "combo_all";
           if (unlockComboBtn) unlockComboBtn.hidden = true;
           unlockBtn.onclick = () => Store.startCheckout("combo_all", { buttonEl: unlockBtn, onError: showDlError });
         } else {
           const prod = Store.getProductByLottery(targetId);
-          noticeText.textContent = `A modalidade ${targetCfg.name} ainda está bloqueada. Cada loteria tem exportação separada por R$ 10,00 ou você pode levar todas no Combo com desconto.`;
+          noticeText.textContent = `A modalidade ${targetCfg.name} ainda está bloqueada. Cada loteria tem exportação separada por R$ 10,00 ou você pode levar todas as 9 no Combo com desconto.`;
           unlockBtn.textContent = `Comprar ${targetCfg.name} (R$ 10,00)`;
           unlockBtn.dataset.productId = prod.id;
           if (unlockComboBtn) unlockComboBtn.hidden = false;
@@ -2271,8 +3064,8 @@
       const allOpt = document.getElementById("opt-exp-all");
       if (allOpt) {
         allOpt.textContent = Store.hasAllLotteries()
-          ? "Todas as 4 Loterias (XLSX Multi-Abas / PDF) - ✓ Liberado"
-          : "Todas as 4 Loterias (XLSX Multi-Abas / PDF) - Combo R$ 24,90";
+          ? "Todas as 9 Loterias (XLSX Multi-Abas / PDF) - ✓ Liberado"
+          : "Todas as 9 Loterias (XLSX Multi-Abas / PDF) - Combo R$ 24,90";
       }
     }
 

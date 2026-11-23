@@ -1,6 +1,18 @@
 // Netlify Serverless Function: Verificação Criptográfica de Sessão Stripe e Emissão de Token Assinado (HMAC-SHA256)
 import crypto from "node:crypto";
 
+const ALL_LOTTERIES = [
+  "megasena",
+  "lotofacil",
+  "quina",
+  "lotomania",
+  "maismilionaria",
+  "timemania",
+  "duplasena",
+  "diadesorte",
+  "supersete"
+];
+
 const PRODUCT_CATALOG = {
   export_megasena: {
     name: "Planilha Mega-Sena + Mega da Virada (XLSX + PDF)",
@@ -22,10 +34,35 @@ const PRODUCT_CATALOG = {
     amountCents: 1000,
     unlocks: ["lotomania"]
   },
+  export_maismilionaria: {
+    name: "Planilha +Milionária Completa (XLSX + PDF)",
+    amountCents: 1000,
+    unlocks: ["maismilionaria"]
+  },
+  export_timemania: {
+    name: "Planilha Timemania Completa (XLSX + PDF)",
+    amountCents: 1000,
+    unlocks: ["timemania"]
+  },
+  export_duplasena: {
+    name: "Planilha Dupla Sena + Dupla de Páscoa (XLSX + PDF)",
+    amountCents: 1000,
+    unlocks: ["duplasena"]
+  },
+  export_diadesorte: {
+    name: "Planilha Dia de Sorte Completa (XLSX + PDF)",
+    amountCents: 1000,
+    unlocks: ["diadesorte"]
+  },
+  export_supersete: {
+    name: "Planilha Super Sete Completa (XLSX + PDF)",
+    amountCents: 1000,
+    unlocks: ["supersete"]
+  },
   combo_all: {
-    name: "Combo 4 Loterias Completo (XLSX + PDF)",
+    name: "Combo 9 Loterias Completo (XLSX + PDF)",
     amountCents: 2490,
-    unlocks: ["megasena", "lotofacil", "quina", "lotomania"]
+    unlocks: ALL_LOTTERIES
   },
   kit_bolao_virada: {
     name: "Kit Bolão Mega da Virada 2026 (Excel + Guia PDF)",
@@ -38,18 +75,26 @@ const PRODUCT_CATALOG = {
     unlocks: ["dossie_especiais"]
   },
   super_combo: {
-    name: "Pacote Completo Atlas + Virada (4 Loterias + Kit Bolão + Dossiê)",
+    name: "Pacote Completo Atlas + Virada (9 Loterias + Kit Bolão + Dossiê)",
     amountCents: 3490,
-    unlocks: ["megasena", "lotofacil", "quina", "lotomania", "kit_bolao_virada", "dossie_especiais"]
+    unlocks: [...ALL_LOTTERIES, "kit_bolao_virada", "dossie_especiais"]
   }
 };
 
-function jsonResponse(payload, status = 200) {
+function getCorsOrigin(req) {
+  const origin = (req && req.headers && req.headers.get("origin")) || "";
+  if (!origin) return "https://lotery-statistics.netlify.app";
+  if (origin === "https://lotery-statistics.netlify.app") return origin;
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin;
+  return "https://lotery-statistics.netlify.app";
+}
+
+function jsonResponse(payload, status = 200, req = null) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": getCorsOrigin(req),
       "Cache-Control": "no-store"
     }
   });
@@ -96,7 +141,6 @@ export default async (req) => {
 
     const metadata = data.metadata || {};
     let metaProductId = typeof metadata.product_id === "string" ? metadata.product_id.trim() : "";
-    const usedBasePrice = metadata.used_base_price === "true";
 
     let productName = null;
     let unlocks = [];
@@ -104,7 +148,7 @@ export default async (req) => {
 
     if (metaProductId && PRODUCT_CATALOG[metaProductId]) {
       const product = PRODUCT_CATALOG[metaProductId];
-      isCorrectAmount = amountCents === product.amountCents || (usedBasePrice && amountCents >= 1000);
+      isCorrectAmount = amountCents >= product.amountCents;
       productName = product.name;
       unlocks = product.unlocks;
     } else if (!metaProductId && amountCents === 1500) {

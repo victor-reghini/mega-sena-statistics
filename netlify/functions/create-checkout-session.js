@@ -1,6 +1,18 @@
 // Netlify Serverless Function: Criação Resiliente de Sessão Stripe Checkout Multi-Produto (com E-mail Validado)
 import crypto from "node:crypto";
 
+const ALL_LOTTERIES = [
+  "megasena",
+  "lotofacil",
+  "quina",
+  "lotomania",
+  "maismilionaria",
+  "timemania",
+  "duplasena",
+  "diadesorte",
+  "supersete"
+];
+
 const PRODUCT_CATALOG = {
   export_megasena: {
     name: "Planilha Mega-Sena + Mega da Virada (XLSX + PDF)",
@@ -42,11 +54,61 @@ const PRODUCT_CATALOG = {
     defaultPriceId: "price_1UdY0iLbOL7pa0nJO77PSg9g",
     defaultLink: "https://buy.stripe.com/9B6dRa3K5abDevDewzeQM04"
   },
+  export_maismilionaria: {
+    name: "Planilha +Milionária Completa (XLSX + PDF)",
+    description: "Base completa de resultados da +Milionária (6 dezenas + 2 trevos e 10 faixas de rateio) em Excel (.xlsx) e PDF.",
+    amountCents: 1000,
+    unlocks: ["maismilionaria"],
+    priceEnv: "STRIPE_PRICE_ID_EXPORT_MAISMILIONARIA",
+    linkEnv: "STRIPE_LINK_EXPORT_MAISMILIONARIA",
+    defaultPriceId: "price_1Uf1U7LbOL7pa0nJBxgL5iRa",
+    defaultLink: "https://buy.stripe.com/28E00k0xTfvX3QZ2NReQM09"
+  },
+  export_timemania: {
+    name: "Planilha Timemania Completa (XLSX + PDF)",
+    description: "Base completa de resultados da Timemania (7 dezenas + Time do Coração) em Excel (.xlsx) e PDF.",
+    amountCents: 1000,
+    unlocks: ["timemania"],
+    priceEnv: "STRIPE_PRICE_ID_EXPORT_TIMEMANIA",
+    linkEnv: "STRIPE_LINK_EXPORT_TIMEMANIA",
+    defaultPriceId: "price_1Uf1U9LbOL7pa0nJG6V3Bdg1",
+    defaultLink: "https://buy.stripe.com/eVq3cw0xTcjLdrz1JNeQM0a"
+  },
+  export_duplasena: {
+    name: "Planilha Dupla Sena + Dupla de Páscoa (XLSX + PDF)",
+    description: "Base completa de resultados da Dupla Sena (1º e 2º sorteios) e edições da Dupla de Páscoa em Excel (.xlsx) e PDF.",
+    amountCents: 1000,
+    unlocks: ["duplasena"],
+    priceEnv: "STRIPE_PRICE_ID_EXPORT_DUPLASENA",
+    linkEnv: "STRIPE_LINK_EXPORT_DUPLASENA",
+    defaultPriceId: "price_1Uf1UALbOL7pa0nJHJP9GZ8y",
+    defaultLink: "https://buy.stripe.com/00wfZidkF3Nf3QZ2NReQM0b"
+  },
+  export_diadesorte: {
+    name: "Planilha Dia de Sorte Completa (XLSX + PDF)",
+    description: "Base completa de resultados do Dia de Sorte (7 dezenas + Mês da Sorte) em Excel (.xlsx) e PDF.",
+    amountCents: 1000,
+    unlocks: ["diadesorte"],
+    priceEnv: "STRIPE_PRICE_ID_EXPORT_DIADESORTE",
+    linkEnv: "STRIPE_LINK_EXPORT_DIADESORTE",
+    defaultPriceId: "price_1Uf1UCLbOL7pa0nJhjK2JkFC",
+    defaultLink: "https://buy.stripe.com/9B6bJ23K5dnPafn3RVeQM0c"
+  },
+  export_supersete: {
+    name: "Planilha Super Sete Completa (XLSX + PDF)",
+    description: "Base completa de resultados do Super Sete (7 colunas numeradas de 0 a 9) em Excel (.xlsx) e PDF.",
+    amountCents: 1000,
+    unlocks: ["supersete"],
+    priceEnv: "STRIPE_PRICE_ID_EXPORT_SUPERSETE",
+    linkEnv: "STRIPE_LINK_EXPORT_SUPERSETE",
+    defaultPriceId: "price_1Uf1UELbOL7pa0nJ8M1azGUo",
+    defaultLink: "https://buy.stripe.com/aFa28sgwR4Rj87ffADeQM0d"
+  },
   combo_all: {
-    name: "Combo 4 Loterias Completo (XLSX + PDF)",
-    description: "Acesso para exportar Mega-Sena, Lotofácil, Quina, Lotomania e todos os concursos especiais.",
+    name: "Combo 9 Loterias Completo (XLSX + PDF)",
+    description: "Acesso para exportar todas as 9 loterias oficiais da Caixa e todos os concursos especiais.",
     amountCents: 2490,
-    unlocks: ["megasena", "lotofacil", "quina", "lotomania"],
+    unlocks: ALL_LOTTERIES,
     priceEnv: "STRIPE_PRICE_ID_COMBO_ALL",
     linkEnv: "STRIPE_LINK_COMBO_ALL",
     defaultPriceId: "price_1UdY0lLbOL7pa0nJk1nYqxgl",
@@ -64,7 +126,7 @@ const PRODUCT_CATALOG = {
   },
   dossie_especiais: {
     name: "Dossiê Concursos Especiais (XLSX + PDF)",
-    description: "Comparativo histórico em Excel e PDF de Mega da Virada, Independência, Quina de São João e Páscoa.",
+    description: "Comparativo histórico em Excel e PDF de Mega da Virada, Independência, Quina de São João, Dupla de Páscoa e Lotomania de Páscoa.",
     amountCents: 1990,
     unlocks: ["dossie_especiais"],
     priceEnv: "STRIPE_PRICE_ID_DOSSIE_ESPECIAIS",
@@ -73,10 +135,10 @@ const PRODUCT_CATALOG = {
     defaultLink: "https://buy.stripe.com/4gM00k94p5VngDLgEHeQM07"
   },
   super_combo: {
-    name: "Pacote Completo Atlas + Virada (4 Loterias + Kit Bolão + Dossiê)",
-    description: "Todas as 4 planilhas oficiais + Kit Bolão Mega da Virada 2026 + Dossiê Concursos Especiais.",
+    name: "Pacote Completo Atlas + Virada (9 Loterias + Kit Bolão + Dossiê)",
+    description: "Todas as 9 planilhas oficiais + Kit Bolão Mega da Virada 2026 + Dossiê Concursos Especiais.",
     amountCents: 3490,
-    unlocks: ["megasena", "lotofacil", "quina", "lotomania", "kit_bolao_virada", "dossie_especiais"],
+    unlocks: [...ALL_LOTTERIES, "kit_bolao_virada", "dossie_especiais"],
     priceEnv: "STRIPE_PRICE_ID_SUPER_COMBO",
     linkEnv: "STRIPE_LINK_SUPER_COMBO",
     defaultPriceId: "price_1UdY0pLbOL7pa0nJFrkhnZIt",
@@ -91,12 +153,22 @@ const ALLOWED_RETURN_PATHS = [
   "/mega-da-virada.html"
 ];
 
-function jsonResponse(payload, status = 200) {
+function getCorsOrigin(req) {
+  const origin = (req && req.headers && req.headers.get("origin")) || "";
+  if (!origin) return "https://lotery-statistics.netlify.app";
+  if (origin === "https://lotery-statistics.netlify.app") return origin;
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin;
+  return "https://lotery-statistics.netlify.app";
+}
+
+function jsonResponse(payload, status = 200, req = null) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*"
+      "Access-Control-Allow-Origin": getCorsOrigin(req),
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
     }
   });
 }
@@ -223,7 +295,7 @@ export default async (req) => {
     return new Response(null, {
       status: 204,
       headers: {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": getCorsOrigin(req),
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type"
       }
@@ -231,7 +303,7 @@ export default async (req) => {
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ ok: false, error: "Método não permitido." }, 405);
+    return jsonResponse({ ok: false, error: "Método não permitido." }, 405, req);
   }
 
   let body = {};
@@ -259,7 +331,7 @@ export default async (req) => {
     return jsonResponse({ ok: false, error: "Serviço de pagamento não configurado no servidor." }, 503);
   }
 
-  const verifiedEmailPayload = verifyEmailToken(emailVerificationToken, stripeKey, email, productId);
+  const verifiedEmailPayload = verifyEmailToken(emailVerificationToken, stripeKey, email);
   if (!verifiedEmailPayload || !verifiedEmailPayload.email) {
     return jsonResponse({
       ok: false,

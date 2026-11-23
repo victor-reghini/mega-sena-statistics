@@ -9,18 +9,33 @@ const PRODUCT_NAMES = {
   export_lotofacil: "Planilha Lotofácil + Independência (XLSX + PDF) - R$ 10,00",
   export_quina: "Planilha Quina + São João (XLSX + PDF) - R$ 10,00",
   export_lotomania: "Planilha Lotomania + Páscoa (XLSX + PDF) - R$ 10,00",
-  combo_all: "Combo 4 Loterias Completo (XLSX + PDF) - R$ 24,90",
+  export_maismilionaria: "Planilha +Milionária Completa (XLSX + PDF) - R$ 10,00",
+  export_timemania: "Planilha Timemania Completa (XLSX + PDF) - R$ 10,00",
+  export_duplasena: "Planilha Dupla Sena + Dupla de Páscoa (XLSX + PDF) - R$ 10,00",
+  export_diadesorte: "Planilha Dia de Sorte Completa (XLSX + PDF) - R$ 10,00",
+  export_supersete: "Planilha Super Sete Completa (XLSX + PDF) - R$ 10,00",
+  combo_all: "Combo 9 Loterias Completo (XLSX + PDF) - R$ 24,90",
   kit_bolao_virada: "Kit Bolão Mega da Virada 2026 (Excel + Guia PDF) - R$ 14,90",
   dossie_especiais: "Dossiê Concursos Especiais (XLSX + PDF) - R$ 19,90",
-  super_combo: "Pacote Completo Atlas + Virada (4 Loterias + Kit Bolão + Dossiê) - R$ 34,90"
+  super_combo: "Pacote Completo Atlas + Virada (9 Loterias + Kit Bolão + Dossiê) - R$ 34,90"
 };
 
-function jsonResponse(payload, status = 200) {
+function getCorsOrigin(req) {
+  const origin = (req && req.headers && req.headers.get("origin")) || "";
+  if (!origin) return "https://lotery-statistics.netlify.app";
+  if (origin === "https://lotery-statistics.netlify.app") return origin;
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin;
+  return "https://lotery-statistics.netlify.app";
+}
+
+function jsonResponse(payload, status = 200, req = null) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": getCorsOrigin(req),
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
       "Cache-Control": "no-store"
     }
   });
@@ -167,7 +182,7 @@ export default async (req) => {
     return new Response(null, {
       status: 204,
       headers: {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": getCorsOrigin(req),
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type"
       }
@@ -175,12 +190,12 @@ export default async (req) => {
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ ok: false, error: "Método não permitido." }, 405);
+    return jsonResponse({ ok: false, error: "Método não permitido." }, 405, req);
   }
 
   const secretKey = (process.env.STRIPE_SECRET_KEY || "").trim();
   if (!secretKey) {
-    return jsonResponse({ ok: false, error: "Serviço de verificação não configurado no servidor." }, 503);
+    return jsonResponse({ ok: false, error: "Serviço de verificação não configurado no servidor." }, 503, req);
   }
 
   let body = {};
@@ -277,10 +292,18 @@ export default async (req) => {
     };
 
     if (!emailSent) {
-      responsePayload.instantVerificationCode = otpCode;
+      const allowDevInstantCode = process.env.ALLOW_DEV_INSTANT_CODE === "true" || (!smtpPass && process.env.NODE_ENV === "development");
+      if (allowDevInstantCode) {
+        responsePayload.instantVerificationCode = otpCode;
+      } else {
+        return jsonResponse({
+          ok: false,
+          error: "Não foi possível enviar o código de verificação para o seu e-mail no momento. Por favor, tente novamente em alguns instantes."
+        }, 500, req);
+      }
     }
 
-    return jsonResponse(responsePayload, 200);
+    return jsonResponse(responsePayload, 200, req);
   }
 
   if (action === "verify_code") {

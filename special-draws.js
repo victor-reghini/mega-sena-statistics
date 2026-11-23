@@ -90,6 +90,25 @@
         1543: 2015,
         1644: 2016
       }
+    },
+    duplasena: {
+      key: "dupla-pascoa",
+      name: "Dupla de Páscoa",
+      shortName: "Dupla de Páscoa",
+      startYear: 2017,
+      ruleNote: "Realizada anualmente no sábado de Aleluia (véspera da Páscoa) desde 2017; o prêmio principal não acumula.",
+      contests: {
+        1630: 2017,
+        1771: 2018,
+        1925: 2019,
+        2070: 2020,
+        2212: 2021,
+        2355: 2022,
+        2499: 2023,
+        2643: 2024,
+        2797: 2025,
+        2940: 2026
+      }
     }
   };
 
@@ -97,7 +116,12 @@
     megasena: { main: "6", fallback: "5" },
     lotofacil: { main: "15", fallback: "14" },
     quina: { main: "5", fallback: "4" },
-    lotomania: { main: "20", fallback: "19" }
+    lotomania: { main: "20", fallback: "19" },
+    maismilionaria: { main: "6+2", fallback: "6+1" },
+    timemania: { main: "7", fallback: "6" },
+    duplasena: { main: "6", fallback: "5" },
+    diadesorte: { main: "7", fallback: "6" },
+    supersete: { main: "7", fallback: "6" }
   };
 
   function parseDateParts(dateStr) {
@@ -153,6 +177,15 @@
         const tot4 = getTierTotal(draw, "4");
         const mainVal = tot5 > 0 ? tot5 : tot4;
         if (mainVal >= 100000000) {
+          return dt.year;
+        }
+      }
+    } else if (lotteryId === "duplasena" && c > 2940) {
+      if ((dt.month === 3 || dt.month === 4) && !draw.a) {
+        const tot6 = getTierTotal(draw, "6");
+        const tot5 = getTierTotal(draw, "5");
+        const mainVal = tot6 > 0 ? tot6 : tot5;
+        if (mainVal >= 20000000) {
           return dt.year;
         }
       }

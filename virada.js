@@ -54,6 +54,7 @@
       id: "lotomania",
       name: "Lotomania",
       specialLabel: "Lotomania de Páscoa",
+      hasSpecial: true,
       drawCount: 20,
       tiers: [
         { key: "20", name: "20 Acertos", minHits: 20 },
@@ -66,6 +67,95 @@
       ],
       tablePrizeCols: { main: "20 Acertos", sub: "19 a 15 e 0 Acertos" },
       dataVar: "LOTOMANIA_DRAWS"
+    },
+    maismilionaria: {
+      id: "maismilionaria",
+      name: "+Milionária",
+      specialLabel: "6 dezenas + 2 trevos",
+      hasSpecial: false,
+      drawCount: 6,
+      tiers: [
+        { key: "6+2", name: "6 + 2 Trevos", minHits: 6 },
+        { key: "6+1", name: "6 + 1/0 Trevo", minHits: 6 },
+        { key: "5+2", name: "5 + 2 Trevos", minHits: 5 },
+        { key: "5+1", name: "5 + 1/0 Trevo", minHits: 5 },
+        { key: "4+2", name: "4 + 2 Trevos", minHits: 4 },
+        { key: "4+1", name: "4 + 1/0 Trevo", minHits: 4 },
+        { key: "3+2", name: "3 + 2 Trevos", minHits: 3 },
+        { key: "3+1", name: "3 + 1 Trevo", minHits: 3 },
+        { key: "2+2", name: "2 + 2 Trevos", minHits: 2 },
+        { key: "2+1", name: "2 + 1 Trevo", minHits: 2 }
+      ],
+      tablePrizeCols: { main: "6 Acertos + 2 Trevos", sub: "Demais Faixas" },
+      dataVar: "MAISMILIONARIA_DRAWS"
+    },
+    timemania: {
+      id: "timemania",
+      name: "Timemania",
+      specialLabel: "7 dezenas + Time do Coração",
+      hasSpecial: false,
+      drawCount: 7,
+      tiers: [
+        { key: "7", name: "7 Acertos", minHits: 7 },
+        { key: "6", name: "6 Acertos", minHits: 6 },
+        { key: "5", name: "5 Acertos", minHits: 5 },
+        { key: "4", name: "4 Acertos", minHits: 4 },
+        { key: "3", name: "3 Acertos", minHits: 3 },
+        { key: "time", name: "Time do Coração", minHits: 0 }
+      ],
+      tablePrizeCols: { main: "7 Acertos", sub: "6 a 3 e Time do Coração" },
+      dataVar: "TIMEMANIA_DRAWS"
+    },
+    duplasena: {
+      id: "duplasena",
+      name: "Dupla Sena",
+      specialLabel: "Dupla de Páscoa",
+      hasSpecial: true,
+      drawCount: 6,
+      tiers: [
+        { key: "6", name: "Sena (1º)", minHits: 6 },
+        { key: "5", name: "Quina (1º)", minHits: 5 },
+        { key: "4", name: "Quadra (1º)", minHits: 4 },
+        { key: "3", name: "Terno (1º)", minHits: 3 },
+        { key: "2_6", name: "Sena (2º)", minHits: 6 },
+        { key: "2_5", name: "Quina (2º)", minHits: 5 },
+        { key: "2_4", name: "Quadra (2º)", minHits: 4 },
+        { key: "2_3", name: "Terno (2º)", minHits: 3 }
+      ],
+      tablePrizeCols: { main: "Sena 1º Sorteio", sub: "2º Sorteio e Demais Faixas" },
+      dataVar: "DUPLASENA_DRAWS"
+    },
+    diadesorte: {
+      id: "diadesorte",
+      name: "Dia de Sorte",
+      specialLabel: "7 dezenas + Mês da Sorte",
+      hasSpecial: false,
+      drawCount: 7,
+      tiers: [
+        { key: "7", name: "7 Acertos", minHits: 7 },
+        { key: "6", name: "6 Acertos", minHits: 6 },
+        { key: "5", name: "5 Acertos", minHits: 5 },
+        { key: "4", name: "4 Acertos", minHits: 4 },
+        { key: "mes", name: "Mês da Sorte", minHits: 0 }
+      ],
+      tablePrizeCols: { main: "7 Acertos", sub: "6, 5, 4 e Mês da Sorte" },
+      dataVar: "DIADESORTE_DRAWS"
+    },
+    supersete: {
+      id: "supersete",
+      name: "Super Sete",
+      specialLabel: "7 colunas numeradas (0 a 9)",
+      hasSpecial: false,
+      drawCount: 7,
+      tiers: [
+        { key: "7", name: "7 Colunas", minHits: 7 },
+        { key: "6", name: "6 Colunas", minHits: 6 },
+        { key: "5", name: "5 Colunas", minHits: 5 },
+        { key: "4", name: "4 Colunas", minHits: 4 },
+        { key: "3", name: "3 Colunas", minHits: 3 }
+      ],
+      tablePrizeCols: { main: "7 Colunas", sub: "6, 5, 4 e 3 Colunas" },
+      dataVar: "SUPERSETE_DRAWS"
     }
   };
 
@@ -508,19 +598,19 @@
 
     const options = [];
     if (Store.hasAllLotteries()) {
-      options.push({ value: "all", label: "Combo 4 Loterias Completo (Multi-Abas .xlsx)" });
+      options.push({ value: "all", label: "Combo 9 Loterias Completo (Multi-Abas .xlsx)" });
     }
     Store.ALL_LOTTERIES.forEach((id) => {
       if (Store.hasLotteryAccess(id)) {
         const cfg = LOTTERY_META[id];
-        options.push({ value: id, label: `Planilha ${cfg.name} + ${cfg.specialLabel} (.xlsx)` });
+        options.push({ value: id, label: `Planilha ${cfg.name} (${cfg.specialLabel}) (.xlsx)` });
       }
     });
     if (Store.hasEntitlement("kit_bolao_virada")) {
       options.push({ value: "kit_bolao_virada", label: "Kit Bolão Mega da Virada 2026 (.xlsx)" });
     }
     if (Store.hasEntitlement("dossie_especiais")) {
-      options.push({ value: "dossie_especiais", label: "Dossiê Concursos Especiais 5 Abas (.xlsx)" });
+      options.push({ value: "dossie_especiais", label: "Dossiê Concursos Especiais 6 Abas (.xlsx)" });
     }
 
     if (options.length === 0) {
@@ -629,6 +719,10 @@
         const spCount = Specials ? Specials.getSpecialDraws(id, draws).length : 0;
         const owned = Store.hasLotteryAccess(id);
 
+        const descText = spCount > 0
+          ? `${intFmt.format(draws.length)} concursos oficiais e ${intFmt.format(spCount)} edições da ${cfg.specialLabel}.`
+          : `${intFmt.format(draws.length)} concursos oficiais (${cfg.specialLabel}).`;
+
         return `
           <article class="product-card ${owned ? "is-owned" : ""}">
             <div class="product-card-top">
@@ -636,10 +730,13 @@
               <span class="product-format-tag">${owned ? "Liberado" : "XLSX + PDF"}</span>
             </div>
             <p class="product-desc">
-              ${intFmt.format(draws.length)} concursos oficiais e ${intFmt.format(spCount)} edições da ${cfg.specialLabel}.
+              ${descText}
             </p>
             <div class="product-price-line">
-              <span class="product-price-main">${owned ? "Acesso Ativo" : "R$ 10,00"}</span>
+              ${owned ? '<span class="product-price-main">Acesso Ativo</span>' : `
+                <span class="product-price-compare">De R$ 20,00 por</span>
+                <span class="product-price-main">R$ 10,00</span>
+              `}
             </div>
             <div class="product-actions">
               ${owned
@@ -679,7 +776,7 @@
     if (comboActions) {
       if (Store.hasAllLotteries()) {
         comboActions.innerHTML = `
-          <span class="badge win" style="align-self:flex-start;">Todas as 4 loterias liberadas</span>
+          <span class="badge win" style="align-self:flex-start;">Todas as 9 loterias liberadas</span>
           <button type="button" id="btn-dl-combo-xlsx" class="btn btn-primary">Baixar Excel Multi-Abas (.xlsx)</button>
           <button type="button" id="btn-dl-combo-pdf" class="btn">Baixar PDF Consolidado</button>
         `;
@@ -690,11 +787,11 @@
       } else {
         comboActions.innerHTML = `
           <div class="product-price-line">
-            <span class="product-price-compare">R$ 40,00</span>
+            <span class="product-price-compare">De R$ 90,00 por</span>
             <span class="product-price-main">R$ 24,90</span>
           </div>
           <button type="button" class="btn btn-primary btn-buy-virada" data-product-id="combo_all">
-            Comprar Combo 4 Loterias (R$ 24,90)
+            Comprar Combo 9 Loterias (R$ 24,90)
           </button>
         `;
       }
@@ -744,7 +841,7 @@
     if (actionsDossie) {
       if (hasDossie) {
         actionsDossie.innerHTML = `
-          <button type="button" id="btn-dl-dossie-xlsx" class="btn btn-primary">Baixar Dossiê 5 Abas (.xlsx)</button>
+          <button type="button" id="btn-dl-dossie-xlsx" class="btn btn-primary">Baixar Dossiê 6 Abas (.xlsx)</button>
           <button type="button" id="btn-dl-dossie-pdf" class="btn">Baixar Dossiê Completo (.pdf)</button>
         `;
         document.getElementById("btn-dl-dossie-xlsx").addEventListener("click", () => {
@@ -770,7 +867,7 @@
       } else {
         actionsSuper.innerHTML = `
           <div class="product-price-line">
-            <span class="product-price-compare">R$ 74,80</span>
+            <span class="product-price-compare">De R$ 124,80 por</span>
             <span class="product-price-main">R$ 34,90</span>
           </div>
           <button type="button" class="btn btn-primary btn-buy-virada" data-product-id="super_combo">

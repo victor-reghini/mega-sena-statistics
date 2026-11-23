@@ -10,6 +10,7 @@ import base64
 from email.message import EmailMessage
 import hashlib
 import hmac
+import html
 import http.server
 import json
 import os
@@ -52,7 +53,17 @@ SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com").strip() or "smtp.gmail
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "465"))
 PORT = int(os.environ.get("PORT", "8080"))
 
-ALL_LOTTERIES = ["megasena", "lotofacil", "quina", "lotomania"]
+ALL_LOTTERIES = [
+    "megasena",
+    "lotofacil",
+    "quina",
+    "lotomania",
+    "maismilionaria",
+    "timemania",
+    "duplasena",
+    "diadesorte",
+    "supersete",
+]
 
 PRODUCT_CATALOG = {
     "export_megasena": {
@@ -95,11 +106,61 @@ PRODUCT_CATALOG = {
         "defaultPriceId": "price_1UdY0iLbOL7pa0nJO77PSg9g",
         "defaultLink": "https://buy.stripe.com/9B6dRa3K5abDevDewzeQM04",
     },
+    "export_maismilionaria": {
+        "name": "Planilha +Milionária Completa (XLSX + PDF)",
+        "description": "Base completa de resultados da +Milionária (6 dezenas + 2 trevos e 10 faixas de rateio) em Excel (.xlsx) e PDF.",
+        "amountCents": 1000,
+        "unlocks": ["maismilionaria"],
+        "priceEnv": "STRIPE_PRICE_ID_EXPORT_MAISMILIONARIA",
+        "linkEnv": "STRIPE_LINK_EXPORT_MAISMILIONARIA",
+        "defaultPriceId": "price_1Uf1U7LbOL7pa0nJBxgL5iRa",
+        "defaultLink": "https://buy.stripe.com/28E00k0xTfvX3QZ2NReQM09",
+    },
+    "export_timemania": {
+        "name": "Planilha Timemania Completa (XLSX + PDF)",
+        "description": "Base completa de resultados da Timemania (7 dezenas + Time do Coração) em Excel (.xlsx) e PDF.",
+        "amountCents": 1000,
+        "unlocks": ["timemania"],
+        "priceEnv": "STRIPE_PRICE_ID_EXPORT_TIMEMANIA",
+        "linkEnv": "STRIPE_LINK_EXPORT_TIMEMANIA",
+        "defaultPriceId": "price_1Uf1U9LbOL7pa0nJG6V3Bdg1",
+        "defaultLink": "https://buy.stripe.com/eVq3cw0xTcjLdrz1JNeQM0a",
+    },
+    "export_duplasena": {
+        "name": "Planilha Dupla Sena + Dupla de Páscoa (XLSX + PDF)",
+        "description": "Base completa de resultados da Dupla Sena (1º e 2º sorteios) e edições da Dupla de Páscoa em Excel (.xlsx) e PDF.",
+        "amountCents": 1000,
+        "unlocks": ["duplasena"],
+        "priceEnv": "STRIPE_PRICE_ID_EXPORT_DUPLASENA",
+        "linkEnv": "STRIPE_LINK_EXPORT_DUPLASENA",
+        "defaultPriceId": "price_1Uf1UALbOL7pa0nJHJP9GZ8y",
+        "defaultLink": "https://buy.stripe.com/00wfZidkF3Nf3QZ2NReQM0b",
+    },
+    "export_diadesorte": {
+        "name": "Planilha Dia de Sorte Completa (XLSX + PDF)",
+        "description": "Base completa de resultados do Dia de Sorte (7 dezenas + Mês da Sorte) em Excel (.xlsx) e PDF.",
+        "amountCents": 1000,
+        "unlocks": ["diadesorte"],
+        "priceEnv": "STRIPE_PRICE_ID_EXPORT_DIADESORTE",
+        "linkEnv": "STRIPE_LINK_EXPORT_DIADESORTE",
+        "defaultPriceId": "price_1Uf1UCLbOL7pa0nJhjK2JkFC",
+        "defaultLink": "https://buy.stripe.com/9B6bJ23K5dnPafn3RVeQM0c",
+    },
+    "export_supersete": {
+        "name": "Planilha Super Sete Completa (XLSX + PDF)",
+        "description": "Base completa de resultados do Super Sete (7 colunas numeradas de 0 a 9) em Excel (.xlsx) e PDF.",
+        "amountCents": 1000,
+        "unlocks": ["supersete"],
+        "priceEnv": "STRIPE_PRICE_ID_EXPORT_SUPERSETE",
+        "linkEnv": "STRIPE_LINK_EXPORT_SUPERSETE",
+        "defaultPriceId": "price_1Uf1UELbOL7pa0nJ8M1azGUo",
+        "defaultLink": "https://buy.stripe.com/aFa28sgwR4Rj87ffADeQM0d",
+    },
     "combo_all": {
-        "name": "Combo 4 Loterias Completo (XLSX + PDF)",
-        "description": "Acesso para exportar Mega-Sena, Lotofácil, Quina, Lotomania e todos os concursos especiais.",
+        "name": "Combo 9 Loterias Completo (XLSX + PDF)",
+        "description": "Acesso para exportar todas as 9 loterias oficiais da Caixa e todos os concursos especiais.",
         "amountCents": 2490,
-        "unlocks": ["megasena", "lotofacil", "quina", "lotomania"],
+        "unlocks": list(ALL_LOTTERIES),
         "priceEnv": "STRIPE_PRICE_ID_COMBO_ALL",
         "linkEnv": "STRIPE_LINK_COMBO_ALL",
         "defaultPriceId": "price_1UdY0lLbOL7pa0nJk1nYqxgl",
@@ -117,7 +178,7 @@ PRODUCT_CATALOG = {
     },
     "dossie_especiais": {
         "name": "Dossiê Concursos Especiais (XLSX + PDF)",
-        "description": "Comparativo histórico em Excel e PDF de Mega da Virada, Independência, Quina de São João e Páscoa.",
+        "description": "Comparativo histórico em Excel e PDF de Mega da Virada, Independência, Quina de São João, Dupla de Páscoa e Lotomania de Páscoa.",
         "amountCents": 1990,
         "unlocks": ["dossie_especiais"],
         "priceEnv": "STRIPE_PRICE_ID_DOSSIE_ESPECIAIS",
@@ -126,10 +187,10 @@ PRODUCT_CATALOG = {
         "defaultLink": "https://buy.stripe.com/4gM00k94p5VngDLgEHeQM07",
     },
     "super_combo": {
-        "name": "Pacote Completo Atlas + Virada (4 Loterias + Kit Bolão + Dossiê)",
-        "description": "Todas as 4 planilhas oficiais + Kit Bolão Mega da Virada 2026 + Dossiê Concursos Especiais.",
+        "name": "Pacote Completo Atlas + Virada (9 Loterias + Kit Bolão + Dossiê)",
+        "description": "Todas as 9 planilhas oficiais + Kit Bolão Mega da Virada 2026 + Dossiê Concursos Especiais.",
         "amountCents": 3490,
-        "unlocks": ["megasena", "lotofacil", "quina", "lotomania", "kit_bolao_virada", "dossie_especiais"],
+        "unlocks": [*ALL_LOTTERIES, "kit_bolao_virada", "dossie_especiais"],
         "priceEnv": "STRIPE_PRICE_ID_SUPER_COMBO",
         "linkEnv": "STRIPE_LINK_SUPER_COMBO",
         "defaultPriceId": "price_1UdY0pLbOL7pa0nJFrkhnZIt",
@@ -264,15 +325,23 @@ def compute_otp_code(email, product_id, nonce, secret_key):
 
 
 def build_receipt_html(receipt_number, session_id, product_name, amount_formatted, paid_at_formatted, verified_email, sender_email, attachment_names):
+    safe_receipt_number = html.escape(str(receipt_number))
+    safe_session_id = html.escape(str(session_id))
+    safe_product_name = html.escape(str(product_name))
+    safe_amount_formatted = html.escape(str(amount_formatted))
+    safe_paid_at_formatted = html.escape(str(paid_at_formatted))
+    safe_verified_email = html.escape(str(verified_email))
+    safe_sender_email = html.escape(str(sender_email))
+
     files_li = "".join(
-        f'<li style="margin:4px 0;font-family:monospace;font-size:13px;">{name}</li>'
+        f'<li style="margin:4px 0;font-family:monospace;font-size:13px;">{html.escape(name)}</li>'
         for name in attachment_names
     )
     return f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Recibo {receipt_number} - Atlas das Loterias Caixa</title>
+<title>Recibo {safe_receipt_number} - Atlas das Loterias Caixa</title>
 </head>
 <body style="font-family:system-ui,-apple-system,sans-serif;background:#F7F5F0;color:#14261C;padding:24px;margin:0;">
   <div style="max-width:620px;margin:0 auto;background:#FFFFFF;border:1.5px solid #94A69B;border-radius:8px;padding:24px;">
@@ -282,16 +351,16 @@ def build_receipt_html(receipt_number, session_id, product_name, amount_formatte
       <p style="margin:4px 0 0;font-size:13px;color:#3D5245;">Atlas Estatístico das Loterias Caixa</p>
     </div>
     <p style="margin:0 0 16px;font-size:14px;line-height:1.5;">
-      Olá! Confirmamos o seu pagamento via Stripe. Os arquivos adquiridos e este recibo oficial foram enviados para o seu e-mail validado (<strong>{verified_email}</strong>).
+      Olá! Confirmamos o seu pagamento via Stripe. Os arquivos adquiridos e este recibo oficial foram enviados para o seu e-mail validado (<strong>{safe_verified_email}</strong>).
     </p>
     <div style="background:#F7F5F0;border:1px solid #C8D4CC;border-radius:6px;padding:16px;margin-bottom:18px;">
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        <tr><td style="padding:6px 0;color:#3D5245;"><strong>Número do Recibo:</strong></td><td style="padding:6px 0;text-align:right;font-family:monospace;font-weight:700;">{receipt_number}</td></tr>
-        <tr><td style="padding:6px 0;color:#3D5245;"><strong>Data / Hora da Confirmação:</strong></td><td style="padding:6px 0;text-align:right;">{paid_at_formatted}</td></tr>
-        <tr><td style="padding:6px 0;color:#3D5245;"><strong>Produto Adquirido:</strong></td><td style="padding:6px 0;text-align:right;font-weight:700;">{product_name}</td></tr>
-        <tr><td style="padding:6px 0;color:#3D5245;"><strong>Valor Total Pago:</strong></td><td style="padding:6px 0;text-align:right;font-weight:700;color:#0F5C3A;font-size:15px;">{amount_formatted}</td></tr>
-        <tr><td style="padding:6px 0;color:#3D5245;"><strong>E-mail Cadastrado e Validado:</strong></td><td style="padding:6px 0;text-align:right;">{verified_email}</td></tr>
-        <tr><td style="padding:6px 0;color:#3D5245;"><strong>ID da Transação Stripe:</strong></td><td style="padding:6px 0;text-align:right;font-family:monospace;font-size:12px;">{session_id}</td></tr>
+        <tr><td style="padding:6px 0;color:#3D5245;"><strong>Número do Recibo:</strong></td><td style="padding:6px 0;text-align:right;font-family:monospace;font-weight:700;">{safe_receipt_number}</td></tr>
+        <tr><td style="padding:6px 0;color:#3D5245;"><strong>Data / Hora da Confirmação:</strong></td><td style="padding:6px 0;text-align:right;">{safe_paid_at_formatted}</td></tr>
+        <tr><td style="padding:6px 0;color:#3D5245;"><strong>Produto Adquirido:</strong></td><td style="padding:6px 0;text-align:right;font-weight:700;">{safe_product_name}</td></tr>
+        <tr><td style="padding:6px 0;color:#3D5245;"><strong>Valor Total Pago:</strong></td><td style="padding:6px 0;text-align:right;font-weight:700;color:#0F5C3A;font-size:15px;">{safe_amount_formatted}</td></tr>
+        <tr><td style="padding:6px 0;color:#3D5245;"><strong>E-mail Cadastrado e Validado:</strong></td><td style="padding:6px 0;text-align:right;">{safe_verified_email}</td></tr>
+        <tr><td style="padding:6px 0;color:#3D5245;"><strong>ID da Transação Stripe:</strong></td><td style="padding:6px 0;text-align:right;font-family:monospace;font-size:12px;">{safe_session_id}</td></tr>
         <tr><td style="padding:6px 0;color:#3D5245;"><strong>Status:</strong></td><td style="padding:6px 0;text-align:right;color:#0F5C3A;font-weight:700;">QUITADO (PAID)</td></tr>
       </table>
     </div>
@@ -300,7 +369,7 @@ def build_receipt_html(receipt_number, session_id, product_name, amount_formatte
       <ul style="margin:0;padding-left:20px;color:#14261C;">{files_li}</ul>
     </div>
     <div style="border-top:1px solid #C8D4CC;padding-top:12px;font-size:12px;color:#3D5245;">
-      <p style="margin:0;">Remetente e suporte oficial: <strong>{sender_email}</strong></p>
+      <p style="margin:0;">Remetente e suporte oficial: <strong>{safe_sender_email}</strong></p>
       <p style="margin:4px 0 0;">Guarde este recibo para seu controle. Caso precise de reenvio ou suporte, basta responder a este e-mail.</p>
     </div>
   </div>
@@ -443,7 +512,6 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
 
                 metadata = data.get("metadata") or {}
                 meta_product_id = str(metadata.get("product_id") or "").strip()
-                used_base_price = str(metadata.get("used_base_price") or "").lower() == "true"
 
                 product_name = None
                 unlocks = []
@@ -451,7 +519,7 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
 
                 if meta_product_id and meta_product_id in PRODUCT_CATALOG:
                     product = PRODUCT_CATALOG[meta_product_id]
-                    is_correct_amount = (amount_cents == product["amountCents"]) or (used_base_price and amount_cents >= 1000)
+                    is_correct_amount = amount_cents >= product["amountCents"]
                     product_name = product["name"]
                     unlocks = product["unlocks"]
                 elif not meta_product_id and amount_cents == 1500:
@@ -652,7 +720,15 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
                     ),
                 }
                 if not email_sent:
-                    resp_data["instantVerificationCode"] = otp_code
+                    allow_dev_code = os.getenv("ALLOW_DEV_INSTANT_CODE") == "true" or (not SMTP_PASS and os.getenv("ENVIRONMENT") == "development")
+                    if allow_dev_code:
+                        resp_data["instantVerificationCode"] = otp_code
+                    else:
+                        self.send_json({
+                            "ok": False,
+                            "error": "Não foi possível enviar o código de verificação para o seu e-mail no momento. Por favor, tente novamente em alguns instantes."
+                        }, status=500)
+                        return
                 self.send_json(resp_data, status=200)
                 return
 
@@ -717,7 +793,7 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
 
             email = str(payload.get("email") or "").strip().lower()
             email_verification_token = str(payload.get("emailVerificationToken") or "").strip()
-            verified_email_payload = verify_email_token(email_verification_token, STRIPE_SECRET_KEY, email, product_id)
+            verified_email_payload = verify_email_token(email_verification_token, STRIPE_SECRET_KEY, email)
             if not verified_email_payload or not verified_email_payload.get("email"):
                 self.send_json({
                     "ok": False,
@@ -893,6 +969,13 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
                 return
 
             verified_token_email = str(token_payload.get("email") or "").strip().lower()
+            if verified_token_email and requested_email and requested_email != verified_token_email:
+                self.send_json({
+                    "ok": False,
+                    "error": f"O e-mail de destino informado ({requested_email}) não corresponde ao e-mail validado no momento da compra ({verified_token_email}).",
+                }, status=403)
+                return
+
             recipient_email = verified_token_email or requested_email
             if not is_valid_email_address(recipient_email):
                 self.send_json({"ok": False, "error": "Informe um endereço de e-mail válido para receber os arquivos e o recibo."}, status=400)
@@ -928,6 +1011,18 @@ class LotteryRequestHandler(http.server.SimpleHTTPRequestHandler):
                     self.send_json({"ok": False, "error": "Falha ao decodificar arquivo."}, status=400)
                     return
                 fname = re.sub(r"[^a-zA-Z0-9._-]", "_", str(att.get("filename") or "Arquivo_Atlas.xlsx").strip())
+                lower_fname = fname.lower()
+                if lower_fname.endswith((".xlsx", ".zip")):
+                    if len(fbytes) < 4 or fbytes[:4] != b"\x50\x4b\x03\x04":
+                        self.send_json({"ok": False, "error": f"Arquivo {fname} possui formato inválido ou corrompido."}, status=400)
+                        return
+                elif lower_fname.endswith(".pdf"):
+                    if len(fbytes) < 4 or fbytes[:4] != b"%PDF":
+                        self.send_json({"ok": False, "error": f"Arquivo {fname} não possui cabeçalho PDF válido."}, status=400)
+                        return
+                elif not lower_fname.endswith((".html", ".txt")):
+                    self.send_json({"ok": False, "error": f"Extensão de arquivo não permitida para {fname}."}, status=400)
+                    return
                 mtype = str(att.get("mimeType") or "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").strip()
                 decoded_attachments.append((fname, fbytes, mtype))
 

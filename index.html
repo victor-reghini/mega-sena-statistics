@@ -181,6 +181,26 @@
         <span class="lottery-dot lotomania"></span>
         <span>Lotomania</span>
       </button>
+      <button type="button" class="lottery-btn" data-lottery="maismilionaria" aria-pressed="false">
+        <span class="lottery-dot maismilionaria"></span>
+        <span>+Milionária</span>
+      </button>
+      <button type="button" class="lottery-btn" data-lottery="timemania" aria-pressed="false">
+        <span class="lottery-dot timemania"></span>
+        <span>Timemania</span>
+      </button>
+      <button type="button" class="lottery-btn" data-lottery="duplasena" aria-pressed="false">
+        <span class="lottery-dot duplasena"></span>
+        <span>Dupla Sena</span>
+      </button>
+      <button type="button" class="lottery-btn" data-lottery="diadesorte" aria-pressed="false">
+        <span class="lottery-dot diadesorte"></span>
+        <span>Dia de Sorte</span>
+      </button>
+      <button type="button" class="lottery-btn" data-lottery="supersete" aria-pressed="false">
+        <span class="lottery-dot supersete"></span>
+        <span>Super Sete</span>
+      </button>
     </nav>
 
     <div class="special-bar" role="region" aria-label="Atalhos para concursos especiais">
@@ -189,6 +209,7 @@
         <button type="button" class="special-chip" data-special-lottery="megasena" aria-pressed="false">Mega da Virada</button>
         <button type="button" class="special-chip" data-special-lottery="lotofacil" aria-pressed="false">Lotofácil da Independência</button>
         <button type="button" class="special-chip" data-special-lottery="quina" aria-pressed="false">Quina de São João</button>
+        <button type="button" class="special-chip" data-special-lottery="duplasena" aria-pressed="false">Dupla de Páscoa</button>
         <button type="button" class="special-chip" data-special-lottery="lotomania" aria-pressed="false">Lotomania de Páscoa</button>
         <button type="button" id="btn-clear-special-scope" class="special-chip special-chip-reset" hidden>Ver todos os concursos</button>
       </div>
@@ -262,6 +283,7 @@
           <div id="ticket-summary" class="ticket-summary-bar" aria-live="polite"></div>
 
           <div id="volante-grid" class="volante-grid" role="group" aria-label="Volante de 60 dezenas da Mega-Sena"></div>
+          <div id="volante-extra-controls" class="volante-extra-controls" hidden></div>
         </div>
 
         <!-- Coluna Direita: Resultado e Extrato -->
@@ -753,7 +775,7 @@
         </div>
 
         <p id="pay-modal-intro" class="export-intro">
-          Cada loteria possui exportação individual em Excel (.xlsx) e PDF por R$ 10,00 (incluindo os concursos especiais da modalidade), ou você pode desbloquear todas as 4 loterias juntas com desconto no Combo.
+          Cada loteria possui exportação individual em Excel (.xlsx) e PDF por R$ 10,00 (incluindo os concursos especiais da modalidade), ou você pode desbloquear todas as 9 loterias juntas com desconto no Combo.
         </p>
 
         <div class="pay-plans-grid">
@@ -763,10 +785,13 @@
             <p id="pay-single-desc" class="pay-plan-desc">
               Histórico completo, concursos filtrados e todas as edições especiais desta loteria em XLSX e PDF.
             </p>
-            <div class="pay-plan-price">
-              <span class="price-currency">R$</span>
-              <span class="price-number">10</span>
-              <span class="price-cents">,00</span>
+            <div class="pay-plan-price-wrap">
+              <span class="price-compare">De R$ 20,00 por</span>
+              <div class="pay-plan-price">
+                <span class="price-currency">R$</span>
+                <span class="price-number">10</span>
+                <span class="price-cents">,00</span>
+              </div>
             </div>
             <span class="checkout-price-sub">Pagamento único, acesso vitalício</span>
             <button type="button" id="btn-buy-single" class="btn pay-plan-btn" data-product-id="export_megasena">
@@ -775,26 +800,26 @@
           </article>
 
           <article class="pay-plan-card recommended">
-            <span class="pay-plan-tag pay-plan-tag-accent">Desconto de 38%</span>
-            <h4 class="pay-plan-title">Combo 4 Loterias Completo</h4>
+            <span class="pay-plan-tag pay-plan-tag-accent">Desconto de 72%</span>
+            <h4 class="pay-plan-title">Combo 9 Loterias Completo</h4>
             <p class="pay-plan-desc">
-              Desbloqueia Mega-Sena, Lotofácil, Quina e Lotomania (incluindo Virada, Independência, São João e Páscoa) em XLSX multi-abas e PDF.
+              Desbloqueia Mega-Sena, Lotofácil, Quina, Lotomania, +Milionária, Timemania, Dupla Sena, Dia de Sorte e Super Sete (incluindo Virada, Independência, São João e Páscoa) em XLSX multi-abas e PDF.
             </p>
             <div class="pay-plan-price-wrap">
-              <span class="price-compare">De R$ 40,00 por</span>
+              <span class="price-compare">De R$ 90,00 por</span>
               <div class="pay-plan-price">
                 <span class="price-currency">R$</span>
                 <span class="price-number">24</span>
                 <span class="price-cents">,90</span>
               </div>
             </div>
-            <span class="checkout-price-sub">Economia de R$ 15,10 no pacote</span>
+            <span class="checkout-price-sub">Economia de R$ 65,10 no pacote</span>
             <button type="button" id="btn-buy-combo" class="btn-checkout-stripe" data-product-id="combo_all">
               <svg class="btn-checkout-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                 <line x1="2" y1="10" x2="22" y2="10"/>
               </svg>
-              <span>Comprar Combo 4 Loterias (R$ 24,90)</span>
+              <span>Comprar Combo 9 Loterias (R$ 24,90)</span>
             </button>
           </article>
         </div>
@@ -810,18 +835,24 @@
                 <strong>Kit Bolão Mega da Virada 2026</strong>
                 <span>Planilha com rateio de cotas, conferidor automático #3100 e Guia PDF</span>
               </div>
-              <button type="button" class="btn btn-buy-product" data-product-id="kit_bolao_virada">
-                Comprar (R$ 14,90)
-              </button>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span class="price-compare">De R$ 29,90 por</span>
+                <button type="button" class="btn btn-buy-product" data-product-id="kit_bolao_virada">
+                  Comprar (R$ 14,90)
+                </button>
+              </div>
             </div>
             <div class="pay-extra-item pay-extra-highlight">
               <div>
-                <strong>Pacote Completo Atlas + Virada (De R$ 74,80)</strong>
-                <span>As 4 Loterias + Kit Bolão 2026 + Dossiê Concursos Especiais</span>
+                <strong>Pacote Completo Atlas + Virada 2026</strong>
+                <span>As 9 Loterias + Kit Bolão 2026 + Dossiê Concursos Especiais</span>
               </div>
-              <button type="button" class="btn btn-primary btn-buy-product" data-product-id="super_combo">
-                Pacote Completo (R$ 34,90)
-              </button>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span class="price-compare">De R$ 124,80 por</span>
+                <button type="button" class="btn btn-primary btn-buy-product" data-product-id="super_combo">
+                  Pacote Completo (R$ 34,90)
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -866,7 +897,12 @@
               <option value="lotofacil" id="opt-exp-lotofacil">Lotofácil</option>
               <option value="quina" id="opt-exp-quina">Quina</option>
               <option value="lotomania" id="opt-exp-lotomania">Lotomania</option>
-              <option value="all" id="opt-exp-all">Todas as 4 Loterias (Planilha Excel Multi-Abas)</option>
+              <option value="maismilionaria" id="opt-exp-maismilionaria">+Milionária</option>
+              <option value="timemania" id="opt-exp-timemania">Timemania</option>
+              <option value="duplasena" id="opt-exp-duplasena">Dupla Sena</option>
+              <option value="diadesorte" id="opt-exp-diadesorte">Dia de Sorte</option>
+              <option value="supersete" id="opt-exp-supersete">Super Sete</option>
+              <option value="all" id="opt-exp-all">Todas as 9 Loterias (Planilha Excel Multi-Abas)</option>
             </select>
           </div>
 
@@ -893,7 +929,7 @@
           <p id="locked-export-text" style="margin:0 0 10px;font-size:0.875rem;"></p>
           <div style="display:flex;flex-wrap:wrap;gap:8px;">
             <button type="button" id="btn-unlock-selected-export" class="btn btn-primary"></button>
-            <button type="button" id="btn-unlock-combo-export" class="btn" data-product-id="combo_all">Comprar Combo 4 Loterias (R$ 24,90)</button>
+            <button type="button" id="btn-unlock-combo-export" class="btn" data-product-id="combo_all">Comprar Combo 9 Loterias (R$ 24,90)</button>
           </div>
         </div>
 
@@ -959,21 +995,26 @@
 
   <footer class="site-footer">
     <p style="margin:0;">
-      Dados históricos oficiais das Loterias Caixa (Mega-Sena, Lotofácil, Quina e Lotomania). Estatísticas, simulador e resultados de sorteios para consulta pública e educacional.
+      Dados históricos oficiais das Loterias Caixa (Mega-Sena, Lotofácil, Quina, Lotomania, +Milionária, Timemania, Dupla Sena, Dia de Sorte e Super Sete). Estatísticas, simulador e resultados de sorteios para consulta pública e educacional.
     </p>
   </footer>
 
   <!-- Bibliotecas para Exportação XLSX e PDF (Vendor local) -->
-  <script src="vendor/xlsx.full.min.js"></script>
-  <script src="vendor/jspdf.umd.min.js"></script>
-  <script src="vendor/jspdf.plugin.autotable.min.js"></script>
-  <script src="data/megasena.js"></script>
-  <script src="data/lotofacil.js"></script>
-  <script src="data/quina.js"></script>
-  <script src="data/lotomania.js"></script>
-  <script src="special-draws.js"></script>
-  <script src="store.js"></script>
-  <script src="app.js"></script>
+  <script src="vendor/xlsx.full.min.js" defer></script>
+  <script src="vendor/jspdf.umd.min.js" defer></script>
+  <script src="vendor/jspdf.plugin.autotable.min.js" defer></script>
+  <script src="data/megasena.js" defer></script>
+  <script src="data/lotofacil.js" defer></script>
+  <script src="data/quina.js" defer></script>
+  <script src="data/lotomania.js" defer></script>
+  <script src="data/maismilionaria.js" defer></script>
+  <script src="data/timemania.js" defer></script>
+  <script src="data/duplasena.js" defer></script>
+  <script src="data/diadesorte.js" defer></script>
+  <script src="data/supersete.js" defer></script>
+  <script src="special-draws.js" defer></script>
+  <script src="store.js" defer></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
 

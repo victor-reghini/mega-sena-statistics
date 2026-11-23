@@ -1,14 +1,34 @@
 // Netlify Serverless Function: Autorização Criptográfica de Exportação Antes do Download
 import crypto from "node:crypto";
 
-const ALL_LOTTERIES = ["megasena", "lotofacil", "quina", "lotomania"];
+const ALL_LOTTERIES = [
+  "megasena",
+  "lotofacil",
+  "quina",
+  "lotomania",
+  "maismilionaria",
+  "timemania",
+  "duplasena",
+  "diadesorte",
+  "supersete"
+];
 
-function jsonResponse(payload, status = 200) {
+function getCorsOrigin(req) {
+  const origin = (req && req.headers && req.headers.get("origin")) || "";
+  if (!origin) return "https://lotery-statistics.netlify.app";
+  if (origin === "https://lotery-statistics.netlify.app") return origin;
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin;
+  return "https://lotery-statistics.netlify.app";
+}
+
+function jsonResponse(payload, status = 200, req = null) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": getCorsOrigin(req),
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
       "Cache-Control": "no-store"
     }
   });
@@ -53,7 +73,7 @@ export default async (req) => {
     return new Response(null, {
       status: 204,
       headers: {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": getCorsOrigin(req),
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type"
       }
@@ -61,12 +81,12 @@ export default async (req) => {
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ ok: false, authorized: false, error: "Método não permitido." }, 405);
+    return jsonResponse({ ok: false, authorized: false, error: "Método não permitido." }, 405, req);
   }
 
   const stripeKey = (process.env.STRIPE_SECRET_KEY || "").trim();
   if (!stripeKey) {
-    return jsonResponse({ ok: false, authorized: false, error: "Serviço de verificação não configurado." }, 503);
+    return jsonResponse({ ok: false, authorized: false, error: "Serviço de verificação não configurado." }, 503, req);
   }
 
   let body = {};
